@@ -228,36 +228,22 @@ if __name__ == "__main__":
 
     model_enc = Encoder(n_ch_in = 3, 
                         padding = "same",
-                        ch = [32, 64, 128, 256, 64, 64],
-                        co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (5, 5)],
-                        po = [(2, 2), (2, 2), (2, 2), (1, 1), (1, 1), (1, 1)],
+                        ch = [32, 64, 128, 256, 512, 1024],
+                        co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (1, 1)],
+                        po = [(4, 4), (2, 2), (2, 2), (2, 2), (2, 2), (1, 1)],
                         n_ch_latent = 1024, 
-                        flattened_size = 4096,
-                        incl_last_layer = True,
+                        flattened_size = 1024,
+                        incl_last_layer = False,
                         ) 
     
     # model_enc = Encoder(incl_last_layer = True) 
     model_enc = model_enc.to(device)
     summary(model_enc, (3, 64, 64))
 
-
-
-
-
-
-
-  
-
-
-               
-                 
-
-
-
     model_dec = Decoder(n_ch_out=3, 
                         n_ch_latent=1024, 
-                        ch = [128, 96, 64, 32, 16],
-                        po = [(1, 1), (4, 4), (2, 2), (2, 2), (2, 2)],
+                        ch = [512, 256, 128, 64, 32, 16],
+                        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
                         incl_convs = True
                         )
     
