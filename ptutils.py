@@ -293,7 +293,7 @@ if __name__ == "__main__":
     model_dec = Decoder(n_ch_out=3, 
                         n_ch_latent=latsha, 
                         shape_output = impsha, 
-                        n_conv_blocks = n_blck,
+                        n_conv_blocks = 5,
                         ch = [128, 96, 64, 32, 16],
                         po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
                         )
