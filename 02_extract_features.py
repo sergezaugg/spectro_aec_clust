@@ -11,7 +11,7 @@ from torchsummary import summary
 import os 
 from torchvision.transforms.functional import pil_to_tensor
 from PIL import Image
-from data_utils import SpectroImageDataset, Encoder, Decoder
+from ptutils import SpectroImageDataset, Encoder, Decoder
 
 
 

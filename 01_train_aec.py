@@ -12,7 +12,7 @@ import torch.nn as nn
 import torch.optim as optim
 import os 
 from torchvision.transforms.functional import pil_to_tensor
-from data_utils import SpectroImageDataset, Encoder, Decoder
+from ptutils import SpectroImageDataset, Encoder, Decoder
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
