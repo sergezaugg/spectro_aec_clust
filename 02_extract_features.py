@@ -7,17 +7,22 @@ import numpy as np
 import torch
 import plotly.express as px
 import numpy as np
-from torchsummary import summary
+# from torchsummary import summary
 import os 
-from torchvision.transforms.functional import pil_to_tensor
+# from torchvision.transforms.functional import pil_to_tensor
 from PIL import Image
 from ptutils import SpectroImageDataset, Encoder, Decoder
+import numpy as np
+import pandas as pd
+from sklearn.cluster import AgglomerativeClustering
+import numpy as np
+import shutil
+import os
+from sklearn.cluster import DBSCAN
 
 
-
-imgpath = "xxxxxxxxxxxxxxxx"
-model_path = "xxxxxxxxxxxxxxxxxxx"
-
+imgpath    = "C:/xc_real_projects/xc_aec_project/downloaded_data_img_24000sps_1ch"
+model_path = "C:/xc_real_projects/models"
 
 
 torch.cuda.is_available()
@@ -25,7 +30,19 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 # Load the model
-model_enc = Encoder(embedding_dim = 512, channels = 3)
+
+
+model_enc = Encoder(n_ch_in = 1, 
+                    padding = "same",
+                    ch = [32, 64, 128, 256, 512, 1024],
+                    co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (1, 1)],
+                    po = [(4, 4), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
+                    n_ch_latent = 1024, 
+                    flattened_size = 1024,
+                    incl_last_layer = True,
+                    ) 
+
+
 model_enc.load_state_dict(torch.load(os.path.join(model_path, "encoder_model.pth"), weights_only=True))
 model_enc = model_enc.to(device)
 model_enc.eval()
@@ -76,24 +93,21 @@ pa = imgpath
 # imgpath
 # imfiles
 
-import numpy as np
-import pandas as pd
-from sklearn.cluster import AgglomerativeClustering
-import numpy as np
-import shutil
-import os
-from sklearn.cluster import DBSCAN
 
 
 # clustering 
-clu = AgglomerativeClustering(n_clusters=21, metric='euclidean', linkage='average')
-
+clu = AgglomerativeClustering(n_clusters=61, metric='euclidean', linkage='average')
 # clu = DBSCAN(eps= 5, min_samples=5, metric='euclidean')
+
+# feature_mat = feature_mat[0:1000]
 
 # clustering = clu.fit(feature_mat)
 cluster_ids = clu.fit_predict(feature_mat)
 cluster_ids.shape
 pd.Series(cluster_ids).value_counts()
+
+finle_name_arr.shape
+cluster_ids.shape
 
 df = pd.DataFrame({
     'file_name' :finle_name_arr,

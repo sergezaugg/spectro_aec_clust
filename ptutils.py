@@ -121,7 +121,7 @@ class Encoder(nn.Module):
         x = self.conv4(x)
         x = self.conv5(x)
         x = self.flatn(x)
-        print('flattened size', x.size())
+        # print('flattened size', x.size())
         if self.incl_last_layer:
             x = self.fc0(x)
         return(x)
@@ -137,10 +137,12 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
     def __init__(self, 
-                 n_ch_out=3, 
-                 n_ch_latent=256, 
+                 n_ch_out = 3, 
+                 n_ch_latent = 256, 
+                 flattened_size = 256,
                  ch = [256, 128, 64, 32, 16], 
-                 po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
+                 co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (5, 5)],
+                 po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
                  incl_convs = True
                  ):
         
@@ -148,58 +150,64 @@ class Decoder(nn.Module):
 
         self.incl_convs = incl_convs
         
-        flattened_size = 256
-        cd1 = po[0][0]
-        cd2 = po[0][1]
-
-        inchd = flattened_size // (cd1*cd2)
+    
+        # cd1 = po[0][0]
+        # cd2 = po[0][1]
+        # inchd = flattened_size // (cd1*cd2)
        
         self.fc = nn.Sequential(
             nn.Linear(n_ch_latent, flattened_size),
             nn.ReLU(),
             )
         
-        self.unfla = nn.Unflatten(1, (inchd, cd1, cd2))
+        # self.unfla = nn.Unflatten(1, (inchd, cd1, cd2))
+        self.unfla = nn.Unflatten(1, (flattened_size, 1, 1))
 
-        # transpose conv block 0
+        # transpose conv block 0      padding=0, output_padding=0,
         self.tconv0 = nn.Sequential(
-            nn.ConvTranspose2d(inchd, ch[0], kernel_size=po[0], stride=po[0]), 
+            nn.ConvTranspose2d(flattened_size, ch[0], kernel_size=co[0], stride=po[0], padding=2, output_padding=1), 
             nn.BatchNorm2d(ch[0]),
             nn.ReLU()
             )
         # transpose conv block 1
         self.tconv1 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=po[1],  stride=po[1]), 
+            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=co[1],  stride=po[1], padding=2, output_padding=1), 
             nn.BatchNorm2d(ch[1]),
             nn.ReLU()
             )
         # transpose conv block 2
         self.tconv2 = nn.Sequential(
-            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=po[2], stride=po[2]), 
+            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=co[2], stride=po[2], padding=2, output_padding=1), 
             nn.BatchNorm2d(ch[2]),
             nn.ReLU()
             )
         # transpose conv block 3
         self.tconv3 = nn.Sequential(
-            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=po[3], stride=po[3]), 
+            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=co[3], stride=po[3], padding=2, output_padding=1), 
             nn.BatchNorm2d(ch[3]),
             nn.ReLU()
             )
         # transpose conv block 4
         self.tconv4 = nn.Sequential(
-            nn.ConvTranspose2d(ch[3], ch[4], kernel_size=po[4], stride=po[4]),  
+            nn.ConvTranspose2d(ch[3], ch[4], kernel_size=co[4], stride=po[4], padding=2, output_padding=1),  
             nn.BatchNorm2d(ch[4]),
+            nn.ReLU()
+            )
+        # transpose conv block 5
+        self.tconv5 = nn.Sequential(
+            nn.ConvTranspose2d(ch[4], ch[5], kernel_size=co[5], stride=po[5], padding=2, output_padding=3),  
+            nn.BatchNorm2d(ch[5]),
             nn.ReLU()
             )
         # ------------------------
         # simple mapping to output 
         self.out_map = nn.Sequential(
-            nn.Conv2d(ch[4], n_ch_out, kernel_size=(1,1), padding=0),
+            nn.Conv2d(ch[5], n_ch_out, kernel_size=(1,1), padding=0),
             nn.Sigmoid()
             )
      
     def forward(self, x):
-        x = self.fc(x)
+        # x = self.fc(x)
         x = self.unfla(x)
         if self.incl_convs:
             x = self.tconv0(x)
@@ -207,6 +215,7 @@ class Decoder(nn.Module):
             x = self.tconv2(x)
             x = self.tconv3(x)
             x = self.tconv4(x)
+            x = self.tconv5(x)
             x = self.out_map(x)
         return x
 
@@ -226,11 +235,11 @@ class Decoder(nn.Module):
 # devel code - supress execution if this is imported as module 
 if __name__ == "__main__":
 
-    model_enc = Encoder(n_ch_in = 3, 
+    model_enc = Encoder(n_ch_in = 1, 
                         padding = "same",
                         ch = [32, 64, 128, 256, 512, 1024],
                         co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (1, 1)],
-                        po = [(4, 4), (2, 2), (2, 2), (2, 2), (2, 2), (1, 1)],
+                        po = [(4, 4), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
                         n_ch_latent = 1024, 
                         flattened_size = 1024,
                         incl_last_layer = False,
@@ -238,13 +247,15 @@ if __name__ == "__main__":
     
     # model_enc = Encoder(incl_last_layer = True) 
     model_enc = model_enc.to(device)
-    summary(model_enc, (3, 64, 64))
+    summary(model_enc, (1, 128, 128))
 
-    model_dec = Decoder(n_ch_out=3, 
-                        n_ch_latent=1024, 
-                        ch = [512, 256, 128, 64, 32, 16],
-                        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
-                        incl_convs = True
+    model_dec = Decoder(n_ch_out = 1, 
+                        n_ch_latent = 1024, 
+                        flattened_size = 1024,
+                        ch = [128, 128, 128, 64, 32, 16],
+                        co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (5, 5)],
+                        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (4, 4)],
+                        incl_convs = True,
                         )
     
     model_dec = model_dec.to(device)
