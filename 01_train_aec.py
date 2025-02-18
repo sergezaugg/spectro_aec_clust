@@ -43,15 +43,13 @@ for i, (data, fi) in enumerate(train_loader, 0):
 #----------------------
 # define models 
 
-latsha = 1024
-
 model_enc = Encoder(n_ch_in = 1, 
                     padding = "same",
-                    ch = [32, 64, 128, 256, 512, 1024],
-                    co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (1, 1)],
+                    ch = [32, 64, 128, 256, 256, 256],
+                    co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (5, 5)],
                     po = [(4, 4), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
-                    n_ch_latent = latsha, 
-                    flattened_size = latsha,
+                    flattened_size = 256,
+                    n_ch_latent = 512, 
                     incl_last_layer = True,
                     ) 
 
@@ -59,16 +57,17 @@ model_enc = model_enc.to(device)
 summary(model_enc, (1, 128, 128))
 
 model_dec = Decoder(n_ch_out = 1, 
-                    n_ch_latent = latsha, 
-                    flattened_size = latsha,
-                    ch = [128, 128, 128, 64, 32, 16],
+                    n_ch_latent = 512, 
+                    flattened_size = 512,
+                    ch = [256, 128, 128, 64, 32, 32],
                     co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (5, 5)],
                     po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (4, 4)],
                     incl_convs = True,
                     )
 
 model_dec = model_dec.to(device)
-summary(model_dec, (latsha,))
+summary(model_dec, (512,))
+
 
 
     
@@ -84,6 +83,8 @@ summary(model_dec, (latsha,))
 # instantiate loss, optimizer
 criterion = nn.MSELoss() #nn.BCELoss()
 optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001)
+
+# optimizer = optim.SGD(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001, momentum=0.9)
 
 _ = model_enc.train()
 _ = model_dec.train()

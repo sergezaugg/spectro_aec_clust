@@ -18,8 +18,8 @@ from torchsummary import summary
 
 
 dataaugm = transforms.Compose([
-   transforms.RandomAffine(degrees=(-1.0, 1.0), translate=(0.02,0.02), scale=(0.97,1.03)),
-    #    transforms.RandomCrop(size=120, padding=None, pad_if_needed=False)
+    transforms.RandomAffine(degrees=(-1.0, 1.0), translate=(0.02,0.02), scale=(0.97,1.03)),
+    transforms.RandomCrop(size=124, padding=None, pad_if_needed=False)
     ])
 
 # Create a dataset for png images in a folder
@@ -29,7 +29,7 @@ class SpectroImageDataset(Dataset):
         self.imgpath = imgpath
     def __getitem__(self, index):     
         img = Image.open( os.path.join(self.imgpath,  self.all_img_files[index] ))
-        # img = dataaugm(img)
+        img = dataaugm(img)
         img = img.resize((128, 128))
         x = pil_to_tensor(img).to(torch.float32) / 255.0
         y = self.all_img_files[index]
@@ -56,9 +56,7 @@ class Encoder(nn.Module):
                  flattened_size = 160,
                  incl_last_layer = True,
                  ):
-        """
-        """
-        
+       
         super(Encoder, self).__init__()
 
         self.incl_last_layer = incl_last_layer
@@ -110,7 +108,7 @@ class Encoder(nn.Module):
 
         self.fc0 = nn.Sequential(
             nn.Linear(flattened_size, n_ch_latent),
-            nn.ReLU(),
+            # nn.ReLU(),
             )
 
     def forward(self, x):
@@ -150,62 +148,103 @@ class Decoder(nn.Module):
 
         self.incl_convs = incl_convs
         
-    
-        # cd1 = po[0][0]
-        # cd2 = po[0][1]
-        # inchd = flattened_size // (cd1*cd2)
-       
         self.fc = nn.Sequential(
             nn.Linear(n_ch_latent, flattened_size),
-            nn.ReLU(),
+            # nn.ReLU(),
             )
         
-        # self.unfla = nn.Unflatten(1, (inchd, cd1, cd2))
         self.unfla = nn.Unflatten(1, (flattened_size, 1, 1))
 
-        # transpose conv block 0      padding=0, output_padding=0,
-        self.tconv0 = nn.Sequential(
-            nn.ConvTranspose2d(flattened_size, ch[0], kernel_size=co[0], stride=po[0], padding=2, output_padding=1), 
+        # transpose conv block 0      
+        if po[0] == (2,2):
+            self.tconv0 = nn.Sequential(
+            nn.ConvTranspose2d(flattened_size, ch[0], kernel_size=co[0], stride=po[0], padding=2, output_padding=1),
             nn.BatchNorm2d(ch[0]),
-            nn.ReLU()
-            )
+            nn.ReLU())  
+        else:
+            self.tconv0 = nn.Sequential(
+            nn.Conv2d(flattened_size, ch[0], kernel_size=[1,1]),
+            nn.BatchNorm2d(ch[0]),
+            nn.ReLU())  
+   
         # transpose conv block 1
-        self.tconv1 = nn.Sequential(
+        if po[1] == (2,2):
+            self.tconv1 = nn.Sequential(
             nn.ConvTranspose2d(ch[0], ch[1], kernel_size=co[1],  stride=po[1], padding=2, output_padding=1), 
             nn.BatchNorm2d(ch[1]),
             nn.ReLU()
             )
+        else:  
+            self.tconv1 = nn.Sequential(
+            nn.Conv2d(ch[0], ch[1], kernel_size=[1,1]),
+            nn.BatchNorm2d(ch[1]),
+            nn.ReLU())  
+
         # transpose conv block 2
-        self.tconv2 = nn.Sequential(
+        if po[2] == (2,2):
+            self.tconv2 = nn.Sequential(
             nn.ConvTranspose2d(ch[1], ch[2], kernel_size=co[2], stride=po[2], padding=2, output_padding=1), 
             nn.BatchNorm2d(ch[2]),
             nn.ReLU()
             )
+        else:  
+            self.tconv2 = nn.Sequential(
+            nn.Conv2d(ch[1], ch[2], kernel_size=[1,1]),
+            nn.BatchNorm2d(ch[2]),
+            nn.ReLU()) 
+
         # transpose conv block 3
-        self.tconv3 = nn.Sequential(
+        if po[3] == (2,2):
+            self.tconv3 = nn.Sequential(
             nn.ConvTranspose2d(ch[2], ch[3], kernel_size=co[3], stride=po[3], padding=2, output_padding=1), 
             nn.BatchNorm2d(ch[3]),
             nn.ReLU()
             )
+        else:  
+            self.tconv3 = nn.Sequential(
+            nn.Conv2d(ch[2], ch[3], kernel_size=[1,1]),
+            nn.BatchNorm2d(ch[3]),
+            nn.ReLU())  
+
         # transpose conv block 4
-        self.tconv4 = nn.Sequential(
+        if po[4] == (2,2):
+            self.tconv4 = nn.Sequential(
             nn.ConvTranspose2d(ch[3], ch[4], kernel_size=co[4], stride=po[4], padding=2, output_padding=1),  
             nn.BatchNorm2d(ch[4]),
             nn.ReLU()
             )
+        else:  
+            self.tconv4 = nn.Sequential(
+            nn.Conv2d(ch[3], ch[4], kernel_size=[1,1]),
+            nn.BatchNorm2d(ch[4]),
+            nn.ReLU())  
+
         # transpose conv block 5
-        self.tconv5 = nn.Sequential(
+        if po[5] == (2,2):
+            self.tconv5 = nn.Sequential(
             nn.ConvTranspose2d(ch[4], ch[5], kernel_size=co[5], stride=po[5], padding=2, output_padding=3),  
             nn.BatchNorm2d(ch[5]),
             nn.ReLU()
             )
+        else:  
+            self.tconv5 = nn.Sequential(
+            nn.Conv2d(ch[4], ch[5], kernel_size=[1,1]),
+            nn.BatchNorm2d(ch[5]),
+            nn.ReLU())  
+        
+        
         # ------------------------
         # simple mapping to output 
         self.out_map = nn.Sequential(
             nn.Conv2d(ch[5], n_ch_out, kernel_size=(1,1), padding=0),
             nn.Sigmoid()
             )
+      
      
+
+
+
+
     def forward(self, x):
         # x = self.fc(x)
         x = self.unfla(x)
@@ -224,42 +263,73 @@ class Decoder(nn.Module):
 
 
 
+# xx = (2,2)
+
+# [a//2 for a in xx]
+
+# [1,1] == [1,1]
 
 
-
-
-
+  
 
 
 
 # devel code - supress execution if this is imported as module 
 if __name__ == "__main__":
 
+   
+    # v2 
     model_enc = Encoder(n_ch_in = 1, 
                         padding = "same",
-                        ch = [32, 64, 128, 256, 512, 1024],
-                        co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (1, 1)],
-                        po = [(4, 4), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
-                        n_ch_latent = 1024, 
-                        flattened_size = 1024,
-                        incl_last_layer = False,
+                        ch = [32, 64, 128, 256, 256, 256],
+                        co = [(5, 5), (5, 5), (5, 5), (1, 1), (1, 1), (1, 1)],
+                        po = [(4, 4), (2, 2), (2, 2), (1, 1), (1, 1), (1, 1)],
+                        flattened_size = 16384,
+                        n_ch_latent = 512, 
+                        incl_last_layer = True,
                         ) 
     
     # model_enc = Encoder(incl_last_layer = True) 
     model_enc = model_enc.to(device)
     summary(model_enc, (1, 128, 128))
 
+
+    # DECODER
+    # v2 
     model_dec = Decoder(n_ch_out = 1, 
-                        n_ch_latent = 1024, 
-                        flattened_size = 1024,
-                        ch = [128, 128, 128, 64, 32, 16],
-                        co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (5, 5)],
-                        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (4, 4)],
+                        n_ch_latent = 512, 
+                        flattened_size = 512,
+                        ch = [256, 128, 128, 64, 32, 32],
+                        co = [(1, 1), (5, 5), (5, 5), (5, 5), (5, 5), (5, 5)],
+                        po = [(1, 1), (1, 1), (2, 2), (2, 2), (2, 2), (2, 2)],
                         incl_convs = True,
                         )
     
     model_dec = model_dec.to(device)
-    summary(model_dec, (1024,))
+    summary(model_dec, (512,))
 
 
 
+
+
+
+
+    # model_enc = Encoder(n_ch_in = 1, 
+    #                     padding = "same",
+    #                     ch = [32, 64, 128, 256, 256, 256],
+    #                     co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (5, 5)],
+    #                     po = [(4, 4), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
+    #                     flattened_size = 256,
+    #                     n_ch_latent = 512, 
+    #                     incl_last_layer = True,
+    #                     ) 
+
+
+    # model_dec = Decoder(n_ch_out = 1, 
+    #                     n_ch_latent = 512, 
+    #                     flattened_size = 512,
+    #                     ch = [256, 128, 128, 64, 32, 32],
+    #                     co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (5, 5)],
+    #                     po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (4, 4)],
+    #                     incl_convs = True,
+    #                     )
