@@ -11,19 +11,17 @@ from torchsummary import summary
 import torch.nn as nn
 import torch.optim as optim
 import os 
-from ptutils import SpectroImageDataset, Encoder, Decoder
+# from ptutils import SpectroImageDataset, Encoder, Decoder
+from ptutils import SpectroImageDataset
+from custom_models import Encoder, Decoder
+
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-
-
-
 imgpath    = "C:/xc_real_projects/xc_aec_project/downloaded_data_img_24000sps_1ch"
 model_path = "C:/xc_real_projects/models"
 
-
-n_epochs = 50
 
 #----------------------
 # define data loader 
@@ -38,42 +36,33 @@ for i, (data, fi) in enumerate(train_loader, 0):
     print(data.shape)
 
 
-
-
 #----------------------
 # define models 
 
-latsha = 1024
+impsha = (128, 128)
+latsha = 512
+n_blck = 3
 
 model_enc = Encoder(n_ch_in = 1, 
-                    padding = "same",
-                    ch = [32, 64, 128, 256, 512, 1024],
-                    co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (1, 1)],
-                    po = [(4, 4), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
-                    n_ch_latent = latsha, 
-                    flattened_size = latsha,
-                    incl_last_layer = True,
+                    n_ch_latent=latsha, 
+                    shape_input = impsha, 
+                    n_conv_blocks = n_blck,
+                    ch = [16, 32, 64, 256, 512],
+                    po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
                     ) 
-
 model_enc = model_enc.to(device)
 summary(model_enc, (1, 128, 128))
 
 model_dec = Decoder(n_ch_out = 1, 
-                    n_ch_latent = latsha, 
-                    flattened_size = latsha,
-                    ch = [128, 128, 128, 64, 32, 16],
-                    co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (5, 5)],
-                    po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (4, 4)],
-                    incl_convs = True,
+                    n_ch_latent=latsha, 
+                    shape_output = impsha, 
+                    n_conv_blocks = n_blck,
+                    ch = [128, 64, 64, 32, 32],
+                    po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
                     )
-
 model_dec = model_dec.to(device)
 summary(model_dec, (latsha,))
 
-
-    
-
-  
 
 
 # torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, 
@@ -84,9 +73,13 @@ summary(model_dec, (latsha,))
 # instantiate loss, optimizer
 criterion = nn.MSELoss() #nn.BCELoss()
 optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001)
+# optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.0001)
+# optimizer = optim.SGD(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.01, momentum=0.9)
 
 _ = model_enc.train()
 _ = model_dec.train()
+
+n_epochs = 10
 
 # initialize the best validation loss as infinity
 best_val_loss = float("inf")
@@ -119,7 +112,9 @@ for epoch in range(n_epochs):
     
 
 # Save the model
-torch.save(model_enc.state_dict(), os.path.join(model_path, "encoder_model.pth") )
+torch.save(model_enc.state_dict(), os.path.join(model_path, "encoder_model_xx.pth") )
+torch.save(model_enc.state_dict(), os.path.join(model_path, "encoder_model"+f"_epo_{epoch + 1}"+".pth") )
+
 
 
 
@@ -135,11 +130,11 @@ if False:
     data.shape
 
     # ii = 489 
-    for ii in np.random.randint(data.shape[0], size = 10):
+    for ii in np.random.randint(data.shape[0], size = 15):
         img_orig = data[ii].cpu().numpy()
         img_orig.shape
-        # img_orig = img_orig.transpose(1,2,0)
-        img_orig = img_orig.squeeze()
+        # img_orig = img_orig.transpose(1,2,0) # 3 ch
+        img_orig = img_orig.squeeze() # 1 ch
         img_orig.min()
         img_orig.max()
         img_orig.dtype
@@ -147,8 +142,8 @@ if False:
         fig00.show()
 
         img_reco = decoded[ii].cpu().detach().numpy()
-        # img_reco = img_reco.transpose(1,2,0)
-        img_reco = img_reco.squeeze()
+        # img_reco = img_reco.transpose(1,2,0) # 3 ch
+        img_reco = img_reco.squeeze()  # 1 ch
         img_reco.shape
         img_reco = 255*(img_reco - img_reco.min())/(img_reco.max())
         img_reco.min()

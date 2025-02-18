@@ -18,8 +18,8 @@ from torchsummary import summary
 
 
 dataaugm = transforms.Compose([
-   transforms.RandomAffine(degrees=(-1.0, 1.0), translate=(0.02,0.02), scale=(0.97,1.03)),
-    #    transforms.RandomCrop(size=120, padding=None, pad_if_needed=False)
+    transforms.RandomAffine(degrees=(-1.0, 1.0), translate=(0.02,0.02), scale=(0.98,1.02)),
+    transforms.RandomCrop(size=126, padding=None, pad_if_needed=False)
     ])
 
 # Create a dataset for png images in a folder
@@ -29,7 +29,7 @@ class SpectroImageDataset(Dataset):
         self.imgpath = imgpath
     def __getitem__(self, index):     
         img = Image.open( os.path.join(self.imgpath,  self.all_img_files[index] ))
-        # img = dataaugm(img)
+        img = dataaugm(img)
         img = img.resize((128, 128))
         x = pil_to_tensor(img).to(torch.float32) / 255.0
         y = self.all_img_files[index]
