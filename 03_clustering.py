@@ -13,28 +13,23 @@ from sklearn.cluster import AgglomerativeClustering
 import shutil
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
-# from ptutils import SpectroImageDataset, Encoder, Decoder
-from ptutils import SpectroImageDataset
-from custom_models import Encoder, Decoder
+from custom_models import Encoder, Decoder, SpectroImageDataset
 
 
-# imgpath = "C:/xc_real_projects/xc_aec_project/downloaded_data_img_24000sps_1ch"
-imgpath =   "C:/xc_real_projects/xc_aec_project_test/downloaded_data_img_24000sps"
-
-
+imgpath =   "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
 
 
 model_path = "C:/xc_real_projects/models"
-model_file_names = "encoder_model_xx.pth"
+model_file_names = "encoder_model_epo_1_nlat_256_nblk_4.pth"
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-# Load the model
-impsha = (128, 128)
-latsha = 512
-n_blck = 3
+
+impsha = (128, 64)
+latsha = 256
+n_blck = 4
 
 model_enc = Encoder(n_ch_in = 1, 
                     n_ch_latent=latsha, 
@@ -50,9 +45,13 @@ model_enc.eval()
 
 
 
+
+
+
+
 train_dataset = SpectroImageDataset(imgpath)
 train_dataset.__len__()
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=32,  shuffle=True)
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=512,  shuffle=True)
 
 
 
@@ -82,11 +81,12 @@ imfiles.shape
 
 
 ################################
-# AGGLOM CLUSTERING
+# CLUSTERING
 
 # rename
-feature_mat = feat
-finle_name_arr = imfiles
+sel_subset = 50000
+feature_mat = feat[0:sel_subset]
+finle_name_arr = imfiles[0:sel_subset]
 pa = imgpath
 
 
@@ -96,7 +96,8 @@ feature_mat.max()
 
 
 # select valid features 
-sel_feats = feature_mat.std(0) != 0.0 # or feature_mat.std(0) != 0.0
+feature_mat.std(0).shape
+sel_feats = feature_mat.std(0) != 0.000 # or feature_mat.std(0) != 0.0
 sel_feats.sum()
 feature_mat_red = feature_mat[:,sel_feats]
 
@@ -114,7 +115,7 @@ feature_mat_scaled.std(0)
 # clustering 
 
 # clustering 
-# clu = AgglomerativeClustering(n_clusters=30, metric='euclidean', linkage='average')
+clu = AgglomerativeClustering(n_clusters=30, metric='euclidean', linkage='average')
 
 # Manhattan distance or cosine 
 # euclidean
@@ -124,7 +125,8 @@ feature_mat_scaled.std(0)
 #    'cosine', 'seuclidean', 'chebyshev', 'yule', 'l1', 'braycurtis', 'haversine', 
 #    'canberra', 'manhattan'}
 
-clu = DBSCAN(eps= 7.0, min_samples=5, metric='euclidean') # eps 10.5 11.0 good min_samples=10
+clu = DBSCAN(eps= 10.5, min_samples=5, metric='euclidean') # eps 10.5 11.0 good min_samples=10
+
 cluster_ids = clu.fit_predict(feature_mat_scaled)
 cluster_ids.shape
 pd.Series(cluster_ids).value_counts()
@@ -152,7 +154,7 @@ for i,r in df.iterrows():
     # print(r)
     if r['cluster_id'] == -1:
         continue
-    if r['cluster_id'] == 0:
+    if r['cluster_id'] == 2:
         continue
     print(r['cluster_id'])
 

@@ -19,7 +19,7 @@ from torchsummary import summary
 
 dataaugm = transforms.Compose([
     transforms.RandomAffine(degrees=(-1.0, 1.0), translate=(0.02,0.02), scale=(0.98,1.02)),
-    transforms.RandomCrop(size=126, padding=None, pad_if_needed=False)
+    # transforms.RandomCrop(size=126, padding=None, pad_if_needed=False)
     ])
 
 # Create a dataset for png images in a folder
@@ -30,7 +30,7 @@ class SpectroImageDataset(Dataset):
     def __getitem__(self, index):     
         img = Image.open( os.path.join(self.imgpath,  self.all_img_files[index] ))
         img = dataaugm(img)
-        img = img.resize((128, 128))
+        # img = img.resize((128, 128))
         x = pil_to_tensor(img).to(torch.float32) / 255.0
         y = self.all_img_files[index]
         return (x ,y)
@@ -235,11 +235,30 @@ class Decoder(nn.Module):
 # devel code - supress execution if this is imported as module 
 if __name__ == "__main__":
 
+
+
+
+    #----------------------
+    # define data loader 
+    imgpath    = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
+
+    train_dataset = SpectroImageDataset(imgpath)
+    train_dataset.__len__()
+    xx = train_dataset.__getitem__(45)
+    
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=128,  shuffle=True)
+    for i, (data, fi) in enumerate(train_loader, 0):
+        if i > 3:
+            break
+        print(data.shape)
+
+
+
     model_enc = Encoder(n_ch_in = 1, 
                         padding = "same",
                         ch = [32, 64, 128, 256, 512, 1024],
                         co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (1, 1)],
-                        po = [(4, 4), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
+                        po = [(4, 4), (2, 2), (2, 2), (2, 2), (2, 2), (1, 1)],
                         n_ch_latent = 1024, 
                         flattened_size = 1024,
                         incl_last_layer = False,
@@ -247,19 +266,19 @@ if __name__ == "__main__":
     
     # model_enc = Encoder(incl_last_layer = True) 
     model_enc = model_enc.to(device)
-    summary(model_enc, (1, 128, 128))
+    summary(model_enc, (1, 128, 64))
 
     model_dec = Decoder(n_ch_out = 1, 
-                        n_ch_latent = 1024, 
+                        n_ch_latent = 2048, 
                         flattened_size = 1024,
                         ch = [128, 128, 128, 64, 32, 16],
                         co = [(5, 5), (5, 5), (5, 5), (5, 5), (5, 5), (5, 5)],
-                        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (4, 4)],
-                        incl_convs = True,
+                        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
+                        incl_convs = False,
                         )
     
     model_dec = model_dec.to(device)
-    summary(model_dec, (1024,))
+    summary(model_dec, (2048,))
 
 
 
