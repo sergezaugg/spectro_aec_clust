@@ -23,7 +23,7 @@ imgpath_test  = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img
 model_path = "C:/xc_real_projects/models"
 
 
-batch_size = 256
+batch_size = 128
 
 #----------------------
 # define data loader 
@@ -40,7 +40,7 @@ n_batches = train_dataset.__len__() // batch_size
 
 # test 
 test_dataset = SpectroImageDataset(imgpath_test)
-test_loader  = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
+test_loader  = torch.utils.data.DataLoader(test_dataset, batch_size=64,  shuffle=True, drop_last=True)
 
 
 
