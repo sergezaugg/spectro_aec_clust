@@ -108,7 +108,7 @@ for epoch in range(n_epochs):
     loss_tra =[]
     loss_tes =[]
     for btchi, (data, fi) in enumerate(train_loader, 0):
-        # print(btchi)
+        print(btchi)
         # print(data.shape)
         data = data.to(device)
         # reset the gradients 

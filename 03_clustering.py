@@ -27,7 +27,24 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 
-impsha = (128, 64)
+# impsha = (128, 64)
+# latsha = 256
+# n_blck = 4
+
+# model_enc = Encoder(n_ch_in = 1, 
+#                     n_ch_latent=latsha, 
+#                     shape_input = impsha, 
+#                     n_conv_blocks = n_blck,
+#                     ch = [16, 32, 64, 256, 512],
+#                     po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
+#                     ) 
+
+# model_enc.load_state_dict(torch.load(os.path.join(model_path, model_file_names), weights_only=True))
+# model_enc = model_enc.to(device)
+# model_enc.eval()
+
+
+impsha = (128, 128)
 latsha = 256
 n_blck = 4
 
@@ -35,15 +52,13 @@ model_enc = Encoder(n_ch_in = 1,
                     n_ch_latent=latsha, 
                     shape_input = impsha, 
                     n_conv_blocks = n_blck,
-                    ch = [16, 32, 64, 256, 512],
-                    po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
+                    ch = [32, 64, 256, 512, 1024],
+                    po = [(4, 4), (4, 4), (2, 2), (2, 2), (2, 2)]
                     ) 
-
 model_enc.load_state_dict(torch.load(os.path.join(model_path, model_file_names), weights_only=True))
+
 model_enc = model_enc.to(device)
 model_enc.eval()
-
-
 
 
 
@@ -114,25 +129,31 @@ feature_mat_scaled.std(0)
 
 # clustering 
 
-# clustering 
-clu = AgglomerativeClustering(n_clusters=30, metric='euclidean', linkage='average')
+# # clustering 
+# clu = AgglomerativeClustering(n_clusters=30, metric='euclidean', linkage='single')
+# cluster_ids = clu.fit_predict(feature_mat_scaled)
+# cluster_ids.shape
+# pd.Series(cluster_ids).value_counts()
 
-# Manhattan distance or cosine 
-# euclidean
-# {'rogerstanimoto', 'dice', 'cityblock', 'matching', 'l2', 'russellrao', 
-#  'mahalanobis', 'euclidean', 'minkowski', 'nan_euclidean', 'wminkowski', 'precomputed',
-#    'jaccard', 'sokalsneath', 'sokalmichener', 'correlation', 'hamming', 'sqeuclidean', 
-#    'cosine', 'seuclidean', 'chebyshev', 'yule', 'l1', 'braycurtis', 'haversine', 
-#    'canberra', 'manhattan'}
 
-clu = DBSCAN(eps= 10.5, min_samples=5, metric='euclidean') # eps 10.5 11.0 good min_samples=10
 
+
+for eps_i in range(3,9,):
+    print("-----------")
+    print(">> eps_i", eps_i)
+    clu = DBSCAN(eps= eps_i, min_samples=2, metric='euclidean') # eps 10.5 11.0 good min_samples=10
+    cluster_ids = clu.fit_predict(feature_mat_scaled)
+    cluster_ids.shape
+    pd.Series(cluster_ids).value_counts()[0:10]
+    print("")
+    print("")
+    print("")
+
+
+clu = DBSCAN(eps= 4.0, min_samples=2, metric='euclidean') # eps 10.5 11.0 good min_samples=10
 cluster_ids = clu.fit_predict(feature_mat_scaled)
 cluster_ids.shape
-pd.Series(cluster_ids).value_counts()
-
-
-
+pd.Series(cluster_ids).value_counts()[0:10]
 
 
 # finle_name_arr.shape
@@ -154,7 +175,7 @@ for i,r in df.iterrows():
     # print(r)
     if r['cluster_id'] == -1:
         continue
-    if r['cluster_id'] == 2:
+    if r['cluster_id'] == 0:
         continue
     print(r['cluster_id'])
 
