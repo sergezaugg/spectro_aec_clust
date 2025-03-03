@@ -52,24 +52,15 @@ class SpectroImageDataset(Dataset):
 
 class Encoder(nn.Module):
 
-    def __init__(self, n_ch_in, n_ch_latent, shape_input, n_conv_blocks, padding = "same",
-                 ch = [16, 32, 64, 128, 256], po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]):
-        """
-        Initialize a convolutional encoder (first half of an auto-encoder)
-        Parameters:
-        n_ch_in (int): nb channels in input image
-        n_ch_latent (int): size of the latent vector
-        shape_input (list): width an height of the input image, e.g. [32,32]
-        n_conv_blocks (int): number of convolutional blocks, should be in 0 to 5
-        padding (str): set to "same"
-        ch (list): Nb of channels in each convolutional block, list of length n_conv_blocks
-        po (list): Pooling applied after each convolutional block, list of length n_conv_blocks
-        """
-        
+    def __init__(self, 
+                 n_ch_in, 
+                 n_conv_blocks, 
+                 ch = [16, 32, 64, 128, 256], 
+                 po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]):
+    
         super(Encoder, self).__init__()
 
-        self.shi = shape_input
-        self.padding = padding
+        self.padding =  "same"
         self.n_conv_blocks = n_conv_blocks
 
         # conv block 0
@@ -132,29 +123,7 @@ class Encoder(nn.Module):
         else:
             self.conv4 = nn.Identity()    
 
-        self.flatn = nn.Flatten()
-
-        # flattened_size = int(self.ch1 * (self.shi[0]/(self.pool0[0]*self.pool1[0])) * (self.shi[1]/(self.pool0[1]*self.pool1[1])))
-        if self.n_conv_blocks == 0:
-            flattened_size = int(n_ch_in * (self.shi[0]) * (self.shi[1]))
-        if self.n_conv_blocks == 1:
-            flattened_size = int(ch[0] * (self.shi[0]/(po[0][0])) * (self.shi[1]/(po[0][1])))
-        if self.n_conv_blocks == 2:
-            flattened_size = int(ch[1] * (self.shi[0]/(po[0][0]*po[1][0])) * (self.shi[1]/(po[0][1]*po[1][1])))
-        if self.n_conv_blocks == 3:
-            flattened_size = int(ch[2] * (self.shi[0]/(po[0][0]*po[1][0]*po[2][0])) * (self.shi[1]/(po[0][1]*po[1][1]*po[2][1]))) 
-        if self.n_conv_blocks == 4:
-            flattened_size = int(ch[3] * (self.shi[0]/(po[0][0]*po[1][0]*po[2][0]*po[3][0])) * (self.shi[1]/(po[0][1]*po[1][1]*po[2][1]*po[3][1]))) 
-        if self.n_conv_blocks == 5:
-            flattened_size = int(ch[4] * (self.shi[0]/(po[0][0]*po[1][0]*po[2][0]*po[3][0]*po[4][0])) * (self.shi[1]/(po[0][1]*po[1][1]*po[2][1]*po[3][1]*po[4][1]))) 
-        print('flattened_size_compute', flattened_size)
-
         self.dropout = nn.Dropout(0.5)
-
-        self.fc0 = nn.Sequential(
-            nn.Linear(flattened_size, n_ch_latent),
-            nn.ReLU(),
-            )
 
     def forward(self, x):
         x = self.conv0(x)
@@ -162,9 +131,7 @@ class Encoder(nn.Module):
         x = self.conv2(x)
         x = self.conv3(x)
         x = self.conv4(x)
-        x = self.flatn(x)
-        self.dropout(x)
-        x = self.fc0(x)
+        # # self.dropout(x)
         return(x)
 
 
@@ -173,76 +140,54 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, n_ch_out=3, n_ch_latent=256, 
+    def __init__(self, 
+                 n_ch_out=3, 
                  ch = [256, 128, 64, 32, 16], 
                  po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]):
         
         super().__init__()
 
-        self.linear = nn.Sequential(
-            nn.Linear(n_ch_latent, ch[0]),
-            nn.ReLU(),
-            )
-        
-        self.unfla = nn.Unflatten(1, (ch[0], 1, 1))
-
         self.tconv0 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[0], kernel_size=po[0], padding=0, stride=po[0], output_padding=0), 
+            nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(2,2), padding=0, stride=po[0], output_padding=0), 
             nn.BatchNorm2d(ch[0]),
             nn.ReLU()
             )
 
         self.tconv1 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=po[1], padding=0, stride=po[1], output_padding=0), 
+            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(5,5), padding=1, stride=po[1], output_padding=1), 
             nn.BatchNorm2d(ch[1]),
             nn.ReLU()
             )
     
         self.tconv2 = nn.Sequential(
-            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=po[2], padding=0, stride=po[2], output_padding=0), 
+            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(5,5), padding=(2,2), stride=po[2], output_padding=0), 
             nn.BatchNorm2d(ch[2]),
             nn.ReLU()
             )
    
         self.tconv3 = nn.Sequential(
-            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=po[3], padding=0, stride=po[3], output_padding=0), 
+            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=(5,5), padding=(3,3), stride=po[3], output_padding=1), 
             nn.BatchNorm2d(ch[3]),
             nn.ReLU()
             )
       
         self.tconv4 = nn.Sequential(
-            nn.ConvTranspose2d(ch[3], ch[4], kernel_size=po[4], padding=0, stride=po[4], output_padding=0), 
+            nn.ConvTranspose2d(ch[3], ch[4], kernel_size=(5,5), padding=(5,10), stride=po[4], output_padding=(1,0)), 
             nn.BatchNorm2d(ch[4]),
             nn.ReLU()
             )
         
-        self.tconv5 = nn.Sequential(
-            nn.ConvTranspose2d(ch[4], ch[5], kernel_size=po[5], padding=0, stride=po[5], output_padding=0), 
-            nn.BatchNorm2d(ch[5]),
-            nn.ReLU()
-            )
-        
-        self.tconv6 = nn.Sequential(
-            nn.ConvTranspose2d(ch[5], ch[6], kernel_size=po[5], padding=0, stride=po[5], output_padding=0), 
-            nn.BatchNorm2d(ch[6]),
-            nn.ReLU()
-            )
-    
         self.out_map = nn.Sequential(
-            nn.Conv2d(ch[6], n_ch_out, kernel_size=(1,1), padding=0),
+            nn.Conv2d(ch[4], n_ch_out, kernel_size=(1,1), padding=0),
             nn.Sigmoid()
             )
 
     def forward(self, x):
-        x = self.linear(x)
-        x = self.unfla(x)
         x = self.tconv0(x)
         x = self.tconv1(x)
         x = self.tconv2(x)
         x = self.tconv3(x)
         x = self.tconv4(x)
-        x = self.tconv5(x)
-        x = self.tconv6(x)
         x = self.out_map(x)
         return x
 
@@ -252,27 +197,23 @@ class Decoder(nn.Module):
 # devel code - supress execution if this is imported as module 
 if __name__ == "__main__":
 
-    impsha = (128, 128)
-    latsha = 512
-    n_blck = 3
-
     model_enc = Encoder(n_ch_in = 1, 
-                        n_ch_latent=latsha, 
-                        shape_input = impsha, 
-                        n_conv_blocks = n_blck,
+                        n_conv_blocks = 5,
                         ch = [16, 32, 64, 256, 512],
-                        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
+                        po = [(2, 2), (2, 2), (4, 2), (4, 2), (2, 2)]
                         ) 
     model_enc = model_enc.to(device)
     summary(model_enc, (1, 128, 128))
 
+
     model_dec = Decoder(n_ch_out = 1, 
-                        n_ch_latent=latsha, 
-                        ch = [512, 512, 256, 128, 64, 32, 32],
-                        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
+                        ch = [256, 256, 256, 128, 64],
+                        po = [(2, 2), (2, 2), (3, 2), (3, 2), (3, 1)]
                         )
     model_dec = model_dec.to(device)
-    summary(model_dec, (latsha,))
+
+
+    summary(model_dec, (256, 1, 8))
 
 
 
