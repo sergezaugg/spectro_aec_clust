@@ -173,122 +173,66 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, n_ch_out=3, n_ch_latent=256, shape_output = (32, 32), n_conv_blocks=4,
-                 ch = [256, 128, 64, 32, 16], po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]):
+    def __init__(self, n_ch_out=3, n_ch_latent=256, 
+                 ch = [256, 128, 64, 32, 16], 
+                 po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]):
         
         super().__init__()
 
-        self.n_conv_blocks = n_conv_blocks
-        self.sho = shape_output
-        self.chout = n_ch_out
-
-        if self.n_conv_blocks == 5:
-            aa = self.sho[0] // (po[0][0]*po[1][0]*po[2][0]*po[3][0]*po[4][0])
-            bb = self.sho[1] // (po[0][1]*po[1][1]*po[2][1]*po[3][1]*po[4][1])
-            last_ch_depth = ch[0]
-        if self.n_conv_blocks == 4:
-            aa = self.sho[0] // (po[0][0]*po[1][0]*po[2][0]*po[3][0])
-            bb = self.sho[1] // (po[0][1]*po[1][1]*po[2][1]*po[3][1])
-            last_ch_depth = ch[0]
-        if self.n_conv_blocks == 3:
-            aa = self.sho[0] // (po[1][0]*po[2][0]*po[3][0])
-            bb = self.sho[1] // (po[1][1]*po[2][1]*po[3][1])
-            last_ch_depth = ch[1]
-        if self.n_conv_blocks == 2:
-            aa = self.sho[0] // (po[2][0]*po[3][0])
-            bb = self.sho[1] // (po[2][1]*po[3][1])
-            last_ch_depth = ch[2]
-        if self.n_conv_blocks == 1:
-            aa = self.sho[0] // (po[3][0])
-            bb = self.sho[1] // (po[3][1])
-            last_ch_depth = ch[3]
-        if self.n_conv_blocks == 0:
-            aa = self.sho[0] 
-            bb = self.sho[1]
-            last_ch_depth = self.chout
-            
-        flattened_size = aa * bb * last_ch_depth # ch[0]
-        print('flattened_size', flattened_size)
-        # rewrap array into a shape for conv
-        cd1 = flattened_size // (aa*last_ch_depth)
-        cd2 = flattened_size // (bb*last_ch_depth)
-       
         self.linear = nn.Sequential(
-            nn.Linear(n_ch_latent, flattened_size),
+            nn.Linear(n_ch_latent, ch[0]),
             nn.ReLU(),
             )
         
-        print('reshape to: ', last_ch_depth, cd2, cd1)
-        self.unfla = nn.Unflatten(1, (last_ch_depth, cd2, cd1))
+        self.unfla = nn.Unflatten(1, (ch[0], 1, 1))
 
-        # transpose conv block 0
-        if self.n_conv_blocks >= 5:
-            self.tconv0 = nn.Sequential(
-                nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(3,3), padding=1),
-                nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(3,3), padding=1, stride=po[0], output_padding=1), 
-                nn.BatchNorm2d(ch[0]),
-                nn.ReLU()
-                )
-        else:
-            self.tconv0 = nn.Identity()
+        self.tconv0 = nn.Sequential(
+            nn.ConvTranspose2d(ch[0], ch[0], kernel_size=po[0], padding=0, stride=po[0], output_padding=0), 
+            nn.BatchNorm2d(ch[0]),
+            nn.ReLU()
+            )
 
-        # transpose conv block 1
-        if self.n_conv_blocks >= 4:
-            self.tconv1 = nn.Sequential(
-                nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(3,3), padding=1),
-                nn.ConvTranspose2d(ch[1], ch[1], kernel_size=(3,3), padding=1, stride=po[1], output_padding=1), 
-                nn.BatchNorm2d(ch[1]),
-                nn.ReLU()
-                )
-        else:
-            self.tconv1 = nn.Identity()
+        self.tconv1 = nn.Sequential(
+            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=po[1], padding=0, stride=po[1], output_padding=0), 
+            nn.BatchNorm2d(ch[1]),
+            nn.ReLU()
+            )
+    
+        self.tconv2 = nn.Sequential(
+            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=po[2], padding=0, stride=po[2], output_padding=0), 
+            nn.BatchNorm2d(ch[2]),
+            nn.ReLU()
+            )
+   
+        self.tconv3 = nn.Sequential(
+            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=po[3], padding=0, stride=po[3], output_padding=0), 
+            nn.BatchNorm2d(ch[3]),
+            nn.ReLU()
+            )
+      
+        self.tconv4 = nn.Sequential(
+            nn.ConvTranspose2d(ch[3], ch[4], kernel_size=po[4], padding=0, stride=po[4], output_padding=0), 
+            nn.BatchNorm2d(ch[4]),
+            nn.ReLU()
+            )
         
-        # transpose conv block 2
-        if self.n_conv_blocks >= 3:
-            self.tconv2 = nn.Sequential(
-                nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(3,3), padding=1),
-                nn.ConvTranspose2d(ch[2], ch[2], kernel_size=(3,3), padding=1, stride=po[2], output_padding=1), 
-                nn.BatchNorm2d(ch[2]),
-                nn.ReLU()
-                )
-        else:
-            self.tconv2 = nn.Identity()
-
-        # transpose conv block 3
-        if self.n_conv_blocks >= 2:
-            self.tconv3 = nn.Sequential(
-                nn.ConvTranspose2d(ch[2], ch[3], kernel_size=(3,3), padding=1),
-                nn.ConvTranspose2d(ch[3], ch[3], kernel_size=(3,3), padding=1, stride=po[3], output_padding=1), 
-                nn.BatchNorm2d(ch[3]),
-                nn.ReLU()
-                )
-        else:
-            self.tconv3 = nn.Identity()
+        self.tconv5 = nn.Sequential(
+            nn.ConvTranspose2d(ch[4], ch[5], kernel_size=po[5], padding=0, stride=po[5], output_padding=0), 
+            nn.BatchNorm2d(ch[5]),
+            nn.ReLU()
+            )
         
-       # transpose conv block 4
-        if self.n_conv_blocks >= 1:
-            self.tconv4 = nn.Sequential(
-                nn.ConvTranspose2d(ch[3], ch[4], kernel_size=(3,3), padding=1),
-                nn.ConvTranspose2d(ch[4], ch[4], kernel_size=(3,3), padding=1, stride=po[4], output_padding=1), 
-                nn.BatchNorm2d(ch[4]),
-                nn.ReLU()
-                )
-        else:
-            self.tconv4 = nn.Identity()
+        self.tconv6 = nn.Sequential(
+            nn.ConvTranspose2d(ch[5], ch[6], kernel_size=po[5], padding=0, stride=po[5], output_padding=0), 
+            nn.BatchNorm2d(ch[6]),
+            nn.ReLU()
+            )
+    
+        self.out_map = nn.Sequential(
+            nn.Conv2d(ch[6], n_ch_out, kernel_size=(1,1), padding=0),
+            nn.Sigmoid()
+            )
 
-        if self.n_conv_blocks >= 1:
-            self.out_map = nn.Sequential(
-                nn.Conv2d(ch[4], self.chout, kernel_size=(1,1), padding=0),
-                nn.Sigmoid()
-                )
-        else:
-            self.out_map = nn.Sequential(
-                nn.Conv2d(self.chout, self.chout, kernel_size=(1,1), padding=0),
-                nn.Sigmoid()
-                )
-
-        # self.relu = nn.ReLU()
-     
     def forward(self, x):
         x = self.linear(x)
         x = self.unfla(x)
@@ -297,6 +241,8 @@ class Decoder(nn.Module):
         x = self.tconv2(x)
         x = self.tconv3(x)
         x = self.tconv4(x)
+        x = self.tconv5(x)
+        x = self.tconv6(x)
         x = self.out_map(x)
         return x
 
@@ -306,7 +252,7 @@ class Decoder(nn.Module):
 # devel code - supress execution if this is imported as module 
 if __name__ == "__main__":
 
-    impsha = (128, 64)
+    impsha = (128, 128)
     latsha = 512
     n_blck = 3
 
@@ -318,14 +264,12 @@ if __name__ == "__main__":
                         po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
                         ) 
     model_enc = model_enc.to(device)
-    summary(model_enc, (1, 128, 64))
+    summary(model_enc, (1, 128, 128))
 
     model_dec = Decoder(n_ch_out = 1, 
                         n_ch_latent=latsha, 
-                        shape_output = impsha, 
-                        n_conv_blocks = n_blck,
-                        ch = [128, 64, 64, 32, 32],
-                        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
+                        ch = [512, 512, 256, 128, 64, 32, 32],
+                        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
                         )
     model_dec = model_dec.to(device)
     summary(model_dec, (latsha,))

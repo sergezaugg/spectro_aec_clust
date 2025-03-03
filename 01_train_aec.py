@@ -12,7 +12,7 @@ import torch.optim as optim
 import os 
 from custom_models import Encoder, Decoder, SpectroImageDataset
 import datetime
-
+import pickle
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -48,29 +48,48 @@ test_loader  = torch.utils.data.DataLoader(test_dataset, batch_size=64,  shuffle
 #----------------------
 # define models 
 
-impsha = (128, 128)
-latsha = 256
-n_blck = 4
+# par['d']['xxx']
 
-model_enc = Encoder(n_ch_in = 1, 
-                    n_ch_latent=latsha, 
-                    shape_input = impsha, 
-                    n_conv_blocks = n_blck,
-                    ch = [32, 64, 256, 512, 1024],
-                    po = [(4, 4), (4, 4), (2, 2), (2, 2), (2, 2)]
+par = { 
+    'impsha' : (128, 128),
+    'latsha' : 256,
+    'n_blck' : 5,
+    'e': {
+        'n_ch_in' : 1,
+        'ch' :  [32, 64, 128, 256, 512],
+        'po' : [(2, 2), (4, 4), (4, 4), (2, 2), (2, 2)],
+        },
+    'd': {
+        'n_ch_out' : 1,
+        'ch' : [512, 512, 256, 128, 64, 32, 32],
+        'po' :  [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)],
+        }}
+
+
+
+
+model_enc = Encoder(n_ch_in = par['e']['n_ch_in'], 
+                    n_ch_latent=par['latsha'], 
+                    shape_input = par['impsha'], 
+                    n_conv_blocks = par['n_blck'],
+                    ch = par['e']['ch'],
+                    po = par['e']['po']
                     ) 
+
 model_enc = model_enc.to(device)
 summary(model_enc, (1, 128, 128))
 
-model_dec = Decoder(n_ch_out = 1, 
-                    n_ch_latent=latsha, 
-                    shape_output = impsha, 
-                    n_conv_blocks = n_blck,
-                    ch = [128, 64, 64, 32, 32],
-                    po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
+
+
+
+model_dec = Decoder(n_ch_out = par['d']['n_ch_out'], 
+                    n_ch_latent=par['latsha'], 
+                    ch = par['d']['ch'], 
+                    po = par['d']['po'], 
                     )
+
 model_dec = model_dec.to(device)
-summary(model_dec, (latsha,))
+summary(model_dec, (par['latsha'],))
 
 
 
@@ -147,24 +166,26 @@ for epoch in range(n_epochs):
         #     loss_li_train.append(mean_loss_train)
             
 
-            # print('loss', np.round(loss.item(),5))
-            # print("status: "  + str(btchi) + " out of " + str(n_batches) + " batches")
-            # print('data min max',    data.min().cpu().detach().numpy().round(4),     data.max().cpu().detach().numpy().round(4))
-            # print('decoded min max', decoded.min().cpu().detach().numpy().round(4),  decoded.max().cpu().detach().numpy().round(4)) 
+        print('loss', np.round(loss.item(),5))
+        print("status: "  + str(btchi) + " out of " + str(n_batches) + " batches")
+        # print('data min max',    data.min().cpu().detach().numpy().round(4),     data.max().cpu().detach().numpy().round(4))
+        # print('decoded min max', decoded.min().cpu().detach().numpy().round(4),  decoded.max().cpu().detach().numpy().round(4)) 
     
 # Save the model
 datetimestamp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
-model_save_name = "encoder_model"+f"_epo_{epoch + 1}" + f"_nlat_{latsha }" + f"_nblk_{n_blck }" ".pth"
+model_save_name = "encoder_model"+f"_epo_{epoch + 1}" + f"_nlat_{par['latsha']}" + f"_nblk_{par['n_blck']}" ".pth"
 torch.save(model_enc.state_dict(), os.path.join(model_path, model_save_name))
 
+param_save_name = "encoder_model"+f"_epo_{epoch + 1}" + f"_nlat_{par['latsha']}" + f"_nblk_{par['n_blck']}" ".json"
+with open(os.path.join(model_path, param_save_name), 'wb') as fp:
+    pickle.dump(par, fp)
 
 
+# fig00 = px.line(
+#     y = np.array(loss_li_train),
+#     markers=True
+#     )
 
-fig00 = px.line(
-    y = np.array(loss_li_train),
-    markers=True
-    )
-
-fig00.show()
+# fig00.show()
 
 

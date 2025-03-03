@@ -14,48 +14,50 @@ import shutil
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 from custom_models import Encoder, Decoder, SpectroImageDataset
+import pickle
+
+
+torch.cuda.is_available()
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 imgpath =   "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
 
 
 model_path = "C:/xc_real_projects/models"
-model_file_names = "encoder_model_epo_1_nlat_256_nblk_4.pth"
 
-torch.cuda.is_available()
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+model_file_names = "encoder_model_epo_1_nlat_256_nblk_4"
 
 
 
-# impsha = (128, 64)
+with open(os.path.join(model_path, model_file_names + '.json'), 'rb') as fp:
+    par = pickle.load(fp)
+
+
+
+
+# impsha = (128, 128)
 # latsha = 256
 # n_blck = 4
 
-# model_enc = Encoder(n_ch_in = 1, 
-#                     n_ch_latent=latsha, 
-#                     shape_input = impsha, 
-#                     n_conv_blocks = n_blck,
-#                     ch = [16, 32, 64, 256, 512],
-#                     po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
-#                     ) 
-
-# model_enc.load_state_dict(torch.load(os.path.join(model_path, model_file_names), weights_only=True))
-# model_enc = model_enc.to(device)
-# model_enc.eval()
+par['impsha']
+par['latsha']
+par['n_blck']
+par['e']['n_ch_in']
+par['e']['ch']
+par['e']['po']
 
 
-impsha = (128, 128)
-latsha = 256
-n_blck = 4
 
-model_enc = Encoder(n_ch_in = 1, 
-                    n_ch_latent=latsha, 
-                    shape_input = impsha, 
-                    n_conv_blocks = n_blck,
-                    ch = [32, 64, 256, 512, 1024],
-                    po = [(4, 4), (4, 4), (2, 2), (2, 2), (2, 2)]
+model_enc = Encoder(n_ch_in = par['e']['n_ch_in'], 
+                    n_ch_latent=par['latsha'], 
+                    shape_input = par['impsha'], 
+                    n_conv_blocks = par['n_blck'],
+                    ch = par['e']['ch'],
+                    po = par['e']['po']
                     ) 
-model_enc.load_state_dict(torch.load(os.path.join(model_path, model_file_names), weights_only=True))
+
+model_enc.load_state_dict(torch.load(os.path.join(model_path, model_file_names + '.pth'), weights_only=True))
 
 model_enc = model_enc.to(device)
 model_enc.eval()
