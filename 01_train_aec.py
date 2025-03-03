@@ -23,7 +23,7 @@ imgpath_test  = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img
 model_path = "C:/xc_real_projects/models"
 
 
-batch_size = 32
+batch_size = 256
 
 #----------------------
 # define data loader 
@@ -37,10 +37,6 @@ for i, (data, fi) in enumerate(train_loader, 0):
     print(data.shape)
 
 n_batches = train_dataset.__len__() // batch_size
-
-# test 
-test_dataset = SpectroImageDataset(imgpath_test)
-test_loader  = torch.utils.data.DataLoader(test_dataset, batch_size=64,  shuffle=True, drop_last=True)
 
 
 
@@ -127,6 +123,9 @@ for epoch in range(n_epochs):
     loss_tra =[]
     loss_tes =[]
     for btchi, (data, fi) in enumerate(train_loader, 0):
+
+        # if btchi > 100:
+        #     break
         print(btchi)
         # print(data.shape)
         data = data.to(device)
@@ -144,6 +143,36 @@ for epoch in range(n_epochs):
         # update the weights
         optimizer.step()
         # accumulate the loss 
+
+        print('loss', np.round(loss.item(),5), "   --- status: "  + str(btchi) + " out of " + str(n_batches) + " batches")
+  
+    
+# Save the model
+tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
+
+model_save_name = "encoder_model"+tstmp+f"_epo_{epoch + 1}" + f"_nlat_{par['latsha']}" + f"_nblk_{par['n_blck']}" ".pth"
+torch.save(model_enc.state_dict(), os.path.join(model_path, model_save_name))
+
+model_save_name = "decoder_model"+tstmp+f"_epo_{epoch + 1}" + f"_nlat_{par['latsha']}" + f"_nblk_{par['n_blck']}" ".pth"
+torch.save(model_dec.state_dict(), os.path.join(model_path, model_save_name))
+
+param_save_name = "params_model"+tstmp+f"_epo_{epoch + 1}" + f"_nlat_{par['latsha']}" + f"_nblk_{par['n_blck']}" ".json"
+with open(os.path.join(model_path, param_save_name), 'wb') as fp:
+    pickle.dump(par, fp)
+
+
+
+
+
+
+
+
+
+# # test 
+# test_dataset = SpectroImageDataset(imgpath_test)
+# test_loader  = torch.utils.data.DataLoader(test_dataset, batch_size=64,  shuffle=True, drop_last=True)
+
+
 
         # # track loss at every x batch 
         # if btchi%20 == 0:
@@ -164,28 +193,3 @@ for epoch in range(n_epochs):
         #     mean_loss_train = np.array(loss_tra).mean()
         #     loss_tra =[]
         #     loss_li_train.append(mean_loss_train)
-            
-
-        print('loss', np.round(loss.item(),5))
-        print("status: "  + str(btchi) + " out of " + str(n_batches) + " batches")
-        # print('data min max',    data.min().cpu().detach().numpy().round(4),     data.max().cpu().detach().numpy().round(4))
-        # print('decoded min max', decoded.min().cpu().detach().numpy().round(4),  decoded.max().cpu().detach().numpy().round(4)) 
-    
-# Save the model
-datetimestamp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
-model_save_name = "encoder_model"+f"_epo_{epoch + 1}" + f"_nlat_{par['latsha']}" + f"_nblk_{par['n_blck']}" ".pth"
-torch.save(model_enc.state_dict(), os.path.join(model_path, model_save_name))
-
-param_save_name = "encoder_model"+f"_epo_{epoch + 1}" + f"_nlat_{par['latsha']}" + f"_nblk_{par['n_blck']}" ".json"
-with open(os.path.join(model_path, param_save_name), 'wb') as fp:
-    pickle.dump(par, fp)
-
-
-# fig00 = px.line(
-#     y = np.array(loss_li_train),
-#     markers=True
-#     )
-
-# fig00.show()
-
-
