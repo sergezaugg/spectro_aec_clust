@@ -41,6 +41,20 @@ n_batches = train_dataset.__len__() // batch_size
 
 
 
+
+# ii = 489 
+for ii in np.random.randint(data.shape[0], size = 5):
+    print(ii)
+    img_orig = data[ii].cpu().detach().numpy()
+    img_orig.shape
+    # img_orig = img_orig.transpose(1,2,0) # 3 ch
+    img_orig = img_orig.squeeze() # 1 ch
+    img_orig = 255*(img_orig - img_orig.min())/(img_orig.max())
+    fig00 = px.imshow(img_orig, height = 500, title="original")
+    fig00.show()
+
+
+
 #    model_enc = Encoder(n_ch_in = 1, 
 #                         ch = [32, 64, 128, 256],
 #                         po = [(2, 2), (4, 2), (4, 2), (4, 2)]
