@@ -12,7 +12,6 @@ import torch.optim as optim
 import os 
 import datetime
 from custom_models import Encoder, Decoder, SpectroImageDataset
-# from custom_models_old import Encoder, Decoder, SpectroImageDataset
 import pickle
 from plotly.subplots import make_subplots
 
@@ -85,10 +84,8 @@ if True:
 
 
 # --------------------------------
-# train 
 # torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, 
-#                  amsgrad=False, *, foreach=None, maximize=False, capturable=False, 
-#                  differentiable=False, fused=None)
+#                  amsgrad=False, *, foreach=None, maximize=False, capturable=False, differentiable=False, fused=None)
 
 # instantiate loss, optimizer
 criterion = nn.MSELoss() #nn.BCELoss()
@@ -98,15 +95,15 @@ optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters(
 _ = model_enc.train()
 _ = model_dec.train()
 
-n_epochs = 1
+n_epochs = 3
 
 for epoch in range(n_epochs):
     print(f"Epoch: {epoch + 1}/{n_epochs}")
     # set the encoder and decoder models to training mode
     loss_tra =[]
     for btchi, (da_orig, data_augm, fi) in enumerate(train_loader, 0):
-        if btchi > 5000:
-            break
+        # if btchi > 5000:
+        #     break
         # print(btchi)
         data_augm = data_augm.to(device)
         da_orig = da_orig.to(device)
@@ -131,7 +128,7 @@ for epoch in range(n_epochs):
   
     
 # Save the model
-if False:
+if True:
     tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
 
     model_save_name = "encoder_model"+tstmp+f"_epo_{epoch + 1}" +  ".pth"
@@ -159,7 +156,7 @@ if True:
     decoded = model_dec(encoded).to(device)
 
     # ii = 489 
-    for ii in np.random.randint(data.shape[0], size = 5):
+    for ii in np.random.randint(data.shape[0], size = 15):
         img_orig = data[ii].cpu().numpy()
         img_orig = img_orig.squeeze() # 1 ch
         img_orig = 255*(img_orig - img_orig.min())/(img_orig.max())

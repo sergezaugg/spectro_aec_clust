@@ -22,10 +22,10 @@ model_path = "C:/xc_real_projects/models"
 
 
 
-tstmp = "20250304_112602"
-path_enc = 'encoder_model_' + tstmp + '_epo_1.pth'
-path_dec = 'decoder_model_' + tstmp + '_epo_1.pth'
-path_par = 'params_model_'  + tstmp + '_epo_1.json'
+tstmp = "20250304_165847"
+path_enc = 'encoder_model_' + tstmp + '_epo_3.pth'
+path_dec = 'decoder_model_' + tstmp + '_epo_3.pth'
+path_par = 'params_model_'  + tstmp + '_epo_3.json'
 
 
 with open(os.path.join(model_path, path_par), 'rb') as fp:
@@ -49,56 +49,41 @@ model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights
 model_dec = model_dec.to(device)
 _ = model_dec.eval()
 
-
+_ = model_enc.eval()
+_ = model_dec.eval()
 
 # test 
 test_dataset = SpectroImageDataset(imgpath)
-test_loader  = torch.utils.data.DataLoader(test_dataset, batch_size=128,  shuffle=True, drop_last=True)
+test_loader  = torch.utils.data.DataLoader(test_dataset, batch_size=128,  shuffle=True, drop_last=False)
 
 # test loss 
-for i_test, (data, _) in enumerate(test_loader, 0):
+for i_test, (da_orig, data_augm, fi) in enumerate(test_loader, 0):
     print(i_test)
     if i_test > 0:
         break
-    data = data.to(device)
-    encoded = model_enc(data).to(device)
-    decoded = model_dec(encoded).to(device)
-    data.shape
-    encoded.shape
-    decoded.shape
+
+_ = model_enc.eval()
+_ = model_dec.eval()
+
+data = da_orig.to(device)
+encoded = model_enc(data).to(device)
+decoded = model_dec(encoded).to(device)
 
 # ii = 489 
-for ii in np.random.randint(data.shape[0], size = 5):
-    print(ii)
-    img_orig = data[ii].cpu().detach().numpy()
-    img_orig.shape
-    # img_orig = img_orig.transpose(1,2,0) # 3 ch
+for ii in np.random.randint(data.shape[0], size = 15):
+    img_orig = data[ii].cpu().numpy()
     img_orig = img_orig.squeeze() # 1 ch
     img_orig = 255*(img_orig - img_orig.min())/(img_orig.max())
-    img_orig.min()
-    img_orig.max()
-    img_orig.dtype
-    fig00 = px.imshow(img_orig, height = 500, title="original")
-    # fig00.show()
-
+    # fig00 = px.imshow(img_orig, height = 500, title="original")
     img_reco = decoded[ii].cpu().detach().numpy()
-    # img_reco = img_reco.transpose(1,2,0) # 3 ch
     img_reco = img_reco.squeeze()  # 1 ch
     img_reco = 255*(img_reco - img_reco.min())/(img_reco.max())
-    img_reco.min()
-    img_reco.max()
-    img_reco.dtype
-    fig01 = px.imshow(img_reco, height = 500, title="reconstructed")
-    # fig01.show() 
-
+    # fig01 = px.imshow(img_reco, height = 500, title="reconstructed")
     fig = make_subplots(rows=1, cols=2)
     fig.add_trace(px.imshow(img_orig).data[0], row=1, col=1)
     fig.add_trace(px.imshow(img_reco).data[0], row=1, col=2)
     fig.update_layout(autosize=True,height=550, width = 1000)
     fig.show()
-
- 
-
 
 
 

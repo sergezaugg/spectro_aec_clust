@@ -21,46 +21,77 @@ torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-imgpath =   "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
+# imgpath =   "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
 
+# model_path = "C:/xc_real_projects/models"
+
+# model_file_names = "encoder_model_epo_1_nlat_256_nblk_4"
+
+# with open(os.path.join(model_path, model_file_names + '.json'), 'rb') as fp:
+#     par = pickle.load(fp)
+
+# # impsha = (128, 128)
+# # latsha = 256
+# # n_blck = 4
+
+# par['impsha']
+# par['latsha']
+# par['n_blck']
+# par['e']['n_ch_in']
+# par['e']['ch']
+# par['e']['po']
+
+# model_enc = Encoder(n_ch_in = par['e']['n_ch_in'], 
+#                     n_ch_latent=par['latsha'], 
+#                     shape_input = par['impsha'], 
+#                     n_conv_blocks = par['n_blck'],
+#                     ch = par['e']['ch'],
+#                     po = par['e']['po']
+#                     ) 
+
+# model_enc.load_state_dict(torch.load(os.path.join(model_path, model_file_names + '.pth'), weights_only=True))
+
+# model_enc = model_enc.to(device)
+# model_enc.eval()
+
+
+
+
+
+imgpath =   "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
 
 model_path = "C:/xc_real_projects/models"
 
-model_file_names = "encoder_model_epo_1_nlat_256_nblk_4"
 
 
+tstmp = "20250304_165847"
+path_enc = 'encoder_model_' + tstmp + '_epo_3.pth'
+path_dec = 'decoder_model_' + tstmp + '_epo_3.pth'
+path_par = 'params_model_'  + tstmp + '_epo_3.json'
 
-with open(os.path.join(model_path, model_file_names + '.json'), 'rb') as fp:
+
+with open(os.path.join(model_path, path_par), 'rb') as fp:
     par = pickle.load(fp)
 
 
-
-
-# impsha = (128, 128)
-# latsha = 256
-# n_blck = 4
-
-par['impsha']
-par['latsha']
-par['n_blck']
-par['e']['n_ch_in']
-par['e']['ch']
-par['e']['po']
-
-
-
 model_enc = Encoder(n_ch_in = par['e']['n_ch_in'], 
-                    n_ch_latent=par['latsha'], 
-                    shape_input = par['impsha'], 
-                    n_conv_blocks = par['n_blck'],
                     ch = par['e']['ch'],
                     po = par['e']['po']
                     ) 
-
-model_enc.load_state_dict(torch.load(os.path.join(model_path, model_file_names + '.pth'), weights_only=True))
-
+model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
 model_enc = model_enc.to(device)
-model_enc.eval()
+_ = model_enc.eval()
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -68,25 +99,26 @@ model_enc.eval()
 
 train_dataset = SpectroImageDataset(imgpath)
 train_dataset.__len__()
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=512,  shuffle=True)
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=500,  shuffle=True)
 
 
 
 # extract features (by batches)
-feat = []
+feat_li = []
 imfiles = []
-for i, (data, fi) in enumerate(train_loader, 0):    
+for i, (data, data_augm, fi) in enumerate(train_loader, 0):    
     # print(data.shape)
     data = data.to(device)
     # data.shape
     # data.dtype
     encoded = model_enc(data).detach().cpu().numpy()
     encoded.shape
-    feat.append(encoded)
+    feat_li.append(encoded)
     imfiles.append(fi)
     print(len(imfiles))
 
-feat = np.concatenate(feat)
+feat = np.concatenate(feat_li)
+feat = feat.squeeze()
 feat.shape
 
 imfiles = np.concatenate(imfiles)
@@ -94,7 +126,11 @@ imfiles.shape
 
 
 
-
+# taka function overt time to get classic feature vector 
+feat_max = feat.max(2)
+feat_mea = feat.mean(2)
+feat_max.shape
+feat_mea.shape
 
 
 ################################
@@ -102,14 +138,14 @@ imfiles.shape
 
 # rename
 sel_subset = 50000
-feature_mat = feat[0:sel_subset]
+feature_mat = feat_max[0:sel_subset]
+# feature_mat = feat_mea[0:sel_subset]
 finle_name_arr = imfiles[0:sel_subset]
 pa = imgpath
 
 
 feature_mat.shape
-feature_mat.min()
-feature_mat.max()
+
 
 
 # select valid features 
@@ -118,15 +154,16 @@ sel_feats = feature_mat.std(0) != 0.000 # or feature_mat.std(0) != 0.0
 sel_feats.sum()
 feature_mat_red = feature_mat[:,sel_feats]
 
+feature_mat_red.shape
 
 # standardize 
 scaler = StandardScaler()
 scaler.fit(feature_mat_red)
 feature_mat_scaled = scaler.transform(feature_mat_red)
-feature_mat_scaled.shape
-feature_mat_scaled.mean(0).shape
-feature_mat_scaled.mean(0)
-feature_mat_scaled.std(0)
+# feature_mat_scaled.shape
+# feature_mat_scaled.mean(0).shape
+# feature_mat_scaled.mean(0)
+# feature_mat_scaled.std(0)
 
 
 # clustering 
@@ -140,10 +177,10 @@ feature_mat_scaled.std(0)
 
 
 
-for eps_i in range(3,9,):
+for eps_i in range(18,30,):
     print("-----------")
     print(">> eps_i", eps_i)
-    clu = DBSCAN(eps= eps_i, min_samples=2, metric='euclidean') # eps 10.5 11.0 good min_samples=10
+    clu = DBSCAN(eps= eps_i, min_samples=5, metric='euclidean') # eps 10.5 11.0 good min_samples=10
     cluster_ids = clu.fit_predict(feature_mat_scaled)
     cluster_ids.shape
     pd.Series(cluster_ids).value_counts()[0:10]
@@ -152,27 +189,36 @@ for eps_i in range(3,9,):
     print("")
 
 
-clu = DBSCAN(eps= 4.0, min_samples=2, metric='euclidean') # eps 10.5 11.0 good min_samples=10
+clu = DBSCAN(eps= 22, min_samples=1, metric='euclidean') # eps 10.5 11.0 good min_samples=10
 cluster_ids = clu.fit_predict(feature_mat_scaled)
 cluster_ids.shape
-pd.Series(cluster_ids).value_counts()[0:10]
+pd.Series(cluster_ids).value_counts()[0:20]
 
 
-# finle_name_arr.shape
-# cluster_ids.shape
+#selec tonly large enought clustes 
+sel = pd.Series(cluster_ids).value_counts() > 10
 
+sel2 = pd.Series(cluster_ids).value_counts().loc[sel].index
+cluster_ids.shape
+sel.shape
+
+cluster_ids_sel = cluster_ids[ pd.Series(cluster_ids).isin(sel2)]
+finle_name_arr_sel = finle_name_arr[ pd.Series(cluster_ids).isin(sel2)]
+cluster_ids_sel.shape
+finle_name_arr_sel.shape
+
+
+
+# save images by cluster id 
 df = pd.DataFrame({
-    'file_name' :finle_name_arr,
-    'cluster_id' :cluster_ids,
+    'file_name' :finle_name_arr_sel,
+    'cluster_id' :cluster_ids_sel,
     })
-
 df['newname'] = df['cluster_id'].astype(str).str.cat(others=df['file_name'], sep='_')
-
 # df['file_name'][3]
 path_clusters = os.path.join(os.path.dirname(pa), 'clusters')
 if not os.path.exists(path_clusters):
     os.mkdir(path_clusters)
-
 for i,r in df.iterrows():
     # print(r)
     if r['cluster_id'] == -1:
@@ -180,11 +226,9 @@ for i,r in df.iterrows():
     if r['cluster_id'] == 0:
         continue
     print(r['cluster_id'])
-
     path_cli=  os.path.join(path_clusters, str(r['cluster_id']))
     if not os.path.exists(path_cli):
         os.mkdir(path_cli)
-
     src = os.path.join(pa, r['file_name'])
     dst = os.path.join(path_cli, r['newname'])
     shutil.copy(src, dst)
