@@ -41,21 +41,22 @@ n_batches = train_dataset.__len__() // batch_size
 
 
 
+
 #----------------------
 # define models 
 
 par = { 
    
-    'n_blck' : 4,
+    'n_blck' : 5,
     'e': {
         'n_ch_in' : 1,
         'ch' : [16, 32, 64, 256, 512],
-        'po' : [(2, 2), (4, 2), (4, 2), (4, 2), (2, 2)],
+        'po' : [(2, 2), (2, 2), (4, 2), (4, 2), (2, 2)],
         },
     'd': {
         'n_ch_out' : 1,
-        'ch' : [256, 256, 256, 128, 64],
-        'po' : [(2, 2), (2, 2), (3, 2), (3, 2), (3, 2)],
+        'ch' :  [512, 256, 256, 128, 64],
+        'po' :  [(2, 2), (2, 2), (4, 2), (2, 2), (2, 2)],
         }}
 
 model_enc = Encoder(n_ch_in = par['e']['n_ch_in'], 
@@ -76,7 +77,7 @@ model_dec = Decoder(n_ch_out = par['d']['n_ch_out'],
                     )
 
 model_dec = model_dec.to(device)
-summary(model_dec, (256, 1, 8))
+summary(model_dec, (512, 1, 4))
 
 
 
@@ -102,9 +103,6 @@ _ = model_dec.train()
 
 n_epochs = 1
 
-# initialize the best validation loss as infinity
-best_val_loss = float("inf")
-# start training by looping over the number of epochs
 
 loss_li_train = []
 loss_li_test  = []
@@ -116,8 +114,8 @@ for epoch in range(n_epochs):
     loss_tes =[]
     for btchi, (data, fi) in enumerate(train_loader, 0):
 
-        # if btchi > 100:
-        #     break
+        if btchi > 50:
+            break
         print(btchi)
         # print(data.shape)
         data = data.to(device)
@@ -160,6 +158,32 @@ with open(os.path.join(model_path, param_save_name), 'wb') as fp:
 
 
 
+da = data.to(device)
+enc_tes = model_enc(da).to(device)
+decoded = model_dec(enc_tes).to(device)
+
+
+# ii = 489 
+for ii in np.random.randint(da.shape[0], size = 5):
+    img_orig = da[ii].cpu().numpy()
+    img_orig.shape
+    img_orig = img_orig.squeeze() # 1 ch
+    img_orig = 255*(img_orig - img_orig.min())/(img_orig.max())
+    img_orig.min()
+    img_orig.max()
+    img_orig.dtype
+    fig = px.imshow(img_orig)
+    fig.show()
+
+    img_reco = decoded[ii].cpu().detach().numpy()
+    img_reco.shape
+    img_reco = img_reco.squeeze()  # 1 ch
+    img_reco = 255*(img_reco - img_reco.min())/(img_reco.max())
+    img_reco.min()
+    img_reco.max()
+    img_reco.dtype
+    fig = px.imshow(img_reco)
+    fig.show()
 
 
 

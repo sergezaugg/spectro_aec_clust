@@ -123,7 +123,6 @@ class Encoder(nn.Module):
         else:
             self.conv4 = nn.Identity()    
 
-        self.dropout = nn.Dropout(0.5)
 
     def forward(self, x):
         x = self.conv0(x)
@@ -131,7 +130,6 @@ class Encoder(nn.Module):
         x = self.conv2(x)
         x = self.conv3(x)
         x = self.conv4(x)
-        # # self.dropout(x)
         return(x)
 
 
@@ -148,31 +146,31 @@ class Decoder(nn.Module):
         super().__init__()
 
         self.tconv0 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(2,2), padding=0, stride=po[0], output_padding=0), 
+            nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(5,5), stride=po[0], padding=(0,0), output_padding=(0,0)), 
             nn.BatchNorm2d(ch[0]),
             nn.ReLU()
             )
 
         self.tconv1 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(5,5), padding=1, stride=po[1], output_padding=1), 
+            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(5,5), stride=po[1], padding=(2,2), output_padding=(0,0)), 
             nn.BatchNorm2d(ch[1]),
             nn.ReLU()
             )
     
         self.tconv2 = nn.Sequential(
-            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(5,5), padding=(2,2), stride=po[2], output_padding=0), 
+            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(5,5), stride=po[2], padding=(2,4), output_padding=(0,0)), 
             nn.BatchNorm2d(ch[2]),
             nn.ReLU()
             )
    
         self.tconv3 = nn.Sequential(
-            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=(5,5), padding=(3,3), stride=po[3], output_padding=1), 
+            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=(5,5), stride=po[3], padding=(2,5),  output_padding=(0,0)), 
             nn.BatchNorm2d(ch[3]),
             nn.ReLU()
             )
       
         self.tconv4 = nn.Sequential(
-            nn.ConvTranspose2d(ch[3], ch[4], kernel_size=(5,5), padding=(5,10), stride=po[4], output_padding=(1,0)), 
+            nn.ConvTranspose2d(ch[3], ch[4], kernel_size=(5,5), stride=po[4], padding=(3,5), output_padding=(1,1)), 
             nn.BatchNorm2d(ch[4]),
             nn.ReLU()
             )
@@ -207,13 +205,13 @@ if __name__ == "__main__":
 
 
     model_dec = Decoder(n_ch_out = 1, 
-                        ch = [256, 256, 256, 128, 64],
-                        po = [(2, 2), (2, 2), (3, 2), (3, 2), (3, 1)]
+                        ch = [512, 256, 256, 128, 64],
+                        po = [(2, 2), (2, 2), (4, 2), (2, 2), (2, 2)]
                         )
     model_dec = model_dec.to(device)
 
 
-    summary(model_dec, (256, 1, 8))
+    summary(model_dec, (512, 1, 4))
 
 
 

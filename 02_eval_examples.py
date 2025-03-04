@@ -21,7 +21,7 @@ imgpath =   "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_240
 model_path = "C:/xc_real_projects/models"
 
 
-tstmp = "20250303_152759"
+tstmp = "20250303_163223"
 path_enc = 'encoder_model_' + tstmp + '_epo_1.pth'
 path_dec = 'decoder_model_' + tstmp + '_epo_1.pth'
 path_par = 'params_model_'  + tstmp + '_epo_1.json'
@@ -70,6 +70,7 @@ for i_test, (da, _) in enumerate(test_loader, 0):
 # ii = 489 
 for ii in np.random.randint(da.shape[0], size = 5):
     img_orig = da[ii].cpu().numpy()
+    img_orig.shape
     img_orig = img_orig.squeeze() # 1 ch
     img_orig = 255*(img_orig - img_orig.min())/(img_orig.max())
     img_orig.min()
@@ -79,6 +80,7 @@ for ii in np.random.randint(da.shape[0], size = 5):
     fig.show()
 
     img_reco = decoded[ii].cpu().detach().numpy()
+    img_reco.shape
     img_reco = img_reco.squeeze()  # 1 ch
     img_reco = 255*(img_reco - img_reco.min())/(img_reco.max())
     img_reco.min()
