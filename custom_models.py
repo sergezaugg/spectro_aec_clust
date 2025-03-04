@@ -3,7 +3,6 @@
 # The __init__ method has several parameter for fine control of the architecture
 #--------------------------------
 
-import numpy as np
 import torch
 import numpy as np
 from torchsummary import summary
@@ -18,54 +17,50 @@ import numpy as np
 import torch.nn as nn
 from torch.utils.data import Dataset
 import os 
-import torchvision.transforms as transforms
 from torchsummary import summary
+import torchvision.transforms.v2 as transforms
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 
+transforms.RandomApply(torch.nn.ModuleList([transforms.ColorJitter(),]), p=0.3)
+
+
+
 dataaugm = transforms.Compose([
-    transforms.RandomAffine(degrees=(-5.0, 5.0), translate=(0.02,0.02), scale=(0.98,1.02)),
-    # transforms.RandomCrop(size=126, padding=None, pad_if_needed=False)
-    transforms.GaussianBlur(kernel_size = 9, sigma=(50.0, 50.0))
+    transforms.RandomAffine(degrees=(-3.0, 3.0)),
+    transforms.RandomResizedCrop(size = (128, 128) , scale = (0.97, 1.0)), 
+    transforms.RandomAdjustSharpness(sharpness_factor = 3.0, p=0.5),
+    transforms.RandomAdjustSharpness(sharpness_factor = 0.1, p=0.5),
+    transforms.ColorJitter(brightness = None , contrast = None, saturation = 0.9),
+    transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.10, clip=True),]), p=0.25),
+    # hmmm ??? 
+    # transforms.GaussianBlur(kernel_size = 5, sigma=(0.001, 1.0)),
+    # transforms.GaussianNoise(mean = 0.0, sigma = 0.05, clip=True),
     ])
 
-# Create a dataset for png images in a folder
 class SpectroImageDataset(Dataset):
+
     def __init__(self, imgpath):
         self.all_img_files = [a for a in os.listdir(imgpath) if '.png' in a]
         self.imgpath = imgpath
+
     def __getitem__(self, index):     
         img = Image.open( os.path.join(self.imgpath,  self.all_img_files[index] ))
-        img = dataaugm(img)
-        img = img.resize((128, 128))
-        x = pil_to_tensor(img).to(torch.float32) / 255.0
+        # img_augm = dataaugm(img)
+        # img_augm = img_augm.resize((128, 128))
+        x_orig = pil_to_tensor(img).to(torch.float32) / 255.0
+        x_augm = dataaugm(x_orig)
+        # x_augm = x_augm.resize((128, 128))
+        # x_augm = pil_to_tensor(img_augm).to(torch.float32) / 255.0
         y = self.all_img_files[index]
-        return (x ,y)
+        return (x_orig, x_augm, y)
+    
     def __len__(self):
         return (len(self.all_img_files))
 
-# dataaugm = transforms.Compose([
-#     transforms.RandomAffine(degrees=(-1.0, 1.0), translate=(0.02,0.02), scale=(0.98,1.02)),
-#     # transforms.RandomCrop(size=126, padding=None, pad_if_needed=False)
-#     ])
-
-# # Create a dataset for png images in a folder
-# class SpectroImageDataset(Dataset):
-#     def __init__(self, imgpath):
-#         self.all_img_files = [a for a in os.listdir(imgpath) if '.png' in a]
-#         self.imgpath = imgpath
-#     def __getitem__(self, index):     
-#         img = Image.open( os.path.join(self.imgpath,  self.all_img_files[index] ))
-#         # img = dataaugm(img)
-#         # img = img.resize((128, 128))
-#         x = pil_to_tensor(img).to(torch.float32) / 255.0
-#         y = self.all_img_files[index]
-#         return (x ,y)
-#     def __len__(self):
-#         return (len(self.all_img_files))
 
 
 

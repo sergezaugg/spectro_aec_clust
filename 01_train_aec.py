@@ -14,15 +14,15 @@ import datetime
 from custom_models import Encoder, Decoder, SpectroImageDataset
 # from custom_models_old import Encoder, Decoder, SpectroImageDataset
 import pickle
+from plotly.subplots import make_subplots
+
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 imgpath_train = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
-imgpath_test  = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
 
 model_path = "C:/xc_real_projects/models"
-
 
 batch_size = 64
 
@@ -32,43 +32,16 @@ train_dataset = SpectroImageDataset(imgpath_train)
 train_dataset.__len__()
 xx = train_dataset.__getitem__(45)
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
-for i, (data, fi) in enumerate(train_loader, 0):
+for i, (da_orig, data_augm, fi) in enumerate(train_loader, 0):
     if i > 3:
         break
-    print(data.shape)
+    print(data_augm.shape)
+    print(da_orig.shape)
+
 
 n_batches = train_dataset.__len__() // batch_size
+n_batches
 
-
-
-
-# ii = 489 
-for ii in np.random.randint(data.shape[0], size = 5):
-    print(ii)
-    img_orig = data[ii].cpu().detach().numpy()
-    img_orig.shape
-    # img_orig = img_orig.transpose(1,2,0) # 3 ch
-    img_orig = img_orig.squeeze() # 1 ch
-    img_orig = 255*(img_orig - img_orig.min())/(img_orig.max())
-    fig00 = px.imshow(img_orig, height = 500, title="original")
-    fig00.show()
-
-
-
-#    model_enc = Encoder(n_ch_in = 1, 
-#                         ch = [32, 64, 128, 256],
-#                         po = [(2, 2), (4, 2), (4, 2), (4, 2)]
-#                         ) 
-#     model_enc = model_enc.to(device)
-#     summary(model_enc, (1, 128, 128))
-
-
-#     model_dec = Decoder(n_ch_out = 1, 
-#                         ch = [256, 128, 64, 32],
-#                         po = [(2, 2), (4, 2), (4, 2), (4, 2)]
-#                         )
-#     model_dec = model_dec.to(device)
-#     summary(model_dec, (256, 1, 8))
 
 
 #----------------------
@@ -131,31 +104,27 @@ for epoch in range(n_epochs):
     print(f"Epoch: {epoch + 1}/{n_epochs}")
     # set the encoder and decoder models to training mode
     loss_tra =[]
-    for btchi, (data, fi) in enumerate(train_loader, 0):
-
+    for btchi, (da_orig, data_augm, fi) in enumerate(train_loader, 0):
         if btchi > 5000:
             break
         # print(btchi)
-        # print(data.shape)
-        data = data.to(device)
+        data_augm = data_augm.to(device)
+        da_orig = da_orig.to(device)
         # reset the gradients 
         optimizer.zero_grad()
         # forward 
-        encoded = model_enc(data).to(device)
+        encoded = model_enc(data_augm)#.to(device)
         # encoded.shape
-        decoded = model_dec(encoded).to(device)
+        decoded = model_dec(encoded)#.to(device)
         # compute the reconstruction loss 
-        loss = criterion(decoded, data)
-        # loss_tra.append(loss)
+        loss = criterion(decoded, da_orig)
         # compute the gradients
         loss.backward()
         # update the weights
         optimizer.step()
-        # accumulate the loss 
 
         if btchi % 10 == 0:
             print('loss', np.round(loss.item(),5), "   --- status: "  + str(btchi) + " out of " + str(n_batches) + " batches")
-            print(data.cpu().detach().numpy().min().round(3) , data.cpu().detach().numpy().max().round(3) )
             print(decoded.cpu().detach().numpy().min().round(3) , decoded.cpu().detach().numpy().max().round(3) )
             print("-")
 
@@ -180,38 +149,30 @@ if False:
 
 
 # check reconstruction with examples 
-if False:
+if True:
 
     _ = model_enc.eval()
     _ = model_dec.eval()
 
-    data = data.to(device)
+    data = da_orig.to(device)
     encoded = model_enc(data).to(device)
     decoded = model_dec(encoded).to(device)
-    data.shape
 
     # ii = 489 
     for ii in np.random.randint(data.shape[0], size = 5):
         img_orig = data[ii].cpu().numpy()
-        img_orig.shape
-        # img_orig = img_orig.transpose(1,2,0) # 3 ch
         img_orig = img_orig.squeeze() # 1 ch
-        img_orig.min()
-        img_orig.max()
-        img_orig.dtype
-        fig00 = px.imshow(img_orig, height = 500, title="original")
-        fig00.show()
-
+        img_orig = 255*(img_orig - img_orig.min())/(img_orig.max())
+        # fig00 = px.imshow(img_orig, height = 500, title="original")
         img_reco = decoded[ii].cpu().detach().numpy()
-        # img_reco = img_reco.transpose(1,2,0) # 3 ch
         img_reco = img_reco.squeeze()  # 1 ch
-        img_reco.shape
         img_reco = 255*(img_reco - img_reco.min())/(img_reco.max())
-        img_reco.min()
-        img_reco.max()
-        img_reco.dtype
-        fig01 = px.imshow(img_reco, height = 500, title="reconstructed")
-        fig01.show()
+        # fig01 = px.imshow(img_reco, height = 500, title="reconstructed")
+        fig = make_subplots(rows=1, cols=2)
+        fig.add_trace(px.imshow(img_orig).data[0], row=1, col=1)
+        fig.add_trace(px.imshow(img_reco).data[0], row=1, col=2)
+        fig.update_layout(autosize=True,height=550, width = 1000)
+        fig.show()
 
 
 
