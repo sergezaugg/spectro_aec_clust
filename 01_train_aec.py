@@ -152,7 +152,7 @@ if False:
     data.shape
 
     # ii = 489 
-    for ii in np.random.randint(data.shape[0], size = 15):
+    for ii in np.random.randint(data.shape[0], size = 10):
         img_orig = data[ii].cpu().numpy()
         img_orig.shape
         # img_orig = img_orig.transpose(1,2,0) # 3 ch
