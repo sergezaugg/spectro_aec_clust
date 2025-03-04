@@ -22,10 +22,11 @@ model_path = "C:/xc_real_projects/models"
 
 
 
-tstmp = "20250304_165847"
-path_enc = 'encoder_model_' + tstmp + '_epo_3.pth'
-path_dec = 'decoder_model_' + tstmp + '_epo_3.pth'
-path_par = 'params_model_'  + tstmp + '_epo_3.json'
+tstmp = "20250304_182800"
+epotag = '_epo_5'
+path_enc = 'encoder_model_' + tstmp + epotag + '.pth'
+path_dec = 'decoder_model_' + tstmp + epotag + '.pth'
+path_par = 'params_model_'  + tstmp + epotag + '.json'
 
 
 with open(os.path.join(model_path, path_par), 'rb') as fp:
@@ -49,8 +50,8 @@ model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights
 model_dec = model_dec.to(device)
 _ = model_dec.eval()
 
-_ = model_enc.eval()
-_ = model_dec.eval()
+# _ = model_enc.eval()
+# _ = model_dec.eval()
 
 # test 
 test_dataset = SpectroImageDataset(imgpath)

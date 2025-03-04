@@ -95,7 +95,7 @@ optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters(
 _ = model_enc.train()
 _ = model_dec.train()
 
-n_epochs = 3
+n_epochs = 5
 
 for epoch in range(n_epochs):
     print(f"Epoch: {epoch + 1}/{n_epochs}")

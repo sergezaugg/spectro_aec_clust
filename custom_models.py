@@ -30,12 +30,13 @@ transforms.RandomApply(torch.nn.ModuleList([transforms.ColorJitter(),]), p=0.3)
 
 
 dataaugm = transforms.Compose([
-    transforms.RandomAffine(degrees=(-3.0, 3.0)),
-    transforms.RandomResizedCrop(size = (128, 128) , scale = (0.97, 1.0)), 
+    transforms.RandomAffine(degrees=(-4.0, 4.0)),
+    transforms.RandomResizedCrop(size = (128, 128) , scale = (0.94, 1.05)), 
     transforms.RandomAdjustSharpness(sharpness_factor = 3.0, p=0.5),
     transforms.RandomAdjustSharpness(sharpness_factor = 0.1, p=0.5),
-    transforms.ColorJitter(brightness = None , contrast = None, saturation = 0.9),
+    transforms.ColorJitter(brightness = 0.4 , contrast = 0.5, saturation = 0.9),
     transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.10, clip=True),]), p=0.25),
+    transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.05, clip=True),]), p=0.25),
     # hmmm ??? 
     # transforms.GaussianBlur(kernel_size = 5, sigma=(0.001, 1.0)),
     # transforms.GaussianNoise(mean = 0.0, sigma = 0.05, clip=True),

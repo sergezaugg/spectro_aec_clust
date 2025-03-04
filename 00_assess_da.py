@@ -23,7 +23,7 @@ for i, (da_orig, data, fi) in enumerate(train_loader, 0):
     print(da_orig.shape)
 
 # assess data  augmentation 
-for ii in np.random.randint(data.shape[0], size = 10):
+for ii in np.random.randint(data.shape[0], size = 16):
     print(ii)
     img_orig = da_orig[ii].cpu().detach().numpy()
     img_orig = img_orig.squeeze() 
@@ -36,7 +36,7 @@ for ii in np.random.randint(data.shape[0], size = 10):
     fig = make_subplots(rows=1, cols=2)
     fig.add_trace(px.imshow(img_orig).data[0], row=1, col=1)
     fig.add_trace(px.imshow(img_augm).data[0], row=1, col=2)
-    fig.update_layout(autosize=True,height=550, width = 1000)
+    _ = fig.update_layout(autosize=True,height=550, width = 1000)
     fig.show()
 
 

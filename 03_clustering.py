@@ -21,53 +21,17 @@ torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-# imgpath =   "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
-
-# model_path = "C:/xc_real_projects/models"
-
-# model_file_names = "encoder_model_epo_1_nlat_256_nblk_4"
-
-# with open(os.path.join(model_path, model_file_names + '.json'), 'rb') as fp:
-#     par = pickle.load(fp)
-
-# # impsha = (128, 128)
-# # latsha = 256
-# # n_blck = 4
-
-# par['impsha']
-# par['latsha']
-# par['n_blck']
-# par['e']['n_ch_in']
-# par['e']['ch']
-# par['e']['po']
-
-# model_enc = Encoder(n_ch_in = par['e']['n_ch_in'], 
-#                     n_ch_latent=par['latsha'], 
-#                     shape_input = par['impsha'], 
-#                     n_conv_blocks = par['n_blck'],
-#                     ch = par['e']['ch'],
-#                     po = par['e']['po']
-#                     ) 
-
-# model_enc.load_state_dict(torch.load(os.path.join(model_path, model_file_names + '.pth'), weights_only=True))
-
-# model_enc = model_enc.to(device)
-# model_enc.eval()
-
-
-
-
-
 imgpath =   "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
 
 model_path = "C:/xc_real_projects/models"
 
 
 
-tstmp = "20250304_165847"
-path_enc = 'encoder_model_' + tstmp + '_epo_3.pth'
-path_dec = 'decoder_model_' + tstmp + '_epo_3.pth'
-path_par = 'params_model_'  + tstmp + '_epo_3.json'
+tstmp = "20250304_182800"
+epotag = '_epo_5'
+path_enc = 'encoder_model_' + tstmp + epotag + '.pth'
+path_dec = 'decoder_model_' + tstmp + epotag + '.pth'
+path_par = 'params_model_'  + tstmp + epotag + '.json'
 
 
 with open(os.path.join(model_path, path_par), 'rb') as fp:
@@ -142,8 +106,6 @@ feature_mat = feat_max[0:sel_subset]
 # feature_mat = feat_mea[0:sel_subset]
 finle_name_arr = imfiles[0:sel_subset]
 pa = imgpath
-
-
 feature_mat.shape
 
 
@@ -196,7 +158,7 @@ pd.Series(cluster_ids).value_counts()[0:20]
 
 
 #selec tonly large enought clustes 
-sel = pd.Series(cluster_ids).value_counts() > 10
+sel = pd.Series(cluster_ids).value_counts() > 6
 
 sel2 = pd.Series(cluster_ids).value_counts().loc[sel].index
 cluster_ids.shape
@@ -223,7 +185,7 @@ for i,r in df.iterrows():
     # print(r)
     if r['cluster_id'] == -1:
         continue
-    if r['cluster_id'] == 0:
+    if r['cluster_id'] == 1:
         continue
     print(r['cluster_id'])
     path_cli=  os.path.join(path_clusters, str(r['cluster_id']))
