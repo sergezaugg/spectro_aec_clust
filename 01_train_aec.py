@@ -17,13 +17,16 @@ import datetime
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-imgpath_train = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
+
+
+
+imgpath_train = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
 imgpath_test  = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
 
 model_path = "C:/xc_real_projects/models"
 
 
-batch_size = 128
+batch_size = 64
 
 #----------------------
 # define data loader 
@@ -48,9 +51,9 @@ test_loader  = torch.utils.data.DataLoader(test_dataset, batch_size=64,  shuffle
 #----------------------
 # define models 
 
-impsha = (128, 64)
+impsha = (128, 128)
 latsha = 256
-n_blck = 4
+n_blck = 3
 
 model_enc = Encoder(n_ch_in = 1, 
                     n_ch_latent=latsha, 
@@ -60,7 +63,7 @@ model_enc = Encoder(n_ch_in = 1,
                     po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
                     ) 
 model_enc = model_enc.to(device)
-summary(model_enc, (1, 128, 64))
+summary(model_enc, (1, impsha[0], impsha[1]))
 
 model_dec = Decoder(n_ch_out = 1, 
                     n_ch_latent=latsha, 
@@ -126,28 +129,7 @@ for epoch in range(n_epochs):
         optimizer.step()
         # accumulate the loss 
 
-        # track loss at every x batch 
-        if btchi%20 == 0:
-
-            # test loss 
-            for i_test, (da, _) in enumerate(test_loader, 0):
-                print(i_test)
-                da = da.to(device)
-                enc_tes = model_enc(da).to(device)
-                dec_tes= model_dec(enc_tes).to(device)
-                loss_test = criterion(dec_tes, da)
-                loss_tes.append(loss_test)
-            mean_loss_test = np.array(loss_tes).mean()
-            loss_tes =[]
-            loss_li_test.append(mean_loss_test)
-
-            # train 
-            mean_loss_train = np.array(loss_tra).mean()
-            loss_tra =[]
-            loss_li_train.append(mean_loss_train)
-            
-
-            # print('loss', np.round(loss.item(),5))
+        print('loss', np.round(loss.item(),5))
             # print("status: "  + str(btchi) + " out of " + str(n_batches) + " batches")
             # print('data min max',    data.min().cpu().detach().numpy().round(4),     data.max().cpu().detach().numpy().round(4))
             # print('decoded min max', decoded.min().cpu().detach().numpy().round(4),  decoded.max().cpu().detach().numpy().round(4)) 
@@ -160,11 +142,36 @@ torch.save(model_enc.state_dict(), os.path.join(model_path, model_save_name))
 
 
 
-fig00 = px.line(
-    y = np.array(loss_li),
-    markers=True
-    )
 
-fig00.show()
+# check reconstruction with examples 
+if False:
+
+    data = data.to(device)
+    encoded = model_enc(data).to(device)
+    decoded = model_dec(encoded).to(device)
+    data.shape
+
+    # ii = 489 
+    for ii in np.random.randint(data.shape[0], size = 15):
+        img_orig = data[ii].cpu().numpy()
+        img_orig.shape
+        # img_orig = img_orig.transpose(1,2,0) # 3 ch
+        img_orig = img_orig.squeeze() # 1 ch
+        img_orig.min()
+        img_orig.max()
+        img_orig.dtype
+        fig00 = px.imshow(img_orig, height = 500, title="original")
+        fig00.show()
+
+        img_reco = decoded[ii].cpu().detach().numpy()
+        # img_reco = img_reco.transpose(1,2,0) # 3 ch
+        img_reco = img_reco.squeeze()  # 1 ch
+        img_reco.shape
+        img_reco = 255*(img_reco - img_reco.min())/(img_reco.max())
+        img_reco.min()
+        img_reco.max()
+        img_reco.dtype
+        fig01 = px.imshow(img_reco, height = 500, title="reconstructed")
+        fig01.show()
 
 

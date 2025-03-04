@@ -147,6 +147,9 @@ class Encoder(nn.Module):
             flattened_size = int(ch[3] * (self.shi[0]/(po[0][0]*po[1][0]*po[2][0]*po[3][0])) * (self.shi[1]/(po[0][1]*po[1][1]*po[2][1]*po[3][1]))) 
         if self.n_conv_blocks == 5:
             flattened_size = int(ch[4] * (self.shi[0]/(po[0][0]*po[1][0]*po[2][0]*po[3][0]*po[4][0])) * (self.shi[1]/(po[0][1]*po[1][1]*po[2][1]*po[3][1]*po[4][1]))) 
+        
+        # flattened_size = flattened_size*2
+        
         print('flattened_size_compute', flattened_size)
 
         self.dropout = nn.Dropout(0.5)
@@ -306,8 +309,9 @@ class Decoder(nn.Module):
 # devel code - supress execution if this is imported as module 
 if __name__ == "__main__":
 
-    impsha = (128, 64)
-    latsha = 512
+
+    impsha = (128, 128)
+    latsha = 256
     n_blck = 3
 
     model_enc = Encoder(n_ch_in = 1, 
@@ -318,7 +322,10 @@ if __name__ == "__main__":
                         po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
                         ) 
     model_enc = model_enc.to(device)
-    summary(model_enc, (1, 128, 64))
+    summary(model_enc, (1, impsha[0], impsha[1]))
+
+
+
 
     model_dec = Decoder(n_ch_out = 1, 
                         n_ch_latent=latsha, 
