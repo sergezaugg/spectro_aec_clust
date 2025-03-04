@@ -41,6 +41,20 @@ n_batches = train_dataset.__len__() // batch_size
 
 
 
+#    model_enc = Encoder(n_ch_in = 1, 
+#                         ch = [32, 64, 128, 256],
+#                         po = [(2, 2), (4, 2), (4, 2), (4, 2)]
+#                         ) 
+#     model_enc = model_enc.to(device)
+#     summary(model_enc, (1, 128, 128))
+
+
+#     model_dec = Decoder(n_ch_out = 1, 
+#                         ch = [256, 128, 64, 32],
+#                         po = [(2, 2), (4, 2), (4, 2), (4, 2)]
+#                         )
+#     model_dec = model_dec.to(device)
+#     summary(model_dec, (256, 1, 8))
 
 
 #----------------------
@@ -48,20 +62,18 @@ n_batches = train_dataset.__len__() // batch_size
 if True:
 
     par = { 
-        'n_blck' : 5,
         'e': {
             'n_ch_in' : 1,
-            'ch' : [64, 128, 256, 256, 256],
-            'po' : [(2, 2), (2, 2), (4, 2), (4, 2), (2, 2)],
+            'ch' : [32, 64, 128, 512],
+            'po' : [(2, 2), (4, 2), (4, 2), (4, 2)]
             },
         'd': {
             'n_ch_out' : 1,
-            'ch' :  [256, 256, 256, 128, 64],
-            'po' :  [(2, 2), (2, 2), (4, 2), (2, 2), (2, 2)],
+            'ch' :  [512, 128, 64, 32],
+            'po' : [(2, 2), (4, 2), (4, 2), (4, 2)]
             }}
 
     model_enc = Encoder(n_ch_in = par['e']['n_ch_in'], 
-                        n_conv_blocks = par['n_blck'],
                         ch = par['e']['ch'],
                         po = par['e']['po']
                         ) 
@@ -78,50 +90,7 @@ if True:
                         )
 
     model_dec = model_dec.to(device)
-    summary(model_dec, (256, 1, 4))
-
-
-
-
-#old models 
-
-if False:
-
-    par = { 
-        'n_blck' : 3,
-        'e': {
-            'n_ch_in' : 1,
-            },
-        'd': {
-            'n_ch_out' : 1,
-            }}
-
-    impsha = (128, 128)
-    latsha = 256
-
-    model_enc = Encoder(n_ch_in = par['e']['n_ch_in'], 
-                        n_ch_latent=latsha, 
-                        shape_input = impsha, 
-                        n_conv_blocks = par['n_blck'],
-                        ch = [16, 32, 64, 256, 512],
-                        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
-                        ) 
-    model_enc = model_enc.to(device)
-    summary(model_enc, (1, impsha[0], impsha[1]))
-
-
-    model_dec = Decoder(n_ch_out = par['d']['n_ch_out'], 
-                        n_ch_latent=latsha, 
-                        shape_output = impsha, 
-                        n_conv_blocks = par['n_blck'],
-                        ch = [128, 64, 64, 32, 32],
-                        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
-                        )
-    model_dec = model_dec.to(device)
-    summary(model_dec, (latsha,))
-
-
-
+    summary(model_dec, (512, 1, 8))
 
 
 
@@ -144,17 +113,13 @@ _ = model_dec.train()
 
 n_epochs = 1
 
-loss_li_train = []
-loss_li_test  = []
 for epoch in range(n_epochs):
     print(f"Epoch: {epoch + 1}/{n_epochs}")
     # set the encoder and decoder models to training mode
-   
     loss_tra =[]
-    loss_tes =[]
     for btchi, (data, fi) in enumerate(train_loader, 0):
 
-        if btchi > 500:
+        if btchi > 5000:
             break
         # print(btchi)
         # print(data.shape)
@@ -167,7 +132,7 @@ for epoch in range(n_epochs):
         decoded = model_dec(encoded).to(device)
         # compute the reconstruction loss 
         loss = criterion(decoded, data)
-        loss_tra.append(loss)
+        # loss_tra.append(loss)
         # compute the gradients
         loss.backward()
         # update the weights
@@ -183,17 +148,18 @@ for epoch in range(n_epochs):
   
     
 # Save the model
-tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
+if False:
+    tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
 
-model_save_name = "encoder_model"+tstmp+f"_epo_{epoch + 1}" +  ".pth"
-torch.save(model_enc.state_dict(), os.path.join(model_path, model_save_name))
+    model_save_name = "encoder_model"+tstmp+f"_epo_{epoch + 1}" +  ".pth"
+    torch.save(model_enc.state_dict(), os.path.join(model_path, model_save_name))
 
-model_save_name = "decoder_model"+tstmp+f"_epo_{epoch + 1}" + ".pth"
-torch.save(model_dec.state_dict(), os.path.join(model_path, model_save_name))
+    model_save_name = "decoder_model"+tstmp+f"_epo_{epoch + 1}" + ".pth"
+    torch.save(model_dec.state_dict(), os.path.join(model_path, model_save_name))
 
-param_save_name = "params_model"+tstmp+f"_epo_{epoch + 1}" + ".json"
-with open(os.path.join(model_path, param_save_name), 'wb') as fp:
-    pickle.dump(par, fp)
+    param_save_name = "params_model"+tstmp+f"_epo_{epoch + 1}" + ".json"
+    with open(os.path.join(model_path, param_save_name), 'wb') as fp:
+        pickle.dump(par, fp)
 
 
 
@@ -201,6 +167,9 @@ with open(os.path.join(model_path, param_save_name), 'wb') as fp:
 
 # check reconstruction with examples 
 if False:
+
+    _ = model_enc.eval()
+    _ = model_dec.eval()
 
     data = data.to(device)
     encoded = model_enc(data).to(device)

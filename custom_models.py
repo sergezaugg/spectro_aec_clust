@@ -54,82 +54,54 @@ class Encoder(nn.Module):
 
     def __init__(self, 
                  n_ch_in, 
-                 n_conv_blocks, 
                  ch = [16, 32, 64, 128, 256], 
                  po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]):
     
         super(Encoder, self).__init__()
 
         self.padding =  "same"
-        self.n_conv_blocks = n_conv_blocks
 
         # conv block 0
-        if self.n_conv_blocks >= 1:
-            self.conv0 = nn.Sequential(
-                nn.Conv2d(n_ch_in,  ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
-                nn.Conv2d(ch[0], ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
-                nn.BatchNorm2d(ch[0]),
-                nn.ReLU(),
-                nn.AvgPool2d(po[0], stride=po[0])
-                )
-        else:
-            self.conv0 = nn.Identity()
-
+        self.conv0 = nn.Sequential(
+            nn.Conv2d(n_ch_in,  ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.Conv2d(ch[0], ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.BatchNorm2d(ch[0]),
+            nn.ReLU(),
+            nn.AvgPool2d(po[0], stride=po[0])
+            )
+     
         # conv block 1
-        if self.n_conv_blocks >= 2:
-            self.conv1 = nn.Sequential(
-                nn.Conv2d(ch[0], ch[1], kernel_size=(3,3), stride=1, padding=self.padding),
-                nn.Conv2d(ch[1], ch[1], kernel_size=(3,3), stride=1, padding=self.padding),
-                nn.BatchNorm2d(ch[1]),
-                nn.ReLU(),
-                nn.AvgPool2d(po[1], stride=po[1])
-                )
-        else:
-            self.conv1 = nn.Identity()
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(ch[0], ch[1], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.Conv2d(ch[1], ch[1], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.BatchNorm2d(ch[1]),
+            nn.ReLU(),
+            nn.AvgPool2d(po[1], stride=po[1])
+            )
         
         # conv block 2
-        if self.n_conv_blocks >= 3:
-            self.conv2 = nn.Sequential(
-                nn.Conv2d(ch[1], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),
-                nn.Conv2d(ch[2], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),
-                nn.BatchNorm2d(ch[2]),
-                nn.ReLU(),
-                nn.AvgPool2d(po[2], stride=po[2])
-                )
-        else:
-            self.conv2 = nn.Identity()
-
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(ch[1], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.Conv2d(ch[2], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.BatchNorm2d(ch[2]),
+            nn.ReLU(),
+            nn.AvgPool2d(po[2], stride=po[2])
+            )
+ 
         # conv block 3
-        if self.n_conv_blocks >= 4:
-            self.conv3 = nn.Sequential(
-                nn.Conv2d(ch[2], ch[3], kernel_size=(3,3), stride=1, padding=self.padding),
-                nn.Conv2d(ch[3], ch[3], kernel_size=(3,3), stride=1, padding=self.padding),
-                nn.BatchNorm2d(ch[3]),
-                nn.ReLU(),
-                nn.AvgPool2d(po[3], stride=po[3])
-                )
-        else:
-            self.conv3 = nn.Identity()    
-
-        # conv block 4
-        if self.n_conv_blocks >= 5:
-            self.conv4 = nn.Sequential(
-                nn.Conv2d(ch[3], ch[4], kernel_size=(3,3), stride=1, padding=self.padding),
-                nn.Conv2d(ch[4], ch[4], kernel_size=(3,3), stride=1, padding=self.padding),
-                nn.BatchNorm2d(ch[4]),
-                nn.ReLU(),
-                nn.AvgPool2d(po[4], stride=po[4])
-                )
-        else:
-            self.conv4 = nn.Identity()    
-
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(ch[2], ch[3], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.Conv2d(ch[3], ch[3], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.BatchNorm2d(ch[3]),
+            # nn.ReLU(),
+            nn.AvgPool2d(po[3], stride=po[3])
+            )
 
     def forward(self, x):
         x = self.conv0(x)
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.conv3(x)
-        x = self.conv4(x)
         return(x)
 
 
@@ -146,7 +118,7 @@ class Decoder(nn.Module):
         super().__init__()
 
         self.tconv0 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(5,5), stride=po[0], padding=(0,0), output_padding=(0,0)), 
+            nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(3,3), stride=po[0], padding=(0,0), output_padding=(0,0)), 
             nn.BatchNorm2d(ch[0]),
             nn.ReLU()
             )
@@ -158,25 +130,20 @@ class Decoder(nn.Module):
             )
     
         self.tconv2 = nn.Sequential(
-            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(5,5), stride=po[2], padding=(2,4), output_padding=(0,0)), 
+            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(5,5), stride=po[2], padding=(2,2), output_padding=(0,0)), 
             nn.BatchNorm2d(ch[2]),
             nn.ReLU()
             )
    
         self.tconv3 = nn.Sequential(
-            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=(5,5), stride=po[3], padding=(2,5),  output_padding=(0,0)), 
+            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=(5,5), stride=po[3], padding=(3,3),  output_padding=(1,1)), 
             nn.BatchNorm2d(ch[3]),
             nn.ReLU()
             )
       
-        self.tconv4 = nn.Sequential(
-            nn.ConvTranspose2d(ch[3], ch[4], kernel_size=(5,5), stride=po[4], padding=(3,5), output_padding=(1,1)), 
-            nn.BatchNorm2d(ch[4]),
-            nn.ReLU()
-            )
-        
         self.out_map = nn.Sequential(
-            nn.Conv2d(ch[4], n_ch_out, kernel_size=(1,1), padding=0),
+            # nn.Conv2d(ch[3], 256, kernel_size=(1,1), padding=0),
+            nn.Conv2d(ch[3], n_ch_out, kernel_size=(1,1), padding=0),
             nn.Sigmoid()
             )
 
@@ -185,7 +152,6 @@ class Decoder(nn.Module):
         x = self.tconv1(x)
         x = self.tconv2(x)
         x = self.tconv3(x)
-        x = self.tconv4(x)
         x = self.out_map(x)
         return x
 
@@ -196,22 +162,19 @@ class Decoder(nn.Module):
 if __name__ == "__main__":
 
     model_enc = Encoder(n_ch_in = 1, 
-                        n_conv_blocks = 5,
-                        ch = [16, 32, 64, 256, 512],
-                        po = [(2, 2), (2, 2), (4, 2), (4, 2), (2, 2)]
+                        ch = [32, 64, 128, 256],
+                        po = [(2, 2), (4, 2), (4, 2), (4, 2)]
                         ) 
     model_enc = model_enc.to(device)
     summary(model_enc, (1, 128, 128))
 
 
     model_dec = Decoder(n_ch_out = 1, 
-                        ch = [512, 256, 256, 128, 64],
-                        po = [(2, 2), (2, 2), (4, 2), (2, 2), (2, 2)]
+                        ch = [256, 128, 64, 32],
+                        po = [(2, 2), (4, 2), (4, 2), (4, 2)]
                         )
     model_dec = model_dec.to(device)
-
-
-    summary(model_dec, (512, 1, 4))
+    summary(model_dec, (256, 1, 8))
 
 
 
