@@ -22,9 +22,9 @@ path_clust_images = "C:/xc_real_projects/clusters"
 
 
 
-tstmp = "xxx"
+# tstmp = "xxx"
 
-path_save = os.path.join(path_features, 'features_20250305_132007.npz')
+path_save = os.path.join(path_features, 'features_20250305_160403.npz')
 
 
 data = np.load(file = path_save)
@@ -76,18 +76,36 @@ feature_mat_scaled = scaler.transform(feature_mat_red)
 
 
 
-# clustering 
-clu = AgglomerativeClustering(n_clusters=400, metric='euclidean', linkage='complete')
-cluster_ids = clu.fit_predict(feature_mat_scaled)
-# cluster_ids.shape
-pd.Series(cluster_ids).value_counts()
+# # clustering 
+# clu = AgglomerativeClustering(n_clusters=400, metric='euclidean', linkage='complete')
+# cluster_ids = clu.fit_predict(feature_mat_scaled)
+# # cluster_ids.shape
+# pd.Series(cluster_ids).value_counts()
 
+
+
+
+# for eps_i in np.arange(1,50, 5):
+for eps_i in np.arange(20,28, 1):
+    print("-----------")
+    print(">> eps_i", eps_i)
+    clu = DBSCAN(eps= eps_i, min_samples=8, metric='euclidean') # eps 10.5 11.0 good min_samples=10
+    cluster_ids = clu.fit_predict(feature_mat_scaled)
+    cluster_ids = cluster_ids[cluster_ids != -1]
+    pd.Series(cluster_ids).value_counts()[0:10]
+    print("")
+  
+
+clu = DBSCAN(eps= 18.5, min_samples=5, metric='euclidean') # eps 10.5 11.0 good min_samples=10
+cluster_ids = clu.fit_predict(feature_mat_scaled)
+cluster_ids.shape
+pd.Series(cluster_ids).value_counts()[0:20]
 
 
 
 
 # select only large enough clusters 
-sel0 = pd.Series(cluster_ids).value_counts() > 20
+sel0 = pd.Series(cluster_ids).value_counts() > 4
 sel1 = pd.Series(cluster_ids).value_counts() < 500
 sel = np.logical_and(sel0, sel1)
 
@@ -114,7 +132,7 @@ for i,r in df.iterrows():
     # print(r)
     if r['cluster_id'] == -1:
         continue
-    if r['cluster_id'] == 13:
+    if r['cluster_id'] == 0:
         continue
     print(r['cluster_id'])
     path_cli =  os.path.join(path_clust_images, str(r['cluster_id']))
@@ -138,24 +156,6 @@ for i,r in df.iterrows():
 
 
 
-# # for eps_i in np.arange(1,50, 5):
-# for eps_i in np.arange(17,20, 0.5):
-#     print("-----------")
-#     print(">> eps_i", eps_i)
-#     clu = DBSCAN(eps= eps_i, min_samples=8, metric='euclidean') # eps 10.5 11.0 good min_samples=10
-#     cluster_ids = clu.fit_predict(feat_temp)
-#     cluster_ids = cluster_ids[cluster_ids != -1]
-#     pd.Series(cluster_ids).value_counts()[0:10]
-#     print("")
-#     print("")
-#     print("")
-
-
-# clu = DBSCAN(eps= 18.5, min_samples=8, metric='euclidean') # eps 10.5 11.0 good min_samples=10
-# cluster_ids = clu.fit_predict(feature_mat_scaled)
-# cluster_ids.shape
-# pd.Series(cluster_ids).value_counts()[0:20]
-
 
 
 
@@ -165,14 +165,16 @@ from sklearn.manifold import Isomap, TSNE
 X = feature_mat_scaled
 X.shape
 
-embedding = Isomap(n_neighbors=10, n_components=2, metric = "l1")
-embedding.fit(X[:3000])
-X_trans = embedding.transform(X[:10000])
-X_trans.shape
+# embedding = Isomap(n_neighbors=10, n_components=2, metric = "l1")
+# embedding.fit(X[:3000])
+# X_trans = embedding.transform(X[:10000])
+# X_trans.shape
 
 # 30
 embedding = TSNE(n_components=2, perplexity=100.0, metric='l1')
 X_trans = embedding.fit_transform(X[:5000])
+fi_trans = finle_name_arr[:5000]
+
 
 fig00 = px.scatter(
     x = X_trans[:,0],
@@ -180,3 +182,11 @@ fig00 = px.scatter(
     )
 
 fig00.show()
+
+
+
+X_trans.shape
+
+fi_trans.shape
+
+

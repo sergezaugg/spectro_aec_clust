@@ -21,8 +21,8 @@ path_models = "C:/xc_real_projects/models"
 path_features = "C:/xc_real_projects/features"
 
 
-tstmp = "20250305_132007"
-epotag = '_epo_5'
+tstmp = "20250305_160403"
+epotag = '_epo_3'
 path_enc = 'encoder_model_' + tstmp + epotag + '.pth'
 path_dec = 'decoder_model_' + tstmp + epotag + '.pth'
 path_par = 'params_model_'  + tstmp + epotag + '.json'
@@ -58,7 +58,7 @@ for i, (data, _, fi) in enumerate(train_loader, 0):
     feat_li.append(encoded)
     imfiles.append(fi)
     print(len(imfiles))
-    if i > 100:
+    if i > 200:
         break
 
 # transform lists to array 

@@ -38,13 +38,8 @@ class SpectroImageDataset(Dataset):
 
     def __getitem__(self, index):     
         img = Image.open( os.path.join(self.imgpath,  self.all_img_files[index] ))
-        # img_augm = dataaugm(img)
-        # img_augm = img_augm.resize((128, 128))
         x_orig = pil_to_tensor(img).to(torch.float32) / 255.0
         x_augm = dataaugm(x_orig)
-        # x_orig = dataaugm(x_orig)
-        # x_augm = x_augm.resize((128, 128))
-        # x_augm = pil_to_tensor(img_augm).to(torch.float32) / 255.0
         y = self.all_img_files[index]
         return (x_orig, x_augm, y)
     
