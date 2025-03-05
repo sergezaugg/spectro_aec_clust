@@ -12,6 +12,8 @@ from plotly.subplots import make_subplots
 
 imgpath_train = "C:/xc_real_projects/da_examples"
 
+from torchvision.transforms import v2
+
 #----------------------
 # define data loader 
 train_dataset = SpectroImageDataset(imgpath_train)
@@ -22,7 +24,7 @@ for i, (da_orig, data, fi) in enumerate(train_loader, 0):
     print(data.shape)
     print(da_orig.shape)
 
-# assess data  augmentation 
+# assess data augmentation 
 for ii in np.random.randint(data.shape[0], size = 16):
     print(ii)
     img_orig = da_orig[ii].cpu().detach().numpy()

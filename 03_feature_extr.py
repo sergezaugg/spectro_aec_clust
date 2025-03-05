@@ -6,9 +6,7 @@
 import numpy as np
 import pandas as pd
 import torch
-# import plotly.express as px
 import os 
-# from PIL import Image
 from custom_models import Encoder, Decoder, SpectroImageDataset
 import pickle
 
@@ -23,7 +21,7 @@ path_models = "C:/xc_real_projects/models"
 path_features = "C:/xc_real_projects/features"
 
 
-tstmp = "20250304_182800"
+tstmp = "20250305_132007"
 epotag = '_epo_5'
 path_enc = 'encoder_model_' + tstmp + epotag + '.pth'
 path_dec = 'decoder_model_' + tstmp + epotag + '.pth'

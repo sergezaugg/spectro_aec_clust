@@ -20,9 +20,11 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 path_clust_images = "C:/xc_real_projects/clusters"
 
 
-tstmp = "20250304_182800"
 
-path_save = os.path.join(path_features, 'features_' + tstmp + '.npz')
+
+tstmp = "xxx"
+
+path_save = os.path.join(path_features, 'features_20250305_132007.npz')
 
 
 data = np.load(file = path_save)

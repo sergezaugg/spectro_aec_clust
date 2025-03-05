@@ -16,13 +16,16 @@ import plotly.graph_objects as go
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-imgpath =   "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
+# imgpath = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
+imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
+
 
 model_path = "C:/xc_real_projects/models"
 
 
 
-tstmp = "20250304_182800"
+# tstmp = "20250304_182800"
+tstmp = "20250305_132007"
 epotag = '_epo_5'
 path_enc = 'encoder_model_' + tstmp + epotag + '.pth'
 path_dec = 'decoder_model_' + tstmp + epotag + '.pth'

@@ -5,17 +5,10 @@
 
 import torch
 import numpy as np
-from torchsummary import summary
 import torch.nn as nn
-import torch
 from torch.utils.data import Dataset
-import os 
 from torchvision.transforms.functional import pil_to_tensor
 from PIL import Image
-import torch
-import numpy as np
-import torch.nn as nn
-from torch.utils.data import Dataset
 import os 
 from torchsummary import summary
 import torchvision.transforms.v2 as transforms
@@ -23,23 +16,18 @@ import torchvision.transforms.v2 as transforms
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-
-
 transforms.RandomApply(torch.nn.ModuleList([transforms.ColorJitter(),]), p=0.3)
-
-
 
 dataaugm = transforms.Compose([
     transforms.RandomAffine(degrees=(-4.0, 4.0)),
-    transforms.RandomResizedCrop(size = (128, 128) , scale = (0.94, 1.05)), 
+    transforms.RandomResizedCrop(size = (128, 128) , scale = (0.93, 1.06)), 
     transforms.RandomAdjustSharpness(sharpness_factor = 3.0, p=0.5),
     transforms.RandomAdjustSharpness(sharpness_factor = 0.1, p=0.5),
     transforms.ColorJitter(brightness = 0.4 , contrast = 0.5, saturation = 0.9),
+    transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.15, clip=True),]), p=0.25),
     transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.10, clip=True),]), p=0.25),
-    transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.05, clip=True),]), p=0.25),
-    # hmmm ??? 
+    transforms.RandomErasing(p = 0.5, scale = (0.02, 0.10), ratio = (0.5, 2.0), value = 0)
     # transforms.GaussianBlur(kernel_size = 5, sigma=(0.001, 1.0)),
-    # transforms.GaussianNoise(mean = 0.0, sigma = 0.05, clip=True),
     ])
 
 class SpectroImageDataset(Dataset):
@@ -54,6 +42,7 @@ class SpectroImageDataset(Dataset):
         # img_augm = img_augm.resize((128, 128))
         x_orig = pil_to_tensor(img).to(torch.float32) / 255.0
         x_augm = dataaugm(x_orig)
+        # x_orig = dataaugm(x_orig)
         # x_augm = x_augm.resize((128, 128))
         # x_augm = pil_to_tensor(img_augm).to(torch.float32) / 255.0
         y = self.all_img_files[index]
