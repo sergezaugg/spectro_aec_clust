@@ -7,14 +7,11 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import os 
-# import shutil
 from sklearn.cluster import DBSCAN, AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
-# import pickle
-from sklearn.manifold import Isomap, TSNE
+from sklearn.manifold import Isomap
 import umap.umap_ as umap
 from PIL import Image
-
 
 
 path_features = "C:/xc_real_projects/features"
@@ -24,6 +21,15 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 path_clust_images = "C:/xc_real_projects/clusters"
 
 path_save = os.path.join(path_features, 'features_20250306_184203.npz')
+
+
+#-------------------------
+# parame Reduce dimensionality
+n_dims_red = 16 # 16
+n_neighbors = 50 # 10
+
+
+
 
 
 
@@ -36,8 +42,8 @@ feat    = data['feat']
 imfiles = data['imfiles']
 feat.shape
 imfiles.shape
-feat = feat[0:20000,:]
-imfiles = imfiles[0:20000]
+feat = feat[0:30000,:]
+imfiles = imfiles[0:30000]
 feat.shape
 imfiles.shape
 
@@ -91,8 +97,6 @@ if False:
 
 
 
-
-
 #-------------------------
 # (x) standardize 1
 #-------------------------
@@ -110,16 +114,14 @@ feature_mat_scaled_1 = scaler.transform(feature_mat_red)
 #-------------------------
 # (x) Reduce dimensionality
 #-------------------------
-
-n_dims_red = 32
-
-  
 # reducer = Isomap(n_neighbors=10, n_components=n_dims_red, metric = "euclidean")
-reducer = umap.UMAP(n_neighbors=10, n_components=n_dims_red, metric='euclidean')
+reducer = umap.UMAP(n_neighbors=n_neighbors, n_components=n_dims_red, metric='euclidean')
 
 reducer.fit(feature_mat_scaled_1[0:4000])
 X_trans = reducer.transform(feature_mat_scaled_1)
 X_trans.shape
+
+
 
 
 #-------------------------
@@ -144,13 +146,8 @@ fig01.show()
 # (x) Clustering
 #-------------------------
 
-
-# clu = DBSCAN(eps = 0.55, min_samples=10, metric='euclidean') 
-# cluster_ids = clu.fit_predict(feature_mat_scaled_2)
-# pd.Series(cluster_ids).value_counts()[0:20]
-
 # for eps_i in np.arange(0.5,30, 0.5):
-for eps_i in np.arange(0.02, 0.6, 0.04):
+for eps_i in np.arange(0.02, 1.6, 0.04):
     print("-----------")
     print(">> eps_i", eps_i)
     clu = DBSCAN(eps = eps_i, min_samples=10, metric='euclidean') 
@@ -158,8 +155,8 @@ for eps_i in np.arange(0.02, 0.6, 0.04):
     pd.Series(cluster_ids).value_counts()[0:10]
  
     # select only large enough clusters 
-    sel0 = pd.Series(cluster_ids).value_counts() > 5
-    sel1 = pd.Series(cluster_ids).value_counts() < 500
+    sel0 = pd.Series(cluster_ids).value_counts() > 10
+    sel1 = pd.Series(cluster_ids).value_counts() < 300
     sel = np.logical_and(sel0, sel1)
 
     sel2 = pd.Series(cluster_ids).value_counts().loc[sel].index
@@ -196,7 +193,12 @@ for eps_i in np.arange(0.02, 0.6, 0.04):
             imall.paste(im, ( horiz_counter, vert_counter))
             horiz_counter = horiz_counter + 128 + gap     
         # imall.show(
-        imall.save(os.path.join(path_clust_images,    'n_dims_red_' + "{:1.0f}".format(n_dims_red)  + 'clusters_eps_' +   "{:5.4f}".format(eps_i) + ".png"))
+
+        n_neighbors
+
+        finam = 'neigh_' + "{:1.0f}".format(n_neighbors)  + '_dims_' + "{:1.0f}".format(n_dims_red)  + '_eps_' +   "{:5.4f}".format(eps_i) + ".png"
+
+        imall.save(os.path.join(path_clust_images,  finam  ))
 
     except:
         print("fuck you all")
