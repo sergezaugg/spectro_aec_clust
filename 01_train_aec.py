@@ -51,7 +51,7 @@ if True:
         'e': {
             'n_ch_in' : 1,
             'ch' : [64, 128, 256, 512],
-            'po' : [(2, 2), (4, 2), (4, 2), (4, 2)]
+            'po' : [(4, 2), (4, 2), (4, 2), (2, 2)]
             },
         'd': {
             'n_ch_out' : 1,
@@ -95,7 +95,7 @@ optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters(
 _ = model_enc.train()
 _ = model_dec.train()
 
-n_epochs = 3
+n_epochs = 5
 
 for epoch in range(n_epochs):
     print(f"Epoch: {epoch + 1}/{n_epochs}")

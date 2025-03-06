@@ -21,8 +21,8 @@ path_models = "C:/xc_real_projects/models"
 path_features = "C:/xc_real_projects/features"
 
 
-tstmp = "20250306_104526"
-epotag = '_epo_3'
+tstmp = "20250306_184203"
+epotag = '_epo_5'
 path_enc = 'encoder_model_' + tstmp + epotag + '.pth'
 path_dec = 'decoder_model_' + tstmp + epotag + '.pth'
 path_par = 'params_model_'  + tstmp + epotag + '.json'

@@ -7,10 +7,10 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import os 
-import shutil
+# import shutil
 from sklearn.cluster import DBSCAN, AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
-import pickle
+# import pickle
 from sklearn.manifold import Isomap, TSNE
 import umap.umap_ as umap
 from PIL import Image
@@ -23,7 +23,7 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 
 path_clust_images = "C:/xc_real_projects/clusters"
 
-path_save = os.path.join(path_features, 'features_20250306_104526.npz')
+path_save = os.path.join(path_features, 'features_20250306_184203.npz')
 
 
 
@@ -47,8 +47,10 @@ imfiles.shape
 #-------------------------
 
 # take a pooling function over time to get classic feature vector 
-feature_mat = feat.max(2)
+feature_mat = np.concatenate([feat.max(2),  feat.mean(2) ], axis = 1)
 # feat_pooled = feat.mean(2)
+
+feature_mat.shape
 
 # select valid features 
 feature_mat.std(0).shape
@@ -108,11 +110,14 @@ feature_mat_scaled_1 = scaler.transform(feature_mat_red)
 #-------------------------
 # (x) Reduce dimensionality
 #-------------------------
-  
-# reducer = Isomap(n_neighbors=10, n_components=32, metric = "euclidean")
-reducer = umap.UMAP(n_neighbors=10, n_components=16, metric='euclidean')
 
-reducer.fit(feature_mat_scaled_1[0:3000])
+n_dims_red = 32
+
+  
+# reducer = Isomap(n_neighbors=10, n_components=n_dims_red, metric = "euclidean")
+reducer = umap.UMAP(n_neighbors=10, n_components=n_dims_red, metric='euclidean')
+
+reducer.fit(feature_mat_scaled_1[0:4000])
 X_trans = reducer.transform(feature_mat_scaled_1)
 X_trans.shape
 
@@ -190,7 +195,8 @@ for eps_i in np.arange(0.02, 0.6, 0.04):
                 current_id = r['cluster_id']
             imall.paste(im, ( horiz_counter, vert_counter))
             horiz_counter = horiz_counter + 128 + gap     
-        imall.show()
+        # imall.show(
+        imall.save(os.path.join(path_clust_images,    'n_dims_red_' + "{:1.0f}".format(n_dims_red)  + 'clusters_eps_' +   "{:5.4f}".format(eps_i) + ".png"))
 
     except:
         print("fuck you all")
@@ -200,25 +206,15 @@ for eps_i in np.arange(0.02, 0.6, 0.04):
 
 
 
-    # path_cli =  os.path.join(path_clust_images, str(r['cluster_id']))
+# path_cli =  os.path.join(path_clust_images, str(r['cluster_id']))
 
-  # if not os.path.exists(path_cli):
-    #     os.mkdir(path_cli)
-    # dst = os.path.join(path_cli, r['newname'])
-    # shutil.copy(src, dst)
-
-
-
-
-
-
+# if not os.path.exists(path_cli):
+#     os.mkdir(path_cli)
+# dst = os.path.join(path_cli, r['newname'])
+# shutil.copy(src, dst)
 
 # embedding = TSNE(n_components=2, perplexity=100.0, metric='l1')
 # X_trans = embedding.fit_transform(X[:5000])
-
-
-
-
 
 # # clustering 
 # clu = AgglomerativeClustering(n_clusters=500, metric='euclidean', linkage='average')
