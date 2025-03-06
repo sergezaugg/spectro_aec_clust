@@ -21,14 +21,19 @@ transforms.RandomApply(torch.nn.ModuleList([transforms.ColorJitter(),]), p=0.3)
 dataaugm = transforms.Compose([
     transforms.RandomAffine(degrees=(-4.0, 4.0)),
     transforms.RandomResizedCrop(size = (128, 128) , scale = (0.93, 1.06)), 
-    transforms.RandomAdjustSharpness(sharpness_factor = 3.0, p=0.5),
+    transforms.RandomAdjustSharpness(sharpness_factor = 2.0, p=0.5),
     transforms.RandomAdjustSharpness(sharpness_factor = 0.1, p=0.5),
-    transforms.ColorJitter(brightness = 0.4 , contrast = 0.5, saturation = 0.9),
-    transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.15, clip=True),]), p=0.25),
-    transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.10, clip=True),]), p=0.25),
-    transforms.RandomErasing(p = 0.5, scale = (0.02, 0.10), ratio = (0.5, 2.0), value = 0)
-    # transforms.GaussianBlur(kernel_size = 5, sigma=(0.001, 1.0)),
+    transforms.ColorJitter(brightness = 0.3 , contrast = 0.5, saturation = 0.9),
+    transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.12, clip=True),]), p=0.25),
+    transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.08, clip=True),]), p=0.25),
+    transforms.RandomErasing(p = 0.5, scale = (0.02, 0.06), ratio = (0.5, 2.0), value = 0)
     ])
+
+blurme = transforms.Compose([
+    transforms.GaussianBlur(kernel_size = 7, sigma=(0.7, 0.9)),
+    ])
+
+
 
 class SpectroImageDataset(Dataset):
 
@@ -38,8 +43,16 @@ class SpectroImageDataset(Dataset):
 
     def __getitem__(self, index):     
         img = Image.open( os.path.join(self.imgpath,  self.all_img_files[index] ))
+
         x_orig = pil_to_tensor(img).to(torch.float32) / 255.0
         x_augm = dataaugm(x_orig)
+
+        # simple denoising with threshold 
+        # thld = x_orig.quantile(q=0.95)
+        x_orig = blurme(x_orig)
+        thld = 0.30
+        x_orig[x_orig < thld] = 0.0
+
         y = self.all_img_files[index]
         return (x_orig, x_augm, y)
     

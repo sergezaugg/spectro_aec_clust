@@ -22,7 +22,7 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 model_path = "C:/xc_real_projects/models"
 
 
-tstmp = "20250305_160403"
+tstmp = "20250306_104526"
 epotag = '_epo_3'
 path_enc = 'encoder_model_' + tstmp + epotag + '.pth'
 path_dec = 'decoder_model_' + tstmp + epotag + '.pth'
