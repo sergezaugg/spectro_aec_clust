@@ -11,6 +11,8 @@ import shutil
 from sklearn.cluster import DBSCAN, AgglomerativeClustering
 from sklearn.preprocessing import StandardScaler
 import pickle
+from sklearn.manifold import Isomap, TSNE
+import umap.umap_ as umap
 
 
 path_features = "C:/xc_real_projects/features"
@@ -19,51 +21,38 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 
 path_clust_images = "C:/xc_real_projects/clusters"
 
-
-
-
-
 path_save = os.path.join(path_features, 'features_20250306_104526.npz')
 
 
-data = np.load(file = path_save)
 
+#-------------------------
+# (x) Load AEC features 
+#-------------------------
+
+data = np.load(file = path_save)
 feat    = data['feat']
 imfiles = data['imfiles']
-
 feat.shape
 imfiles.shape
 
 
 
+
+#-------------------------
+# (x)
+#-------------------------
+
 # take a pooling function over time to get classic feature vector 
-feat_max = feat.max(2)
-feat_mea = feat.mean(2)
-feat_max.shape
-feat_mea.shape
-
-
-# rename
-sel_subset = 20000
-
-
-# feature_mat = feat_max[0:sel_subset]
-feature_mat = feat_mea[0:sel_subset]
-
-
-finle_name_arr = imfiles[0:sel_subset]
-feature_mat.shape
-
-
+feature_mat = feat.max(2)
+# feat_pooled = feat.mean(2)
 
 # select valid features 
 feature_mat.std(0).shape
 sel_feats = feature_mat.std(0) != 0.000 # or feature_mat.std(0) != 0.0
-sel_feats.sum()
 feature_mat_red = feature_mat[:,sel_feats]
 feature_mat_red.shape
 
-# log transform 
+
 # check features's univariate distribution
 if False: 
     XX = feature_mat_red[0:2000, :]
@@ -73,7 +62,6 @@ if False:
         xx = XX[:,ii]
         figa = px.scatter(x = xx, y = jit)
         figa.show()
-
 
 if False: 
 # look for correlations 
@@ -99,62 +87,67 @@ if False:
 
 
 
+#-------------------------
+# (x) standardize 1
+#-------------------------
 
-# standardize 
 scaler = StandardScaler()
 scaler.fit(feature_mat_red)
-feature_mat_scaled = scaler.transform(feature_mat_red)
-# feature_mat_scaled.shape
-# feature_mat_scaled.mean(0).shape
-# feature_mat_scaled.mean(0)
-# feature_mat_scaled.std(0)
+feature_mat_scaled_1 = scaler.transform(feature_mat_red)
+# feature_mat_scaled_1.mean(0)
+# feature_mat_scaled_1.std(0)
 
 
 
 
-from sklearn.manifold import Isomap, TSNE
 
+#-------------------------
+# (x) Reduce dimensionality
+#-------------------------
+  
+reducer = Isomap(n_neighbors=10, n_components=32, metric = "euclidean")
+# reducer = umap.UMAP(n_neighbors=10, n_components=32, metric='euclidean')
 
-feature_mat_scaled.shape
-
-embedding = Isomap(n_neighbors=10, n_components=16, metric = "euclidean")
-
-embedding.fit(feature_mat_scaled[0:4000])
-
-X_trans = embedding.transform(feature_mat_scaled)
-
+reducer.fit(feature_mat_scaled_1[0:3000])
+X_trans = reducer.transform(feature_mat_scaled_1)
 X_trans.shape
 
 
+#-------------------------
+# (x) standardize 2
+#-------------------------
+
+scaler = StandardScaler()
+scaler.fit(X_trans)
+feature_mat_scaled_2 = scaler.transform(X_trans)
+feature_mat_scaled_2.shape
+
+fig01 = px.scatter(
+    x = feature_mat_scaled_2[:,0],
+    y = feature_mat_scaled_2[:,1]
+    )
+fig01.show()
 
 
 
 
+#-------------------------
+# (x) Clustering
+#-------------------------
 
-
-# # clustering 
-# clu = AgglomerativeClustering(n_clusters=1000, metric='euclidean', linkage='average')
-# # cluster_ids = clu.fit_predict(feature_mat_scaled)
-# cluster_ids = clu.fit_predict(X_trans)
-# # cluster_ids.shape
-# pd.Series(cluster_ids).value_counts()
-
-
-
-
-for eps_i in np.arange(1,20, 1):
-# for eps_i in np.arange(0.5,10, 1):
+for eps_i in np.arange(0.5,30, 2):
+# for eps_i in np.arange(0.05,2.30, 0.05):
     print("-----------")
     print(">> eps_i", eps_i)
-    clu = DBSCAN(eps= eps_i, min_samples=5, metric='euclidean') # eps 10.5 11.0 good min_samples=10
-    cluster_ids = clu.fit_predict(X_trans)
+    clu = DBSCAN(eps = eps_i, min_samples=10, metric='euclidean') # eps 10.5 11.0 good min_samples=10
+    cluster_ids = clu.fit_predict(feature_mat_scaled_2)
     cluster_ids = cluster_ids[cluster_ids != -1]
     pd.Series(cluster_ids).value_counts()[0:10]
     print("")
   
 
-clu = DBSCAN(eps = 5, min_samples=5, metric='euclidean') # eps 10.5 11.0 good min_samples=10
-cluster_ids = clu.fit_predict(X_trans)
+clu = DBSCAN(eps = 7.0, min_samples=10, metric='euclidean') # eps 10.5 11.0 good min_samples=10
+cluster_ids = clu.fit_predict(feature_mat_scaled_2)
 cluster_ids.shape
 pd.Series(cluster_ids).value_counts()[0:20]
 
@@ -162,7 +155,7 @@ pd.Series(cluster_ids).value_counts()[0:20]
 
 
 # select only large enough clusters 
-sel0 = pd.Series(cluster_ids).value_counts() > 8
+sel0 = pd.Series(cluster_ids).value_counts() > 5
 sel1 = pd.Series(cluster_ids).value_counts() < 500
 sel = np.logical_and(sel0, sel1)
 
@@ -170,8 +163,8 @@ sel2 = pd.Series(cluster_ids).value_counts().loc[sel].index
 cluster_ids.shape
 sel.shape
 
-cluster_ids_sel = cluster_ids[ pd.Series(cluster_ids).isin(sel2)]
-finle_name_arr_sel = finle_name_arr[ pd.Series(cluster_ids).isin(sel2)]
+cluster_ids_sel    = cluster_ids[pd.Series(cluster_ids).isin(sel2)]
+finle_name_arr_sel = imfiles[pd.Series(cluster_ids).isin(sel2)]
 cluster_ids_sel.shape
 finle_name_arr_sel.shape
 
@@ -184,20 +177,27 @@ df = pd.DataFrame({
     })
 df['newname'] = df['cluster_id'].astype(str).str.cat(others=df['file_name'], sep='_')
 
+df = df.sort_values(by = 'cluster_id')
 
+
+from PIL import Image
+
+# MAKE NICE MOSAIK PLOT 
+# w ,h 
+imall = Image.new('L', (6000, 6000), '#55ff00')
+gap = 25
+current_id = df['cluster_id'].min()
+vert_counter = gap
+horiz_counter = gap
 for i,r in df.iterrows():
-    # print(r)
-    # if r['cluster_id'] == -1:
-    #     continue
-    # if r['cluster_id'] == 0:
-    #     continue
-    print(r['cluster_id'])
-    path_cli =  os.path.join(path_clust_images, str(r['cluster_id']))
-    if not os.path.exists(path_cli):
-        os.mkdir(path_cli)
-    src = os.path.join(imgpath, r['file_name'])
-    dst = os.path.join(path_cli, r['newname'])
-    shutil.copy(src, dst)
+    im = Image.open(os.path.join(imgpath, r['file_name']))
+    if r['cluster_id'] > current_id: 
+        vert_counter = vert_counter + 128 + gap
+        horiz_counter = 0 + gap
+        current_id = r['cluster_id']
+    imall.paste(im, ( horiz_counter, vert_counter))
+    horiz_counter = horiz_counter + 128 + gap     
+imall.show()
 
 
 
@@ -205,6 +205,12 @@ for i,r in df.iterrows():
 
 
 
+    # path_cli =  os.path.join(path_clust_images, str(r['cluster_id']))
+
+  # if not os.path.exists(path_cli):
+    #     os.mkdir(path_cli)
+    # dst = os.path.join(path_cli, r['newname'])
+    # shutil.copy(src, dst)
 
 
 
@@ -212,38 +218,20 @@ for i,r in df.iterrows():
 
 
 
-
-
-
-
-
-# from sklearn.manifold import Isomap, TSNE
-
-# X = feature_mat_scaled
-# X.shape
-
-# # embedding = Isomap(n_neighbors=10, n_components=2, metric = "l1")
-# # embedding.fit(X[:3000])
-# # X_trans = embedding.transform(X[:10000])
-# # X_trans.shape
-
-# # 30
 # embedding = TSNE(n_components=2, perplexity=100.0, metric='l1')
 # X_trans = embedding.fit_transform(X[:5000])
-# fi_trans = finle_name_arr[:5000]
-
-
-# fig00 = px.scatter(
-#     x = X_trans[:,0],
-#     y = X_trans[:,1]
-#     )
-
-# fig00.show()
 
 
 
-# X_trans.shape
 
-# fi_trans.shape
+
+# # clustering 
+# clu = AgglomerativeClustering(n_clusters=500, metric='euclidean', linkage='average')
+# # cluster_ids = clu.fit_predict(feature_mat_scaled)
+# # cluster_ids.shape
+# pd.Series(cluster_ids).value_counts()
+
+
+
 
 
