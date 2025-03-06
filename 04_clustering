@@ -13,6 +13,8 @@ from sklearn.preprocessing import StandardScaler
 import pickle
 from sklearn.manifold import Isomap, TSNE
 import umap.umap_ as umap
+from PIL import Image
+
 
 
 path_features = "C:/xc_real_projects/features"
@@ -34,8 +36,10 @@ feat    = data['feat']
 imfiles = data['imfiles']
 feat.shape
 imfiles.shape
-
-
+feat = feat[0:20000,:]
+imfiles = imfiles[0:20000]
+feat.shape
+imfiles.shape
 
 
 #-------------------------
@@ -105,8 +109,8 @@ feature_mat_scaled_1 = scaler.transform(feature_mat_red)
 # (x) Reduce dimensionality
 #-------------------------
   
-reducer = Isomap(n_neighbors=10, n_components=32, metric = "euclidean")
-# reducer = umap.UMAP(n_neighbors=10, n_components=32, metric='euclidean')
+# reducer = Isomap(n_neighbors=10, n_components=32, metric = "euclidean")
+reducer = umap.UMAP(n_neighbors=10, n_components=16, metric='euclidean')
 
 reducer.fit(feature_mat_scaled_1[0:3000])
 X_trans = reducer.transform(feature_mat_scaled_1)
@@ -135,70 +139,61 @@ fig01.show()
 # (x) Clustering
 #-------------------------
 
-for eps_i in np.arange(0.5,30, 2):
-# for eps_i in np.arange(0.05,2.30, 0.05):
+
+# clu = DBSCAN(eps = 0.55, min_samples=10, metric='euclidean') 
+# cluster_ids = clu.fit_predict(feature_mat_scaled_2)
+# pd.Series(cluster_ids).value_counts()[0:20]
+
+# for eps_i in np.arange(0.5,30, 0.5):
+for eps_i in np.arange(0.02, 0.6, 0.04):
     print("-----------")
     print(">> eps_i", eps_i)
-    clu = DBSCAN(eps = eps_i, min_samples=10, metric='euclidean') # eps 10.5 11.0 good min_samples=10
+    clu = DBSCAN(eps = eps_i, min_samples=10, metric='euclidean') 
     cluster_ids = clu.fit_predict(feature_mat_scaled_2)
-    cluster_ids = cluster_ids[cluster_ids != -1]
     pd.Series(cluster_ids).value_counts()[0:10]
-    print("")
-  
+ 
+    # select only large enough clusters 
+    sel0 = pd.Series(cluster_ids).value_counts() > 5
+    sel1 = pd.Series(cluster_ids).value_counts() < 500
+    sel = np.logical_and(sel0, sel1)
 
-clu = DBSCAN(eps = 7.0, min_samples=10, metric='euclidean') # eps 10.5 11.0 good min_samples=10
-cluster_ids = clu.fit_predict(feature_mat_scaled_2)
-cluster_ids.shape
-pd.Series(cluster_ids).value_counts()[0:20]
+    sel2 = pd.Series(cluster_ids).value_counts().loc[sel].index
+    cluster_ids.shape
+    sel.shape
 
+    try:
 
+        cluster_ids_sel    = cluster_ids[pd.Series(cluster_ids).isin(sel2)]
+        finle_name_arr_sel = imfiles[pd.Series(cluster_ids).isin(sel2)]
+        cluster_ids_sel.shape
+        finle_name_arr_sel.shape
 
+        # prepare df 
+        df = pd.DataFrame({
+            'file_name' :finle_name_arr_sel,
+            'cluster_id' :cluster_ids_sel,
+            })
+        df['newname'] = df['cluster_id'].astype(str).str.cat(others=df['file_name'], sep='_')
+        df = df.sort_values(by = 'cluster_id')
 
-# select only large enough clusters 
-sel0 = pd.Series(cluster_ids).value_counts() > 5
-sel1 = pd.Series(cluster_ids).value_counts() < 500
-sel = np.logical_and(sel0, sel1)
+        # MAKE NICE MOSAIK PLOT 
+        imall = Image.new('L', (12000, 8000), '#55ff00')
+        gap = 25
+        current_id = df['cluster_id'].min()
+        vert_counter = gap
+        horiz_counter = gap
+        for i,r in df.iterrows():
+            im = Image.open(os.path.join(imgpath, r['file_name']))
+            if r['cluster_id'] > current_id: 
+                vert_counter = vert_counter + 128 + gap
+                horiz_counter = 0 + gap
+                current_id = r['cluster_id']
+            imall.paste(im, ( horiz_counter, vert_counter))
+            horiz_counter = horiz_counter + 128 + gap     
+        imall.show()
 
-sel2 = pd.Series(cluster_ids).value_counts().loc[sel].index
-cluster_ids.shape
-sel.shape
-
-cluster_ids_sel    = cluster_ids[pd.Series(cluster_ids).isin(sel2)]
-finle_name_arr_sel = imfiles[pd.Series(cluster_ids).isin(sel2)]
-cluster_ids_sel.shape
-finle_name_arr_sel.shape
-
-
-
-# save images by cluster id 
-df = pd.DataFrame({
-    'file_name' :finle_name_arr_sel,
-    'cluster_id' :cluster_ids_sel,
-    })
-df['newname'] = df['cluster_id'].astype(str).str.cat(others=df['file_name'], sep='_')
-
-df = df.sort_values(by = 'cluster_id')
-
-
-from PIL import Image
-
-# MAKE NICE MOSAIK PLOT 
-# w ,h 
-imall = Image.new('L', (6000, 6000), '#55ff00')
-gap = 25
-current_id = df['cluster_id'].min()
-vert_counter = gap
-horiz_counter = gap
-for i,r in df.iterrows():
-    im = Image.open(os.path.join(imgpath, r['file_name']))
-    if r['cluster_id'] > current_id: 
-        vert_counter = vert_counter + 128 + gap
-        horiz_counter = 0 + gap
-        current_id = r['cluster_id']
-    imall.paste(im, ( horiz_counter, vert_counter))
-    horiz_counter = horiz_counter + 128 + gap     
-imall.show()
-
+    except:
+        print("fuck you all")
 
 
 
