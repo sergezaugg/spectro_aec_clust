@@ -25,8 +25,10 @@ path_save = os.path.join(path_features, 'features_20250306_184203.npz')
 
 #-------------------------
 # parame Reduce dimensionality
-n_dims_red = 16 # 16
-n_neighbors = 50 # 10
+n_dims_red = 16 # 16 or 32 are ok
+n_neighbors = 10 # between 5-15 seems ok
+eps_search = np.arange(0.02, 0.60, 0.04) # defaults 
+# eps_search = np.arange(0.20, 0.26, 0.02)
 
 
 
@@ -42,8 +44,8 @@ feat    = data['feat']
 imfiles = data['imfiles']
 feat.shape
 imfiles.shape
-feat = feat[0:30000,:]
-imfiles = imfiles[0:30000]
+feat = feat[0:100000,:]
+imfiles = imfiles[0:100000]
 feat.shape
 imfiles.shape
 
@@ -53,9 +55,10 @@ imfiles.shape
 #-------------------------
 
 # take a pooling function over time to get classic feature vector 
-feature_mat = np.concatenate([feat.max(2),  feat.mean(2) ], axis = 1)
-# feat_pooled = feat.mean(2)
-
+# feature_mat = np.concatenate([feat.max(2),  feat.mean(2) ], axis = 1)
+feature_mat = np.concatenate([feat.max(2),  feat.mean(2) , feat.std(2)], axis = 1)
+# feature_mat = feat.max(2)
+# feature_mat = feat.mean(2)
 feature_mat.shape
 
 # select valid features 
@@ -117,7 +120,7 @@ feature_mat_scaled_1 = scaler.transform(feature_mat_red)
 # reducer = Isomap(n_neighbors=10, n_components=n_dims_red, metric = "euclidean")
 reducer = umap.UMAP(n_neighbors=n_neighbors, n_components=n_dims_red, metric='euclidean')
 
-reducer.fit(feature_mat_scaled_1[0:4000])
+reducer.fit(feature_mat_scaled_1[0:5000])
 X_trans = reducer.transform(feature_mat_scaled_1)
 X_trans.shape
 
@@ -133,11 +136,11 @@ scaler.fit(X_trans)
 feature_mat_scaled_2 = scaler.transform(X_trans)
 feature_mat_scaled_2.shape
 
-fig01 = px.scatter(
-    x = feature_mat_scaled_2[:,0],
-    y = feature_mat_scaled_2[:,1]
-    )
-fig01.show()
+# fig01 = px.scatter(
+#     x = feature_mat_scaled_2[:,0],
+#     y = feature_mat_scaled_2[:,1]
+#     )
+# fig01.show()
 
 
 
@@ -146,25 +149,21 @@ fig01.show()
 # (x) Clustering
 #-------------------------
 
-# for eps_i in np.arange(0.5,30, 0.5):
-for eps_i in np.arange(0.02, 1.6, 0.04):
+for eps_i in eps_search:
     print("-----------")
     print(">> eps_i", eps_i)
-    clu = DBSCAN(eps = eps_i, min_samples=10, metric='euclidean') 
+    clu = DBSCAN(eps = eps_i, min_samples=10, metric='euclidean', n_jobs = 4) 
     cluster_ids = clu.fit_predict(feature_mat_scaled_2)
     pd.Series(cluster_ids).value_counts()[0:10]
  
     # select only large enough clusters 
     sel0 = pd.Series(cluster_ids).value_counts() > 10
-    sel1 = pd.Series(cluster_ids).value_counts() < 300
+    sel1 = pd.Series(cluster_ids).value_counts() < 500
     sel = np.logical_and(sel0, sel1)
-
     sel2 = pd.Series(cluster_ids).value_counts().loc[sel].index
     cluster_ids.shape
-    sel.shape
 
     try:
-
         cluster_ids_sel    = cluster_ids[pd.Series(cluster_ids).isin(sel2)]
         finle_name_arr_sel = imfiles[pd.Series(cluster_ids).isin(sel2)]
         cluster_ids_sel.shape
@@ -177,9 +176,10 @@ for eps_i in np.arange(0.02, 1.6, 0.04):
             })
         df['newname'] = df['cluster_id'].astype(str).str.cat(others=df['file_name'], sep='_')
         df = df.sort_values(by = 'cluster_id')
+        df.shape
 
         # MAKE NICE MOSAIK PLOT 
-        imall = Image.new('L', (12000, 8000), '#55ff00')
+        imall = Image.new('L', (20000, 10000), '#55ff00')
         gap = 25
         current_id = df['cluster_id'].min()
         vert_counter = gap
@@ -192,37 +192,19 @@ for eps_i in np.arange(0.02, 1.6, 0.04):
                 current_id = r['cluster_id']
             imall.paste(im, ( horiz_counter, vert_counter))
             horiz_counter = horiz_counter + 128 + gap     
-        # imall.show(
+        # imall.show()
 
-        n_neighbors
-
-        finam = 'neigh_' + "{:1.0f}".format(n_neighbors)  + '_dims_' + "{:1.0f}".format(n_dims_red)  + '_eps_' +   "{:5.4f}".format(eps_i) + ".png"
-
-        imall.save(os.path.join(path_clust_images,  finam  ))
+        finam = 'neigh_' + "{:1.0f}".format(n_neighbors)  + '_dims_' + "{:1.0f}".format(n_dims_red)  + '_eps_' +   "{:5.4f}".format(eps_i) 
+        imall.save(os.path.join(path_clust_images,  finam + ".png" ))
+        df.to_pickle(path = os.path.join(path_clust_images,  finam + ".pkl" )  )
 
     except:
-        print("fuck you all")
+        print("haha")
 
 
 
 
 
-
-# path_cli =  os.path.join(path_clust_images, str(r['cluster_id']))
-
-# if not os.path.exists(path_cli):
-#     os.mkdir(path_cli)
-# dst = os.path.join(path_cli, r['newname'])
-# shutil.copy(src, dst)
-
-# embedding = TSNE(n_components=2, perplexity=100.0, metric='l1')
-# X_trans = embedding.fit_transform(X[:5000])
-
-# # clustering 
-# clu = AgglomerativeClustering(n_clusters=500, metric='euclidean', linkage='average')
-# # cluster_ids = clu.fit_predict(feature_mat_scaled)
-# # cluster_ids.shape
-# pd.Series(cluster_ids).value_counts()
 
 
 

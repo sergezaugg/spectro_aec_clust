@@ -22,8 +22,8 @@ train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=16,  shuffl
 for i, (da_orig, data, fi) in enumerate(train_loader, 0):
     if i > 0:
         break
-    print(data.shape)
     print(da_orig.shape)
+    print(data.shape)
 
 # assess data augmentation 
 for ii in np.random.randint(data.shape[0], size = 16):

@@ -58,8 +58,8 @@ for i, (data, _, fi) in enumerate(train_loader, 0):
     feat_li.append(encoded)
     imfiles.append(fi)
     print(len(imfiles))
-    if i > 100:
-        break
+    # if i > 100:
+    #     break
 
 # transform lists to array 
 feat = np.concatenate(feat_li)

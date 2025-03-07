@@ -26,7 +26,8 @@ dataaugm = transforms.Compose([
     transforms.ColorJitter(brightness = 0.3 , contrast = 0.5, saturation = 0.9),
     transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.12, clip=True),]), p=0.25),
     transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.08, clip=True),]), p=0.25),
-    transforms.RandomErasing(p = 0.5, scale = (0.02, 0.06), ratio = (0.5, 2.0), value = 0)
+    transforms.RandomErasing(p = 0.5, scale = (0.02, 0.06), ratio = (0.5, 2.0), value = 0),
+    # transforms.Resize(size = (128, 128) )
     ])
 
 blurme = transforms.Compose([
