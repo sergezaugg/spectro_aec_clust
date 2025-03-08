@@ -8,7 +8,8 @@ import torch
 import plotly.express as px
 import os 
 from PIL import Image
-from custom_models import Encoder, Decoder, SpectroImageDataset
+from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample
+from custom_models import SpectroImageDataset
 import pickle
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
@@ -22,33 +23,46 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 model_path = "C:/xc_real_projects/models"
 
 
-tstmp = "20250306_184203"
-epotag = '_epo_5'
+# 20250308_112914 not good at all 
+tstmp = "20250308_112914"
+epotag = '_epo_3'
+model_enc = EncoderSimple()
+model_dec = DecoderUpsample()
+
+
 path_enc = 'encoder_model_' + tstmp + epotag + '.pth'
 path_dec = 'decoder_model_' + tstmp + epotag + '.pth'
-path_par = 'params_model_'  + tstmp + epotag + '.json'
 
 
-with open(os.path.join(model_path, path_par), 'rb') as fp:
-    par = pickle.load(fp)
-
-
-model_enc = Encoder(n_ch_in = par['e']['n_ch_in'], 
-                    ch = par['e']['ch'],
-                    po = par['e']['po']
-                    ) 
 model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
 model_enc = model_enc.to(device)
 _ = model_enc.eval()
 
 
-model_dec = Decoder(n_ch_out = par['d']['n_ch_out'], 
-                    ch = par['d']['ch'], 
-                    po = par['d']['po'], 
-                    )
 model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights_only=True))
 model_dec = model_dec.to(device)
 _ = model_dec.eval()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # _ = model_enc.eval()
 # _ = model_dec.eval()

@@ -195,7 +195,7 @@ class EncoderSimple(nn.Module):
 class DecoderTransp(nn.Module):
     def __init__(self) :
         super(DecoderTransp, self).__init__()
-        n_ch_out=3
+        n_ch_out=1
         ch =  [512, 256, 128, 64]
         po =  [(2, 2), (4, 2), (4, 2), (4, 2)]
            
@@ -240,7 +240,7 @@ class DecoderUpsample(nn.Module):
 
     def __init__(self):
         super(DecoderUpsample, self).__init__()
-        n_ch_out=3
+        n_ch_out=1
         ch =  [512, 256, 128, 64]
         po =  [(2, 2), (4, 2), (4, 2), (4, 2)]
     

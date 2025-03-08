@@ -12,7 +12,7 @@ import torch.optim as optim
 import os 
 import datetime
 from custom_models import SpectroImageDataset
-from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample
+from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample, EncoderAvgpool
 # import pickle
 from plotly.subplots import make_subplots
 
@@ -26,7 +26,7 @@ model_path = "C:/xc_real_projects/models"
 
 batch_size = 64
 
-n_epochs = 3
+n_epochs = 30
 
 #----------------------
 # define data loader 
@@ -46,17 +46,35 @@ n_batches
 
 
 
+
+# test set 
+imgpath_test = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
+test_dataset = SpectroImageDataset(imgpath_test)
+test_dataset.__len__()
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
+
+
+
+
 #----------------------
 # define models 
 
 
-model_enc = EncoderSimple()
+# 20250308_112914 not good at all 
+# model_enc = EncoderSimple()
+# model_dec = DecoderUpsample()
+
+# 20250308_125419 not good at all 
+# model_enc = EncoderSimple()
+# model_dec = DecoderTransp()
+
+# 20250308_133155  better 
+model_enc = EncoderAvgpool()
+model_dec = DecoderTransp()
+
+
 model_enc = model_enc.to(device)
 summary(model_enc, (1, 128, 128))
-
-
-# model_dec = DecoderTransp()
-model_dec = DecoderUpsample()
 
 model_dec = model_dec.to(device)
 summary(model_dec, (512, 1, 8))
@@ -65,8 +83,6 @@ summary(model_dec, (512, 1, 8))
 
 
 
-_ = model_enc.train()
-_ = model_dec.train()
 
 
 
@@ -80,13 +96,21 @@ criterion = nn.MSELoss() #nn.BCELoss()
 optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001)
 # optimizer = optim.SGD(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.01, momentum=0.9)
 
+
+
+mse_test_li = []
+mse_trai_li = []
 for epoch in range(n_epochs):
     print(f"Epoch: {epoch + 1}/{n_epochs}")
     # set the encoder and decoder models to training mode
     loss_tra =[]
+        
+    _ = model_enc.train()
+    _ = model_dec.train()
+    trai_perf_li = []
     for btchi, (da_orig, data_augm, fi) in enumerate(train_loader, 0):
-        # if btchi > 5000:
-        #     break
+        if btchi > 100:
+            break
         # print(btchi)
         data_augm = data_augm.to(device)
         da_orig = da_orig.to(device)
@@ -98,6 +122,7 @@ for epoch in range(n_epochs):
         decoded = model_dec(encoded)#.to(device)
         # compute the reconstruction loss 
         loss = criterion(decoded, da_orig)
+        trai_perf_li.append(loss.cpu().detach().numpy().item())
         # compute the gradients
         loss.backward()
         # update the weights
@@ -107,9 +132,57 @@ for epoch in range(n_epochs):
             print('loss', np.round(loss.item(),5), "   --- status: "  + str(btchi) + " out of " + str(n_batches) + " batches")
             print(decoded.cpu().detach().numpy().min().round(3) , decoded.cpu().detach().numpy().max().round(3) )
             print("-")
+    mse_trai_li.append(np.array(trai_perf_li).mean())        
+
+
+    # Testing the model
+    _ = model_enc.eval()
+    _ = model_dec.eval()
+    with torch.no_grad():
+        test_perf_li = []
+        for btchi, (da_orig, data_augm, fi) in enumerate(test_loader, 0):
+            if btchi > 100:
+                break
+             # print(btchi)
+            data_augm = data_augm.to(device)
+            da_orig = da_orig.to(device)
+            # forward 
+            encoded = model_enc(data_augm)#.to(device)
+            # encoded.shape
+            decoded = model_dec(encoded)#.to(device)
+            # compute the reconstruction loss 
+            loss_test = criterion(decoded, da_orig)
+            test_perf_li.append(loss_test.cpu().detach().numpy().item())
+            if btchi % 10 == 0:
+                print('loss', np.round(loss_test.item(),5), "   --- status: "  + str(btchi) + " out of " + str(n_batches) + " batches")
+        mse_test_li.append(np.array(test_perf_li).mean())
+           
 
   
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Save the model
 if True:
     tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
@@ -119,13 +192,6 @@ if True:
 
     model_save_name = "decoder_model"+tstmp+f"_epo_{epoch + 1}" + ".pth"
     torch.save(model_dec.state_dict(), os.path.join(model_path, model_save_name))
-
-    # param_save_name = "params_model"+tstmp+f"_epo_{epoch + 1}" + ".json"
-    # with open(os.path.join(model_path, param_save_name), 'wb') as fp:
-    #     pickle.dump(par, fp)
-
-
-
 
 
 # check reconstruction with examples 
@@ -152,7 +218,7 @@ if True:
         _ = fig.add_trace(px.imshow(img_orig).data[0], row=1, col=1)
         _ = fig.add_trace(px.imshow(img_reco).data[0], row=1, col=2)
         _ = fig.update_layout(autosize=True,height=550, width = 1000)
-        _ = fig.show()
+        fig.show()
 
 
 
