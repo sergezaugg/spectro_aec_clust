@@ -11,8 +11,9 @@ import torch.nn as nn
 import torch.optim as optim
 import os 
 import datetime
-from custom_models import Encoder, Decoder, SpectroImageDataset
-import pickle
+from custom_models import SpectroImageDataset
+from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample
+# import pickle
 from plotly.subplots import make_subplots
 
 
@@ -24,6 +25,8 @@ imgpath_train = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img
 model_path = "C:/xc_real_projects/models"
 
 batch_size = 64
+
+n_epochs = 3
 
 #----------------------
 # define data loader 
@@ -45,40 +48,25 @@ n_batches
 
 #----------------------
 # define models 
-if True:
 
-    par = { 
-        'e': {
-            'n_ch_in' : 1,
-            'ch' : [64, 128, 256, 512],
-            'po' : [(4, 2), (4, 2), (4, 2), (2, 2)]
-            },
-        'd': {
-            'n_ch_out' : 1,
-            'ch' :  [512, 256, 128, 64],
-            'po' : [(2, 2), (4, 2), (4, 2), (4, 2)]
-            }}
 
-    model_enc = Encoder(n_ch_in = par['e']['n_ch_in'], 
-                        ch = par['e']['ch'],
-                        po = par['e']['po']
-                        ) 
+model_enc = EncoderSimple()
+model_enc = model_enc.to(device)
+summary(model_enc, (1, 128, 128))
 
-    model_enc = model_enc.to(device)
-    summary(model_enc, (1, 128, 128))
+
+# model_dec = DecoderTransp()
+model_dec = DecoderUpsample()
+
+model_dec = model_dec.to(device)
+summary(model_dec, (512, 1, 8))
+
+   
 
 
 
-
-    model_dec = Decoder(n_ch_out = par['d']['n_ch_out'], 
-                        ch = par['d']['ch'], 
-                        po = par['d']['po'], 
-                        )
-
-    model_dec = model_dec.to(device)
-    summary(model_dec, (512, 1, 8))
-
-
+_ = model_enc.train()
+_ = model_dec.train()
 
 
 
@@ -91,11 +79,6 @@ if True:
 criterion = nn.MSELoss() #nn.BCELoss()
 optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001)
 # optimizer = optim.SGD(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.01, momentum=0.9)
-
-_ = model_enc.train()
-_ = model_dec.train()
-
-n_epochs = 5
 
 for epoch in range(n_epochs):
     print(f"Epoch: {epoch + 1}/{n_epochs}")
@@ -137,9 +120,9 @@ if True:
     model_save_name = "decoder_model"+tstmp+f"_epo_{epoch + 1}" + ".pth"
     torch.save(model_dec.state_dict(), os.path.join(model_path, model_save_name))
 
-    param_save_name = "params_model"+tstmp+f"_epo_{epoch + 1}" + ".json"
-    with open(os.path.join(model_path, param_save_name), 'wb') as fp:
-        pickle.dump(par, fp)
+    # param_save_name = "params_model"+tstmp+f"_epo_{epoch + 1}" + ".json"
+    # with open(os.path.join(model_path, param_save_name), 'wb') as fp:
+    #     pickle.dump(par, fp)
 
 
 
@@ -166,10 +149,10 @@ if True:
         img_reco = 255*(img_reco - img_reco.min())/(img_reco.max())
         # fig01 = px.imshow(img_reco, height = 500, title="reconstructed")
         fig = make_subplots(rows=1, cols=2)
-        fig.add_trace(px.imshow(img_orig).data[0], row=1, col=1)
-        fig.add_trace(px.imshow(img_reco).data[0], row=1, col=2)
-        fig.update_layout(autosize=True,height=550, width = 1000)
-        fig.show()
+        _ = fig.add_trace(px.imshow(img_orig).data[0], row=1, col=1)
+        _ = fig.add_trace(px.imshow(img_reco).data[0], row=1, col=2)
+        _ = fig.update_layout(autosize=True,height=550, width = 1000)
+        _ = fig.show()
 
 
 

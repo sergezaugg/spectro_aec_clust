@@ -12,6 +12,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.manifold import Isomap
 import umap.umap_ as umap
 from PIL import Image
+from sklearn.utils import shuffle
+
 
 
 path_features = "C:/xc_real_projects/features"
@@ -46,6 +48,13 @@ feat.shape
 imfiles.shape
 feat = feat[0:100000,:]
 imfiles = imfiles[0:100000]
+feat.shape
+imfiles.shape
+
+
+
+# shuffle
+feat, imfiles = shuffle(feat, imfiles)
 feat.shape
 imfiles.shape
 
@@ -120,7 +129,7 @@ feature_mat_scaled_1 = scaler.transform(feature_mat_red)
 # reducer = Isomap(n_neighbors=10, n_components=n_dims_red, metric = "euclidean")
 reducer = umap.UMAP(n_neighbors=n_neighbors, n_components=n_dims_red, metric='euclidean')
 
-reducer.fit(feature_mat_scaled_1[0:5000])
+reducer.fit(feature_mat_scaled_1[0:7000])
 X_trans = reducer.transform(feature_mat_scaled_1)
 X_trans.shape
 
