@@ -22,13 +22,12 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 
 path_clust_images = "C:/xc_real_projects/clusters"
 
-# path_save = os.path.join(path_features, 'features_20250308_214623.npz')
-path_save = os.path.join(path_features, 'features_20250309_005037.npz')
+path_save = os.path.join(path_features, 'features_20250309_171521.npz')
 
 
 #-------------------------
 # parame Reduce dimensionality
-n_dims_red = 16 # 16 or 32 are ok
+n_dims_red = 8 # 16 # 16 or 32 are ok
 n_neighbors = 10 # between 5-15 seems ok
 eps_search = np.arange(0.02, 0.60, 0.04) # defaults 
 # eps_search = np.arange(0.20, 0.26, 0.02)

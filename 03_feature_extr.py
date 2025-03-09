@@ -25,9 +25,15 @@ model_path = "C:/xc_real_projects/models"
 # model_enc = EncoderAvgpool()
 # model_dec = DecoderTransp()
 
-tstmp = '20250309_005037' # not so good
-epotag = '_epo_30'
-model_enc = EncoderNopad()
+# tstmp = '20250309_005037' # not so good
+# epotag = '_epo_30'
+# model_enc = EncoderNopad()
+# model_dec = DecoderTransp()
+
+
+tstmp = '20250309_171521' #new - "hamming"
+epotag = '_epo_20'
+model_enc = EncoderAvgpool()
 model_dec = DecoderTransp()
 
 
@@ -42,7 +48,7 @@ model_enc = model_enc.to(device)
 _ = model_enc.eval()
 
 
-train_dataset = SpectroImageDataset(imgpath)
+train_dataset = SpectroImageDataset(imgpath, edge_attenuation = False)
 train_dataset.__len__()
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=256,  shuffle=True)
 
@@ -57,8 +63,8 @@ for i, (data, _, fi) in enumerate(train_loader, 0):
     feat_li.append(encoded)
     imfiles.append(fi)
     print(len(imfiles))
-    # if i > 100:
-    #     break
+    if i > 200:
+        break
 
 # transform lists to array 
 feat = np.concatenate(feat_li)

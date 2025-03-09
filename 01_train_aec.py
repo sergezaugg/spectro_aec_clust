@@ -14,7 +14,6 @@ import os
 import datetime
 from custom_models import SpectroImageDataset
 from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample, EncoderAvgpool, EncoderNopad, EncoderSimple2
-# import pickle
 from plotly.subplots import make_subplots
 
 
@@ -31,7 +30,7 @@ n_epochs = 20
 
 #----------------------
 # define data loader 
-train_dataset = SpectroImageDataset(imgpath_train)
+train_dataset = SpectroImageDataset(imgpath_train, edge_attenuation = True)
 train_dataset.__len__()
 xx = train_dataset.__getitem__(45)
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
@@ -41,7 +40,6 @@ for i, (da_orig, data_augm, fi) in enumerate(train_loader, 0):
     print(data_augm.shape)
     print(da_orig.shape)
 
-
 n_batches = train_dataset.__len__() // batch_size
 n_batches
 
@@ -50,7 +48,7 @@ n_batches
 
 # test set 
 imgpath_test = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
-test_dataset = SpectroImageDataset(imgpath_test)
+test_dataset = SpectroImageDataset(imgpath_test, edge_attenuation = False)
 test_dataset.__len__()
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128,  shuffle=True, drop_last=True)
 
@@ -63,6 +61,8 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128,  shuffle
 
 # # 20250308_173444  good  
 # # 20250308_214623  good
+## 20250309_105306 new - "hamming"
+# 20250309_171521
 model_enc = EncoderAvgpool()
 model_dec = DecoderTransp()
 
