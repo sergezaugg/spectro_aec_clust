@@ -27,7 +27,7 @@ model_path = "C:/xc_real_projects/models"
 
 batch_size = 64
 
-n_epochs = 10
+n_epochs = 20
 
 #----------------------
 # define data loader 

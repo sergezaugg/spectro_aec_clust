@@ -21,13 +21,6 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 
-edge_att_win = np.kaiser(128, 5)
-edge_att_win = edge_att_win - edge_att_win.min()
-edge_att_win = edge_att_win / edge_att_win.max()
-# import plotly.express as px
-# f = px.line(y=edge_att_win)
-# f.show()
-edge_att_win = np.broadcast_to(edge_att_win, shape = (128,128))
 
 
 
@@ -57,21 +50,41 @@ class SpectroImageDataset(Dataset):
     def __init__(self, imgpath):
         self.all_img_files = [a for a in os.listdir(imgpath) if '.png' in a]
         self.imgpath = imgpath
+       
+        edge_att_win = np.kaiser(128, 5)
+        edge_att_win = edge_att_win - edge_att_win.min()
+        edge_att_win = edge_att_win / edge_att_win.max()
+        # import plotly.express as px
+        # f = px.line(y=edge_att_win)
+        # f.show()
+        edge_att_win = np.broadcast_to(edge_att_win, shape = (128,128))
+        att = torch.from_numpy(edge_att_win)
+        self.att = att.type(torch.float32)
+        # att = torch.from_numpy(edge_att_win)
+        # type(att)
+        # (att.dtype)
+
+
+
+
+
+
 
     def __getitem__(self, index):     
         img = Image.open( os.path.join(self.imgpath,  self.all_img_files[index] ))
 
         x_orig = pil_to_tensor(img).to(torch.float32) / 255.0
 
-        att = torch.from_numpy(edge_att_win)
-        x_augm = dataaugm(x_orig)*att
+        
+        x_augm = dataaugm(x_orig)*self.att
 
         # simple denoising with threshold 
         # thld = x_orig.quantile(q=0.95)
         x_orig = blurme(x_orig)
         thld = 0.30
         x_orig[x_orig < thld] = 0.0
-        x_orig = x_orig*att
+
+        x_orig = x_orig*self.att
 
         y = self.all_img_files[index]
         return (x_orig, x_augm, y)
