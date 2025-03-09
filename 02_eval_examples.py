@@ -8,7 +8,7 @@ import torch
 import plotly.express as px
 import os 
 from PIL import Image
-from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample
+from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample, EncoderAvgpool, EncoderSimple2, EncoderNopad
 from custom_models import SpectroImageDataset
 import pickle
 from plotly.subplots import make_subplots
@@ -23,11 +23,20 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 model_path = "C:/xc_real_projects/models"
 
 
-# 20250308_112914 not good at all 
-tstmp = "20250308_112914"
-epotag = '_epo_3'
-model_enc = EncoderSimple()
-model_dec = DecoderUpsample()
+# tstmp = "20250308_173444"
+# epotag = '_epo_20'
+# model_enc = EncoderAvgpool()
+# model_dec = DecoderTransp()
+
+# tstmp = "20250308_214623" #   good
+# epotag = '_epo_28'
+# model_enc = EncoderAvgpool()
+# model_dec = DecoderTransp()
+
+tstmp = '20250309_005037'
+epotag = '_epo_30'
+model_enc = EncoderNopad()
+model_dec = DecoderTransp()
 
 
 path_enc = 'encoder_model_' + tstmp + epotag + '.pth'
@@ -38,30 +47,9 @@ model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights
 model_enc = model_enc.to(device)
 _ = model_enc.eval()
 
-
 model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights_only=True))
 model_dec = model_dec.to(device)
 _ = model_dec.eval()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # _ = model_enc.eval()
@@ -85,7 +73,9 @@ encoded = model_enc(data).to(device)
 decoded = model_dec(encoded).to(device)
 
 # ii = 489 
+# np.random.seed(45623)
 for ii in np.random.randint(data.shape[0], size = 15):
+# for ii in [0,1,2]:
     img_orig = data[ii].cpu().numpy()
     img_orig = img_orig.squeeze() # 1 ch
     img_orig = 255*(img_orig - img_orig.min())/(img_orig.max())

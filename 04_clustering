@@ -22,7 +22,8 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 
 path_clust_images = "C:/xc_real_projects/clusters"
 
-path_save = os.path.join(path_features, 'features_20250306_184203.npz')
+# path_save = os.path.join(path_features, 'features_20250308_214623.npz')
+path_save = os.path.join(path_features, 'features_20250309_005037.npz')
 
 
 #-------------------------

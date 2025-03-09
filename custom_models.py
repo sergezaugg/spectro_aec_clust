@@ -16,7 +16,23 @@ import torchvision.transforms.v2 as transforms
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-transforms.RandomApply(torch.nn.ModuleList([transforms.ColorJitter(),]), p=0.3)
+# transforms.RandomApply(torch.nn.ModuleList([transforms.ColorJitter(),]), p=0.3)
+
+
+
+
+edge_att_win = np.kaiser(128, 5)
+edge_att_win = edge_att_win - edge_att_win.min()
+edge_att_win = edge_att_win / edge_att_win.max()
+# import plotly.express as px
+# f = px.line(y=edge_att_win)
+# f.show()
+edge_att_win = np.broadcast_to(edge_att_win, shape = (128,128))
+
+
+
+
+
 
 dataaugm = transforms.Compose([
     transforms.RandomAffine(degrees=(-4.0, 4.0)),
@@ -26,7 +42,7 @@ dataaugm = transforms.Compose([
     transforms.ColorJitter(brightness = 0.3 , contrast = 0.5, saturation = 0.9),
     transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.12, clip=True),]), p=0.25),
     transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = 0.08, clip=True),]), p=0.25),
-    transforms.RandomErasing(p = 0.5, scale = (0.02, 0.06), ratio = (0.5, 2.0), value = 0),
+    # transforms.RandomErasing(p = 0.5, scale = (0.02, 0.06), ratio = (0.5, 2.0), value = 0),
     # transforms.Resize(size = (128, 128) )
     ])
 
@@ -46,13 +62,16 @@ class SpectroImageDataset(Dataset):
         img = Image.open( os.path.join(self.imgpath,  self.all_img_files[index] ))
 
         x_orig = pil_to_tensor(img).to(torch.float32) / 255.0
-        x_augm = dataaugm(x_orig)
+
+        att = torch.from_numpy(edge_att_win)
+        x_augm = dataaugm(x_orig)*att
 
         # simple denoising with threshold 
         # thld = x_orig.quantile(q=0.95)
         x_orig = blurme(x_orig)
         thld = 0.30
         x_orig[x_orig < thld] = 0.0
+        x_orig = x_orig*att
 
         y = self.all_img_files[index]
         return (x_orig, x_augm, y)
@@ -64,41 +83,34 @@ class SpectroImageDataset(Dataset):
 
 
 class EncoderAvgpool(nn.Module):
-
     def __init__(self):
         super(EncoderAvgpool, self).__init__()
         n_ch_in = 1
         ch = [64, 128, 256, 512]
         po = [(2, 2), (4, 2), (4, 2), (4, 2)]
         self.padding =  "same"
-
         self.conv0 = nn.Sequential(
             nn.Conv2d(n_ch_in,  ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.Conv2d(ch[0], ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[0]),
             nn.ReLU(),
-            nn.AvgPool2d(po[0], stride=po[0])
-            )
+            nn.AvgPool2d(po[0], stride=po[0]))
         self.conv1 = nn.Sequential(
             nn.Conv2d(ch[0], ch[1], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.Conv2d(ch[1], ch[1], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[1]),
             nn.ReLU(),
-            nn.AvgPool2d(po[1], stride=po[1])
-            )
+            nn.AvgPool2d(po[1], stride=po[1]))
         self.conv2 = nn.Sequential(
             nn.Conv2d(ch[1], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.Conv2d(ch[2], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[2]),
             nn.ReLU(),
-            nn.AvgPool2d(po[2], stride=po[2])
-            )
+            nn.AvgPool2d(po[2], stride=po[2]))
         self.conv3 = nn.Sequential(
             nn.Conv2d(ch[2], ch[3], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.Conv2d(ch[3], ch[3], kernel_size=(3,3), stride=1, padding=self.padding),
-            nn.AvgPool2d(po[3], stride=po[3])
-            )
-
+            nn.AvgPool2d(po[3], stride=po[3]))
     def forward(self, x):
         x = self.conv0(x)
         x = self.conv1(x)
@@ -106,48 +118,34 @@ class EncoderAvgpool(nn.Module):
         x = self.conv3(x)
         return(x)
 
-
-
-
-
-
-
-
 class EncoderNopad(nn.Module):
-
     def __init__(self):
         super(EncoderNopad, self).__init__()
         n_ch_in = 1
         ch = [64, 128, 256, 512]
         po = [(2, 2), (2, 2), (3, 2), (3, 1)]
-    
         self.conv0 = nn.Sequential(
             nn.Conv2d(n_ch_in,  ch[0], kernel_size=(3,3), stride=1, padding=0),
             nn.Conv2d(ch[0], ch[0], kernel_size=(3,3), stride=1, padding=0),
             nn.BatchNorm2d(ch[0]),
             nn.ReLU(),
-            nn.AvgPool2d(po[0], stride=po[0])
-            )
+            nn.AvgPool2d(po[0], stride=po[0]))
         self.conv1 = nn.Sequential(
             nn.Conv2d(ch[0], ch[1], kernel_size=(3,3), stride=1, padding=0),
             nn.Conv2d(ch[1], ch[1], kernel_size=(3,3), stride=1, padding=0),
             nn.BatchNorm2d(ch[1]),
             nn.ReLU(),
-            nn.AvgPool2d(po[1], stride=po[1])
-            )
+            nn.AvgPool2d(po[1], stride=po[1]))
         self.conv2 = nn.Sequential(
             nn.Conv2d(ch[1], ch[2], kernel_size=(3,3), stride=1, padding=0),
             nn.Conv2d(ch[2], ch[2], kernel_size=(3,3), stride=1, padding=0),
             nn.BatchNorm2d(ch[2]),
             nn.ReLU(),
-            nn.AvgPool2d(po[2], stride=po[2])
-            )
+            nn.AvgPool2d(po[2], stride=po[2]))
         self.conv3 = nn.Sequential(
             nn.Conv2d(ch[2], ch[3], kernel_size=(3,3), stride=1, padding=0),
             nn.Conv2d(ch[3], ch[3], kernel_size=(3,3), stride=1, padding=0),
-            nn.AvgPool2d(po[3], stride=po[3])
-            )
-
+            nn.AvgPool2d(po[3], stride=po[3]))
     def forward(self, x):
         x = self.conv0(x)
         x = self.conv1(x)
@@ -158,29 +156,26 @@ class EncoderNopad(nn.Module):
 
 
 class EncoderSimple(nn.Module):
-
     def __init__(self):
         super(EncoderSimple, self).__init__()
         n_ch_in = 1
         ch = [64, 128, 256, 512]
         po = [(2, 2), (4, 2), (4, 2), (4, 2)]
-
         self.conv0 = nn.Sequential(
-            nn.Conv2d(n_ch_in, ch[0], 3, stride=po[0], bias=False, padding=1),
+            nn.Conv2d(n_ch_in, ch[0], kernel_size=(5,5), stride=po[0], padding=2),
             nn.BatchNorm2d(ch[0]),
             nn.ReLU(True),)
         self.conv1 = nn.Sequential(
-            nn.Conv2d(ch[0], ch[1], 3, stride=po[1], bias=False, padding=1),
+            nn.Conv2d(ch[0], ch[1], kernel_size=(5,5), stride=po[1], padding=2),
             nn.BatchNorm2d(ch[1]),
             nn.ReLU(True),)
         self.conv2 = nn.Sequential(
-            nn.Conv2d(ch[1], ch[2], 3, stride=po[2], bias=False, padding=1),
+            nn.Conv2d(ch[1], ch[2], kernel_size=(5,5), stride=po[2], padding=2),
             nn.BatchNorm2d(ch[2]),
             nn.ReLU(True),)
         self.conv3 = nn.Sequential(
-            nn.Conv2d(ch[2], ch[3], 3, stride=po[3], bias=False, padding=1),
+            nn.Conv2d(ch[2], ch[3], kernel_size=(5,5), stride=po[3], padding=2),
             )
-
     def forward(self, x):
         x = self.conv0(x)
         x = self.conv1(x)
@@ -190,6 +185,38 @@ class EncoderSimple(nn.Module):
 
 
 
+class EncoderSimple2(nn.Module):
+    def __init__(self):
+        super(EncoderSimple2, self).__init__()
+        n_ch_in = 1
+        ch = [64, 128, 256, 256, 512]
+        po = [(2, 2), (3, 2), (3, 2), (3, 1), (1, 1)]
+        self.conv0 = nn.Sequential(
+            nn.Conv2d(n_ch_in, ch[0], kernel_size=(5,5), stride=po[0], padding=2),
+            nn.BatchNorm2d(ch[0]),
+            nn.ReLU(True),)
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(ch[0], ch[1], kernel_size=(5,5), stride=po[1], padding=2),
+            nn.BatchNorm2d(ch[1]),
+            nn.ReLU(True),)
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(ch[1], ch[2], kernel_size=(5,5), stride=po[2], padding=2),
+            nn.BatchNorm2d(ch[2]),
+            nn.ReLU(True),)
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(ch[2], ch[3], kernel_size=(5,5), stride=po[2], padding=2),
+            nn.BatchNorm2d(ch[3]),
+            nn.ReLU(True),)
+        self.conv4 = nn.Sequential(
+            nn.Conv2d(ch[3], ch[4], kernel_size=(5,5), stride=po[3], padding=2),
+            )
+    def forward(self, x):
+        x = self.conv0(x)
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
+        return(x)
 
 
 class DecoderTransp(nn.Module):
@@ -248,28 +275,28 @@ class DecoderUpsample(nn.Module):
         self.tconv0 = nn.Sequential(
             nn.Upsample(scale_factor = po[0], mode='bilinear'),
             nn.Conv2d(ch[0], ch[0], kernel_size=(3,3), stride=1, padding='same'),
-            # nn.Conv2d(ch[0], ch[0], kernel_size=(3,3), stride=1, padding='same'),
+            nn.Conv2d(ch[0], ch[0], kernel_size=(3,3), stride=1, padding='same'),
             nn.BatchNorm2d(ch[0]),
             nn.ReLU()
             )
         self.tconv1 = nn.Sequential(
             nn.Upsample(scale_factor = po[1], mode='bilinear'),
             nn.Conv2d(ch[0], ch[1], kernel_size=(3,3), stride=1, padding='same'),
-            # nn.Conv2d(ch[1], ch[1], kernel_size=(3,3), stride=1, padding='same'),
+            nn.Conv2d(ch[1], ch[1], kernel_size=(3,3), stride=1, padding='same'),
             nn.BatchNorm2d(ch[1]),
             nn.ReLU()
             )
         self.tconv2 = nn.Sequential(
             nn.Upsample(scale_factor = po[2], mode='bilinear'),
             nn.Conv2d(ch[1], ch[2], kernel_size=(3,3), stride=1, padding='same'),
-            # nn.Conv2d(ch[2], ch[2], kernel_size=(3,3), stride=1, padding='same'),
+            nn.Conv2d(ch[2], ch[2], kernel_size=(3,3), stride=1, padding='same'),
             nn.BatchNorm2d(ch[2]),
             nn.ReLU()
             )
         self.tconv3 = nn.Sequential(
             nn.Upsample(scale_factor = po[3], mode='bilinear'),
             nn.Conv2d(ch[2], ch[3], kernel_size=(3,3), stride=1, padding='same'),
-            # nn.Conv2d(ch[3], ch[3], kernel_size=(3,3), stride=1, padding='same'),
+            nn.Conv2d(ch[3], ch[3], kernel_size=(3,3), stride=1, padding='same'),
             nn.BatchNorm2d(ch[3]),
             nn.ReLU()
             )
@@ -303,14 +330,19 @@ if __name__ == "__main__":
     summary(model_enc, (1, 128, 128))
 
 
+    model_enc = EncoderSimple2()
+    model_enc = model_enc.to(device)
+    summary(model_enc, (1, 128, 128))
+
+
 
     model_dec = DecoderTransp()
     model_dec = model_dec.to(device)
     summary(model_dec, (512, 1, 8))
 
-    model_dec = DecoderUpsample()
-    model_dec = model_dec.to(device)
-    summary(model_dec, (512, 1, 8))
+    # model_dec = DecoderUpsample()
+    # model_dec = model_dec.to(device)
+    # summary(model_dec, (512, 1, 8))
 
   
 

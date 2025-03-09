@@ -5,6 +5,7 @@
 
 import plotly.express as px
 import torch
+import pandas as pd
 import numpy as np
 from torchsummary import summary
 import torch.nn as nn
@@ -12,7 +13,7 @@ import torch.optim as optim
 import os 
 import datetime
 from custom_models import SpectroImageDataset
-from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample, EncoderAvgpool
+from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample, EncoderAvgpool, EncoderNopad, EncoderSimple2
 # import pickle
 from plotly.subplots import make_subplots
 
@@ -26,7 +27,7 @@ model_path = "C:/xc_real_projects/models"
 
 batch_size = 64
 
-n_epochs = 30
+n_epochs = 10
 
 #----------------------
 # define data loader 
@@ -51,7 +52,7 @@ n_batches
 imgpath_test = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
 test_dataset = SpectroImageDataset(imgpath_test)
 test_dataset.__len__()
-test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128,  shuffle=True, drop_last=True)
 
 
 
@@ -60,17 +61,27 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,  
 # define models 
 
 
-# 20250308_112914 not good at all 
-# model_enc = EncoderSimple()
-# model_dec = DecoderUpsample()
+# # 20250308_173444  good  
+# # 20250308_214623  good
+model_enc = EncoderAvgpool()
+model_dec = DecoderTransp()
 
-# 20250308_125419 not good at all 
+
+# # 20250308_182312 not good 
+# # 20250309_005037
+# model_enc = EncoderNopad()
+# model_dec = DecoderTransp()
+
+
+# # 20250308_185712 quite OK 
 # model_enc = EncoderSimple()
 # model_dec = DecoderTransp()
 
-# 20250308_133155  better 
-model_enc = EncoderAvgpool()
-model_dec = DecoderTransp()
+# # 20250308_193622 good  
+# model_enc = EncoderSimple2()
+# model_dec = DecoderTransp()
+
+
 
 
 model_enc = model_enc.to(device)
@@ -109,7 +120,7 @@ for epoch in range(n_epochs):
     _ = model_dec.train()
     trai_perf_li = []
     for btchi, (da_orig, data_augm, fi) in enumerate(train_loader, 0):
-        if btchi > 100:
+        if btchi > 300:
             break
         # print(btchi)
         data_augm = data_augm.to(device)
@@ -141,7 +152,7 @@ for epoch in range(n_epochs):
     with torch.no_grad():
         test_perf_li = []
         for btchi, (da_orig, data_augm, fi) in enumerate(test_loader, 0):
-            if btchi > 100:
+            if btchi > 80:
                 break
              # print(btchi)
             data_augm = data_augm.to(device)
@@ -154,29 +165,29 @@ for epoch in range(n_epochs):
             loss_test = criterion(decoded, da_orig)
             test_perf_li.append(loss_test.cpu().detach().numpy().item())
             if btchi % 10 == 0:
-                print('loss', np.round(loss_test.item(),5), "   --- status: "  + str(btchi) + " out of " + str(n_batches) + " batches")
+                print('TEST loss', np.round(loss_test.item(),5), "   --- status: "  + str(btchi) )
         mse_test_li.append(np.array(test_perf_li).mean())
            
 
   
 
+# reshape performance metrics to a neat lil df
+mse_test = np.array(mse_test_li)
+mse_trai = np.array(mse_trai_li)
+df_test = pd.DataFrame({"mse" : mse_test})
+df_test['role'] = "test"
+df_trai = pd.DataFrame({"mse" : mse_trai})
+df_trai['role'] = "train"
+df_mse = pd.concat([df_test, df_trai], axis = 0)
+df_mse.shape
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+fig_mse = px.line(
+    df_mse,
+    y = "mse",
+    color = "role"
+    )
+fig_mse.show()
 
 
 
@@ -192,6 +203,9 @@ if True:
 
     model_save_name = "decoder_model"+tstmp+f"_epo_{epoch + 1}" + ".pth"
     torch.save(model_dec.state_dict(), os.path.join(model_path, model_save_name))
+
+    mse_save_name = "df_mse"+tstmp+f"_epo_{epoch + 1}" + ".pkl"
+    df_mse.to_pickle(path=os.path.join(model_path, mse_save_name))
 
 
 # check reconstruction with examples 
