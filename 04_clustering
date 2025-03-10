@@ -22,15 +22,19 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 
 path_clust_images = "C:/xc_real_projects/clusters"
 
-path_save = os.path.join(path_features, 'features_20250309_171521.npz')
+path_save = os.path.join(path_features, 'features_20250310_004358.npz')
 
 
 #-------------------------
 # parame Reduce dimensionality
-n_dims_red = 8 # 16 # 16 or 32 are ok
+n_dims_red = 32 # 16 # 16 or 32 are ok
+# n_dims_red = 64 # 16 # 16 or 32 are ok
 n_neighbors = 10 # between 5-15 seems ok
-eps_search = np.arange(0.02, 0.60, 0.04) # defaults 
-# eps_search = np.arange(0.20, 0.26, 0.02)
+eps_search = np.arange(0.05, 0.60, 0.05) # defaults 32
+# eps_search = np.arange(0.30, 0.70, 0.05) # dim  64
+# eps_search = np.arange(0.10, 3.60, 0.20) # large  256
+# eps_search = np.arange(14, 19, 0.50) # super large  1500
+
 
 
 
@@ -127,14 +131,16 @@ feature_mat_scaled_1 = scaler.transform(feature_mat_red)
 # (x) Reduce dimensionality
 #-------------------------
 # reducer = Isomap(n_neighbors=10, n_components=n_dims_red, metric = "euclidean")
-reducer = umap.UMAP(n_neighbors=n_neighbors, n_components=n_dims_red, metric='euclidean')
+if True:
+    reducer = umap.UMAP(n_neighbors=n_neighbors, n_components=n_dims_red, metric='euclidean')
+    reducer.fit(feature_mat_scaled_1[0:7000])
+    X_trans = reducer.transform(feature_mat_scaled_1)
+    X_trans.shape
 
-reducer.fit(feature_mat_scaled_1[0:7000])
-X_trans = reducer.transform(feature_mat_scaled_1)
-X_trans.shape
-
-
-
+# skip umap    
+if False:
+    X_trans = feature_mat_scaled_1
+    X_trans.shape
 
 #-------------------------
 # (x) standardize 2

@@ -37,8 +37,14 @@ model_path = "C:/xc_real_projects/models"
 # model_enc = EncoderNopad()
 # model_dec = DecoderTransp()
 
-tstmp = '20250309_171521' #new - "hamming"
-epotag = '_epo_20'
+# tstmp = '20250309_171521' #new - "hamming"
+# epotag = '_epo_20'
+# model_enc = EncoderAvgpool()
+# model_dec = DecoderTransp()
+
+
+tstmp = '20250310_004358'
+epotag = '_epo_52'
 model_enc = EncoderAvgpool()
 model_dec = DecoderTransp()
 

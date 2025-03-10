@@ -26,7 +26,7 @@ model_path = "C:/xc_real_projects/models"
 
 batch_size = 64
 
-n_epochs = 20
+n_epochs = 60
 
 #----------------------
 # define data loader 
@@ -63,6 +63,7 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128,  shuffle
 # # 20250308_214623  good
 ## 20250309_105306 new - "hamming"
 # 20250309_171521
+# 20250310_004358
 model_enc = EncoderAvgpool()
 model_dec = DecoderTransp()
 
