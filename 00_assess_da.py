@@ -10,8 +10,7 @@ from custom_models import SpectroImageDataset
 from plotly.subplots import make_subplots
 
 # imgpath_train = "C:/xc_real_projects/da_examples/1"
-imgpath_train = "C:/xc_real_projects/da_examples/2"
-# imgpath_train = "C:/xc_real_projects/da_examples/3"
+imgpath_train = "C:/xc_real_projects/da_examples/4"
 
 # define data loader 
 train_dataset = SpectroImageDataset(imgpath_train, edge_attenuation = True)
@@ -31,10 +30,10 @@ for ii in np.random.randint(data.shape[0], size = 16):
     img_augm = data[ii].cpu().detach().numpy()
     img_augm = img_augm.squeeze() 
     img_augm = 255*(img_augm - img_augm.min())/(img_augm.max())
-    fig = make_subplots(rows=1, cols=2)
+    fig = make_subplots(rows=2, cols=1)
     fig.add_trace(px.imshow(img_orig).data[0], row=1, col=1)
-    fig.add_trace(px.imshow(img_augm).data[0], row=1, col=2)
-    _ = fig.update_layout(autosize=True,height=550, width = 1000)
+    fig.add_trace(px.imshow(img_augm).data[0], row=2, col=1)
+    # _ = fig.update_layout(autosize=True,height=200, width = 1000)
     fig.show()
 
 

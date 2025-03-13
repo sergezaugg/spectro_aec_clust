@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import torch
 import os 
-from custom_models import SpectroImageDataset, EncoderAvgpool, DecoderTransp, EncoderNopad, DecoderTranspNew
+from custom_models import SpectroImageDataset, EncoderAvgpool
 import pickle
 
 torch.cuda.is_available()
@@ -20,10 +20,16 @@ path_features = "C:/xc_real_projects/features"
 model_path = "C:/xc_real_projects/models"
 
 
-tstmp = '20250312_212815'
-epotag = '_epo_20'
+# tstmp = '20250312_212815'
+# epotag = '_epo_20'
+# model_enc = EncoderAvgpool()
+# model_dec = DecoderTranspNew()
+
+
+tstmp = '20250313_164709'
+epotag = '_epo_5'
 model_enc = EncoderAvgpool()
-model_dec = DecoderTranspNew()
+# model_dec = DecoderTranspNew()
 
 
 path_save = os.path.join(path_features, 'features_' + tstmp + '.npz')
@@ -52,7 +58,7 @@ for i, (data, _, fi) in enumerate(train_loader, 0):
     feat_li.append(encoded)
     imfiles.append(fi)
     print(len(imfiles))
-    if i > 200:
+    if i > 300:
         break
 
 # transform lists to array 

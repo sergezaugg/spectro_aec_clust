@@ -17,8 +17,8 @@ torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 dataaugm = transforms.Compose([
-    transforms.RandomAffine(degrees=(-4.0, 4.0)),
-    transforms.RandomResizedCrop(size = (128, 128) , scale = (0.93, 1.06)), 
+    # transforms.RandomAffine(degrees=(-4.0, 4.0)),
+    # transforms.RandomResizedCrop(size = (128, 128) , scale = (0.93, 1.06)), 
     transforms.RandomAdjustSharpness(sharpness_factor = 2.0, p=0.5),
     transforms.RandomAdjustSharpness(sharpness_factor = 0.1, p=0.5),
     transforms.ColorJitter(brightness = 0.3 , contrast = 0.5, saturation = 0.9),
@@ -39,12 +39,12 @@ class SpectroImageDataset(Dataset):
         self.imgpath = imgpath
         self.edge_attenuation = edge_attenuation
         # make attenuation window (hanning-like)
-        edge_att_win = np.kaiser(128, 5)
-        edge_att_win = edge_att_win - edge_att_win.min()
-        edge_att_win = edge_att_win / edge_att_win.max()
-        edge_att_win = np.broadcast_to(edge_att_win, shape = (128,128))
-        att = torch.from_numpy(edge_att_win)
-        self.att = att.type(torch.float32)
+        # edge_att_win = np.kaiser(128, 5)
+        # edge_att_win = edge_att_win - edge_att_win.min()
+        # edge_att_win = edge_att_win / edge_att_win.max()
+        # edge_att_win = np.broadcast_to(edge_att_win, shape = (128,128))
+        # att = torch.from_numpy(edge_att_win)
+        # self.att = att.type(torch.float32)
   
     def __getitem__(self, index):     
         img = Image.open( os.path.join(self.imgpath,  self.all_img_files[index] ))
@@ -58,10 +58,10 @@ class SpectroImageDataset(Dataset):
         thld = 0.30
         x_orig[x_orig < thld] = 0.0
 
-        # apply attenuation window
-        if self.edge_attenuation:
-            # x_orig = x_orig*self.att
-            x_augm = x_augm*self.att
+        # # apply attenuation window
+        # if self.edge_attenuation:
+        #     # x_orig = x_orig*self.att
+        #     # x_augm = x_augm*self.att
 
         # prepare meta.data too
         y = self.all_img_files[index]
@@ -347,14 +347,14 @@ if __name__ == "__main__":
 
     model_enc = EncoderAvgpool() 
     model_enc = model_enc.to(device)
-    summary(model_enc, (1, 128, 128))
-    summary(model_enc, (1, 128, 1024))
+    # summary(model_enc, (1, 128, 128))
+    summary(model_enc, (1, 128, 1152))
 
 
     model_dec = DecoderTranspNew()
     model_dec = model_dec.to(device)
-    summary(model_dec, (512, 1, 8))
-    summary(model_dec, (512, 1, 64))
+    # summary(model_dec, (512, 1, 8))
+    summary(model_dec, (512, 1, 72))
 
 
 

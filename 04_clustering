@@ -22,7 +22,7 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 
 path_clust_images = "C:/xc_real_projects/clusters"
 
-path_save = os.path.join(path_features, 'features_20250312_212815.npz')
+path_save = os.path.join(path_features, 'features_20250313_164709.npz')
 
 
 #-------------------------
@@ -30,7 +30,7 @@ path_save = os.path.join(path_features, 'features_20250312_212815.npz')
 n_dims_red = 32 # 16 # 16 or 32 are ok
 # n_dims_red = 64 # 16 # 16 or 32 are ok
 n_neighbors = 10 # between 5-15 seems ok
-eps_search = np.arange(0.05, 0.60, 0.05) # defaults 32
+eps_search = np.arange(0.03, 1.10, 0.05) # defaults 32
 # eps_search = np.arange(0.30, 0.70, 0.05) # dim  64
 # eps_search = np.arange(0.10, 3.60, 0.20) # large  256
 # eps_search = np.arange(14, 19, 0.50) # super large  1500
@@ -67,9 +67,34 @@ imfiles.shape
 # (x)
 #-------------------------
 
+# atak only center time bins 
+feat.shape
+feat = feat[:, :,1:7]
+feat.shape
+
+
+
+
+# 
+# select only where average featur value hig
+per_image_mean = feat.mean((1,2))
+per_image_mean.shape
+pimm = per_image_mean.mean()
+feat = feat[per_image_mean > pimm]
+feat.shape
+imfiles = imfiles[per_image_mean > pimm]
+imfiles.shape
+
+
+
+
+
+
 # take a pooling function over time to get classic feature vector 
 # feature_mat = np.concatenate([feat.max(2),  feat.mean(2) ], axis = 1)
 feature_mat = np.concatenate([feat.max(2),  feat.mean(2) , feat.std(2)], axis = 1)
+# feature_mat = np.concatenate([feat.mean(2) , feat.std(2)], axis = 1)
+
 # feature_mat = feat.max(2)
 # feature_mat = feat.mean(2)
 feature_mat.shape

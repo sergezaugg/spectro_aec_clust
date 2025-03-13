@@ -20,13 +20,14 @@ from plotly.subplots import make_subplots
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-imgpath_train = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
+# imgpath_train = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
+imgpath_train = "C:/xc_real_projects/xc_aec_n_eur_longclips/downloaded_data_img_24000sps"
 
 model_path = "C:/xc_real_projects/models"
 
-batch_size = 64
+batch_size = 8
 
-n_epochs = 20
+n_epochs = 15
 
 #----------------------
 # define data loader 
@@ -47,10 +48,12 @@ n_batches
 
 
 # test set 
-imgpath_test = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
+# imgpath_test = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
+imgpath_test = "C:/xc_real_projects/xc_aec_n_eur_longclips/downloaded_data_img_24000sps"
+
 test_dataset = SpectroImageDataset(imgpath_test, edge_attenuation = False)
 test_dataset.__len__()
-test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128,  shuffle=True, drop_last=True)
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
 
 
 
@@ -63,37 +66,17 @@ model_enc = EncoderAvgpool()
 model_dec = DecoderTranspNew()
 
 
-# # # 20250308_173444  good  
-# # # 20250308_214623  good
-# ## 20250309_105306 new - "hamming"
-# # 20250309_171521
-# # 20250310_004358
-# model_enc = EncoderAvgpool()
-# model_dec = DecoderTransp()
-
-
-# # 20250308_182312 not good 
-# # 20250309_005037
-# model_enc = EncoderNopad()
-# model_dec = DecoderTransp()
-
-
-# # 20250308_185712 quite OK 
-# model_enc = EncoderSimple()
-# model_dec = DecoderTransp()
-
-# # 20250308_193622 good  
-# model_enc = EncoderSimple2()
-# model_dec = DecoderTransp()
-
 
 
 
 model_enc = model_enc.to(device)
-summary(model_enc, (1, 128, 128))
+# summary(model_enc, (1, 128, 128))
+summary(model_enc, (1, 128, 1152))
+
 
 model_dec = model_dec.to(device)
-summary(model_dec, (512, 1, 8))
+# summary(model_dec, (512, 1, 8))
+summary(model_dec, (512, 1, 72))
 
    
 

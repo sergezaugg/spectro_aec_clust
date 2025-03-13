@@ -19,10 +19,8 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 
 model_path = "C:/xc_real_projects/models"
 
-# tstmp = '20250312_215716'
-# epotag = '_epo_4'
-tstmp = '20250312_212815'
-epotag = '_epo_20'
+tstmp = '20250313_164709'
+epotag = '_epo_5'
 model_enc = EncoderAvgpool()
 model_dec = DecoderTranspNew()
 
@@ -45,6 +43,7 @@ test_loader  = torch.utils.data.DataLoader(test_dataset, batch_size=128,  shuffl
 # test loss 
 for i_test, (da_orig, data_augm, fi) in enumerate(test_loader, 0):
     print(i_test)
+    print(da_orig.shape)
     if i_test > 1:
         break
 
