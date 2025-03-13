@@ -7,10 +7,8 @@ import pandas as pd
 import torch
 import plotly.express as px
 import os 
-# from PIL import Image
-from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample, EncoderAvgpool, EncoderSimple2, EncoderNopad
+from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample, EncoderAvgpool, EncoderSimple2, EncoderNopad, DecoderTranspNew
 from custom_models import SpectroImageDataset
-# import pickle
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
@@ -21,33 +19,12 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 
 model_path = "C:/xc_real_projects/models"
 
-
-# tstmp = "20250308_173444"
-# epotag = '_epo_20'
-# model_enc = EncoderAvgpool()
-# model_dec = DecoderTransp()
-
-# tstmp = "20250308_214623" #   good
-# epotag = '_epo_28'
-# model_enc = EncoderAvgpool()
-# model_dec = DecoderTransp()
-
-# tstmp = '20250309_005037'
-# epotag = '_epo_30'
-# model_enc = EncoderNopad()
-# model_dec = DecoderTransp()
-
-# tstmp = '20250309_171521' #new - "hamming"
-# epotag = '_epo_20'
-# model_enc = EncoderAvgpool()
-# model_dec = DecoderTransp()
-
-
-tstmp = '20250310_004358'
-epotag = '_epo_52'
+# tstmp = '20250312_215716'
+# epotag = '_epo_4'
+tstmp = '20250312_212815'
+epotag = '_epo_20'
 model_enc = EncoderAvgpool()
-model_dec = DecoderTransp()
-
+model_dec = DecoderTranspNew()
 
 
 path_enc = 'encoder_model_' + tstmp + epotag + '.pth'

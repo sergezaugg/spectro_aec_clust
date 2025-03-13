@@ -13,7 +13,7 @@ import torch.optim as optim
 import os 
 import datetime
 from custom_models import SpectroImageDataset
-from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample, EncoderAvgpool, EncoderNopad, EncoderSimple2
+from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample, EncoderAvgpool, EncoderNopad, EncoderSimple2, DecoderTranspNew
 from plotly.subplots import make_subplots
 
 
@@ -26,7 +26,7 @@ model_path = "C:/xc_real_projects/models"
 
 batch_size = 64
 
-n_epochs = 60
+n_epochs = 20
 
 #----------------------
 # define data loader 
@@ -58,14 +58,18 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128,  shuffle
 #----------------------
 # define models 
 
-
-# # 20250308_173444  good  
-# # 20250308_214623  good
-## 20250309_105306 new - "hamming"
-# 20250309_171521
-# 20250310_004358
+# 
 model_enc = EncoderAvgpool()
-model_dec = DecoderTransp()
+model_dec = DecoderTranspNew()
+
+
+# # # 20250308_173444  good  
+# # # 20250308_214623  good
+# ## 20250309_105306 new - "hamming"
+# # 20250309_171521
+# # 20250310_004358
+# model_enc = EncoderAvgpool()
+# model_dec = DecoderTransp()
 
 
 # # 20250308_182312 not good 
@@ -112,6 +116,7 @@ optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters(
 
 mse_test_li = []
 mse_trai_li = []
+
 for epoch in range(n_epochs):
     print(f"Epoch: {epoch + 1}/{n_epochs}")
     # set the encoder and decoder models to training mode
@@ -121,7 +126,7 @@ for epoch in range(n_epochs):
     _ = model_dec.train()
     trai_perf_li = []
     for btchi, (da_orig, data_augm, fi) in enumerate(train_loader, 0):
-        if btchi > 300:
+        if btchi > 500:
             break
         # print(btchi)
         data_augm = data_augm.to(device)

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import torch
 import os 
-from custom_models import SpectroImageDataset, EncoderAvgpool, DecoderTransp, EncoderNopad
+from custom_models import SpectroImageDataset, EncoderAvgpool, DecoderTransp, EncoderNopad, DecoderTranspNew
 import pickle
 
 torch.cuda.is_available()
@@ -20,25 +20,10 @@ path_features = "C:/xc_real_projects/features"
 model_path = "C:/xc_real_projects/models"
 
 
-# tstmp = "20250308_214623" #   good
-# epotag = '_epo_28'
-# model_enc = EncoderAvgpool()
-# model_dec = DecoderTransp()
-
-# tstmp = '20250309_005037' # not so good
-# epotag = '_epo_30'
-# model_enc = EncoderNopad()
-# model_dec = DecoderTransp()
-
-# tstmp = '20250309_171521' #new - "hamming"
-# epotag = '_epo_20'
-# model_enc = EncoderAvgpool()
-# model_dec = DecoderTransp()
-
-tstmp = '20250310_004358'
-epotag = '_epo_52'
+tstmp = '20250312_212815'
+epotag = '_epo_20'
 model_enc = EncoderAvgpool()
-model_dec = DecoderTransp()
+model_dec = DecoderTranspNew()
 
 
 path_save = os.path.join(path_features, 'features_' + tstmp + '.npz')

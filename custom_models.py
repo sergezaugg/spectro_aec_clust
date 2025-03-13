@@ -109,6 +109,51 @@ class EncoderAvgpool(nn.Module):
         x = self.conv2(x)
         x = self.conv3(x)
         return(x)
+    
+
+
+class DecoderTranspNew(nn.Module):
+    def __init__(self) :
+        super(DecoderTranspNew, self).__init__()
+        n_ch_out=1
+        ch =  [512, 256, 128, 64]
+        po =  [(4, 2), (4, 2), (4, 2), (2, 2)]
+           
+        self.tconv0 = nn.Sequential(
+            nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(5,5), stride=po[0], padding=(1,2), output_padding=(1,1)), 
+            nn.BatchNorm2d(ch[0]),
+            nn.ReLU()
+            )
+        self.tconv1 = nn.Sequential(
+            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(5,5), stride=po[1], padding=(1,2), output_padding=(1,1)), 
+            nn.BatchNorm2d(ch[1]),
+            nn.ReLU()
+            )
+        self.tconv2 = nn.Sequential(
+            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(5,5), stride=po[2], padding=(1,2), output_padding=(1,1)), 
+            nn.BatchNorm2d(ch[2]),
+            nn.ReLU()
+            )
+        self.tconv3 = nn.Sequential(
+            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=(5,5), stride=po[3], padding=(2,2),  output_padding=(1,1)), 
+            nn.BatchNorm2d(ch[3]),
+            nn.ReLU()
+            )
+        self.out_map = nn.Sequential(
+            nn.Conv2d(ch[3], n_ch_out, kernel_size=(1,1), padding=0),
+            nn.Sigmoid()
+            )
+
+    def forward(self, x):
+        x = self.tconv0(x)
+        x = self.tconv1(x)
+        x = self.tconv2(x)
+        x = self.tconv3(x)
+        x = self.out_map(x)
+        return x
+
+
+
 
 class EncoderNopad(nn.Module):
     def __init__(self):
@@ -145,8 +190,6 @@ class EncoderNopad(nn.Module):
         x = self.conv3(x)
         return(x)
 
-
-
 class EncoderSimple(nn.Module):
     def __init__(self):
         super(EncoderSimple, self).__init__()
@@ -174,8 +217,6 @@ class EncoderSimple(nn.Module):
         x = self.conv2(x)
         x = self.conv3(x)
         return(x)
-
-
 
 class EncoderSimple2(nn.Module):
     def __init__(self):
@@ -209,7 +250,6 @@ class EncoderSimple2(nn.Module):
         x = self.conv3(x)
         x = self.conv4(x)
         return(x)
-
 
 class DecoderTransp(nn.Module):
     def __init__(self) :
@@ -250,10 +290,6 @@ class DecoderTransp(nn.Module):
         x = self.tconv3(x)
         x = self.out_map(x)
         return x
-
-
-
-
 
 class DecoderUpsample(nn.Module):
 
@@ -312,26 +348,32 @@ if __name__ == "__main__":
     model_enc = EncoderAvgpool() 
     model_enc = model_enc.to(device)
     summary(model_enc, (1, 128, 128))
-
-    model_enc = EncoderNopad() 
-    model_enc = model_enc.to(device)
-    summary(model_enc, (1, 128, 128))
-
-    model_enc = EncoderSimple()
-    model_enc = model_enc.to(device)
-    summary(model_enc, (1, 128, 128))
+    summary(model_enc, (1, 128, 1024))
 
 
-    model_enc = EncoderSimple2()
-    model_enc = model_enc.to(device)
-    summary(model_enc, (1, 128, 128))
-
-
-
-    model_dec = DecoderTransp()
+    model_dec = DecoderTranspNew()
     model_dec = model_dec.to(device)
     summary(model_dec, (512, 1, 8))
+    summary(model_dec, (512, 1, 64))
 
+
+
+    # model_enc = EncoderNopad() 
+    # model_enc = model_enc.to(device)
+    # summary(model_enc, (1, 128, 128))
+
+    # model_enc = EncoderSimple()
+    # model_enc = model_enc.to(device)
+    # summary(model_enc, (1, 128, 128))
+
+    # model_enc = EncoderSimple2()
+    # model_enc = model_enc.to(device)
+    # summary(model_enc, (1, 128, 128))
+
+    # model_dec = DecoderTransp()
+    # model_dec = model_dec.to(device)
+    # summary(model_dec, (512, 1, 8))
+   
     # model_dec = DecoderUpsample()
     # model_dec = model_dec.to(device)
     # summary(model_dec, (512, 1, 8))
