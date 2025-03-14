@@ -13,7 +13,7 @@ import torch.optim as optim
 import os 
 import datetime
 from custom_models import SpectroImageDataset
-from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample, EncoderAvgpool, EncoderNopad, EncoderSimple2, DecoderTranspNew
+from custom_models import EncoderAvgpool, DecoderTranspNew
 from plotly.subplots import make_subplots
 
 
@@ -31,7 +31,7 @@ n_epochs = 15
 
 #----------------------
 # define data loader 
-train_dataset = SpectroImageDataset(imgpath_train, edge_attenuation = True)
+train_dataset = SpectroImageDataset(imgpath_train, edge_attenuation = False)
 train_dataset.__len__()
 xx = train_dataset.__getitem__(45)
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
@@ -141,7 +141,7 @@ for epoch in range(n_epochs):
     with torch.no_grad():
         test_perf_li = []
         for btchi, (da_orig, data_augm, fi) in enumerate(test_loader, 0):
-            if btchi > 80:
+            if btchi > 20:
                 break
              # print(btchi)
             data_augm = data_augm.to(device)

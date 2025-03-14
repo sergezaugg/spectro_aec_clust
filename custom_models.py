@@ -39,12 +39,12 @@ class SpectroImageDataset(Dataset):
         self.imgpath = imgpath
         self.edge_attenuation = edge_attenuation
         # make attenuation window (hanning-like)
-        # edge_att_win = np.kaiser(128, 5)
-        # edge_att_win = edge_att_win - edge_att_win.min()
-        # edge_att_win = edge_att_win / edge_att_win.max()
-        # edge_att_win = np.broadcast_to(edge_att_win, shape = (128,128))
-        # att = torch.from_numpy(edge_att_win)
-        # self.att = att.type(torch.float32)
+        edge_att_win = np.kaiser(128, 5)
+        edge_att_win = edge_att_win - edge_att_win.min()
+        edge_att_win = edge_att_win / edge_att_win.max()
+        edge_att_win = np.broadcast_to(edge_att_win, shape = (128,128))
+        att = torch.from_numpy(edge_att_win)
+        self.att = att.type(torch.float32)
   
     def __getitem__(self, index):     
         img = Image.open( os.path.join(self.imgpath,  self.all_img_files[index] ))
@@ -59,9 +59,9 @@ class SpectroImageDataset(Dataset):
         x_orig[x_orig < thld] = 0.0
 
         # # apply attenuation window
-        # if self.edge_attenuation:
-        #     # x_orig = x_orig*self.att
-        #     # x_augm = x_augm*self.att
+        if self.edge_attenuation:
+            x_orig = x_orig*self.att
+            x_augm = x_augm*self.att
 
         # prepare meta.data too
         y = self.all_img_files[index]
