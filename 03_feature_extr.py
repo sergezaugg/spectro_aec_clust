@@ -13,7 +13,9 @@ import pickle
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
+# imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
+imgpath = "C:/xc_real_projects/xc_streamlit_sw_eur/downloaded_data_img_24000sps"
+
 path_features = "C:/xc_real_projects/features"
 model_path = "C:/xc_real_projects/models"
 
@@ -25,7 +27,7 @@ model_enc = EncoderAvgpool()
 
 
 
-path_save = os.path.join(path_features, 'features_' + tstmp + '.npz')
+path_save = os.path.join(path_features, 'features_medium' + tstmp + '.npz')
 
 path_enc = 'encoder_model_' + tstmp + epotag + '.pth'
 path_dec = 'decoder_model_' + tstmp + epotag + '.pth'
@@ -49,7 +51,7 @@ for i, (data, _, fi) in enumerate(train_loader, 0):
     feat_li.append(encoded)
     imfiles.append(fi)
     print(len(imfiles))
-    # if i > 600:
+    # if i > 200:
     #     break
 
 # transform lists to array 
@@ -57,7 +59,9 @@ feat = np.concatenate(feat_li)
 feat = feat.squeeze()
 imfiles = np.concatenate(imfiles)
 
-np.savez(file = path_save,  feat=feat, imfiles=imfiles)
+np.savez(file = path_save, feat=feat, imfiles=imfiles)
 
-
+# feat.shape
+# feat.dtype
+# imfiles.shape
 

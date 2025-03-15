@@ -22,7 +22,7 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 
 path_clust_images = "C:/xc_real_projects/clusters"
 
-path_save = os.path.join(path_features, 'features_20250313_185849_with_edgeatt.npz')
+path_save = os.path.join(path_features, 'features_medium20250313_185849.npz')
 
 
 #-------------------------
@@ -75,15 +75,15 @@ feat.shape
 
 
 
-# 
-# select only where average feature value high
-per_image_mean = feat.mean((1,2))
-per_image_mean.shape
-pimm = per_image_mean.mean()
-feat = feat[per_image_mean > pimm]
-feat.shape
-imfiles = imfiles[per_image_mean > pimm]
-imfiles.shape
+# # 
+# # select only where average feature value high
+# per_image_mean = feat.mean((1,2))
+# per_image_mean.shape
+# pimm = per_image_mean.mean()
+# feat = feat[per_image_mean > pimm]
+# feat.shape
+# imfiles = imfiles[per_image_mean > pimm]
+# imfiles.shape
 
 
 
@@ -182,6 +182,20 @@ feature_mat_scaled_2.shape
 #     y = feature_mat_scaled_2[:,1]
 #     )
 # fig01.show()
+
+
+
+
+# save smaller data just befor clustering 
+
+imfiles.shape
+feature_mat_scaled_2.shape
+imfiles.dtype
+feature_mat_scaled_2.dtype
+
+path_save_mini = os.path.join(path_features, 'features_reduced_2.npz')
+np.savez(file = path_save_mini, feat=feature_mat_scaled_2, imfiles=imfiles)
+
 
 
 

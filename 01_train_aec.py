@@ -25,9 +25,9 @@ imgpath_train = "C:/xc_real_projects/xc_aec_n_eur_longclips/downloaded_data_img_
 
 model_path = "C:/xc_real_projects/models"
 
-batch_size = 8
+batch_size = 16
 
-n_epochs = 15
+n_epochs = 20
 
 #----------------------
 # define data loader 
@@ -109,7 +109,7 @@ for epoch in range(n_epochs):
     _ = model_dec.train()
     trai_perf_li = []
     for btchi, (da_orig, data_augm, fi) in enumerate(train_loader, 0):
-        if btchi > 500:
+        if btchi > 700:
             break
         # print(btchi)
         data_augm = data_augm.to(device)
