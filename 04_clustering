@@ -18,18 +18,23 @@ from sklearn.utils import shuffle
 
 path_features = "C:/xc_real_projects/features"
 
-imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
+# imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
+imgpath = "C:/xc_real_projects/xc_streamlit_sw_eur/downloaded_data_img_24000sps"
+
 
 path_clust_images = "C:/xc_real_projects/clusters"
 
-path_save = os.path.join(path_features, 'features_medium20250313_185849.npz')
-
+# path_save = os.path.join(path_features, 'features_medium20250313_185849.npz')
+path_save = os.path.join(path_features, 'features_medium20250315_132629.npz')
+#                                        features_medium20250315_132629
 
 #-------------------------
 # parame Reduce dimensionality
 n_dims_red = 32 # 32 seems goooood 
 # n_dims_red = 64 # 16 # 16 or 32 are ok
-n_neighbors = 10 # between 5-15 seems ok
+# n_neighbors = 10 # between 5-15 seems ok
+n_neighbors = 15 # between 5-15 seems ok
+
 eps_search = np.arange(0.03, 0.8, 0.03) # defaults 32
 # eps_search = np.arange(0.30, 0.70, 0.05) # dim  64
 # eps_search = np.arange(0.10, 3.60, 0.20) # large  256
@@ -159,7 +164,7 @@ feature_mat_scaled_1 = scaler.transform(feature_mat_red)
 if True:
     reducer = umap.UMAP(n_neighbors=n_neighbors, n_components=n_dims_red, metric = 'euclidean')
     # reducer =    Isomap(n_neighbors=n_neighbors, n_components=n_dims_red, metric = "euclidean")
-    reducer.fit(feature_mat_scaled_1[0:7000])
+    reducer.fit(feature_mat_scaled_1[0:10000])
     X_trans = reducer.transform(feature_mat_scaled_1)
     X_trans.shape
 
@@ -193,7 +198,7 @@ feature_mat_scaled_2.shape
 imfiles.dtype
 feature_mat_scaled_2.dtype
 
-path_save_mini = os.path.join(path_features, 'features_reduced_2.npz')
+path_save_mini = os.path.join(path_features, 'features_reduced_4.npz')
 np.savez(file = path_save_mini, feat=feature_mat_scaled_2, imfiles=imfiles)
 
 

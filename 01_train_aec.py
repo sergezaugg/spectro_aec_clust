@@ -25,7 +25,7 @@ imgpath_train = "C:/xc_real_projects/xc_aec_n_eur_longclips/downloaded_data_img_
 
 model_path = "C:/xc_real_projects/models"
 
-batch_size = 16
+batch_size = 8
 
 n_epochs = 20
 

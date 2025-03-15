@@ -19,8 +19,8 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 
 model_path = "C:/xc_real_projects/models"
 
-tstmp = '20250313_164709'
-epotag = '_epo_5'
+tstmp = '20250315_132629'
+epotag = '_epo_20'
 model_enc = EncoderAvgpool()
 model_dec = DecoderTranspNew()
 
