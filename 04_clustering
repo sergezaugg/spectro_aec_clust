@@ -25,7 +25,7 @@ imgpath = "C:/xc_real_projects/xc_streamlit_sw_eur/downloaded_data_img_24000sps"
 path_clust_images = "C:/xc_real_projects/clusters"
 
 # path_save = os.path.join(path_features, 'features_medium20250313_185849.npz')
-path_save = os.path.join(path_features, 'features_medium20250315_132629.npz')
+path_save = os.path.join(path_features, 'features_medium20250315_235946.npz')
 #                                        features_medium20250315_132629
 
 #-------------------------
@@ -74,7 +74,8 @@ imfiles.shape
 
 # atak only center time bins 
 feat.shape
-feat = feat[:, :,1:7]
+feat = feat[:, :,1:7] # better 
+# feat = feat[:, :,3:5] # performs poorly
 feat.shape
 
 
@@ -96,10 +97,7 @@ feat.shape
 
 
 # take a pooling function over time to get classic feature vector 
-# feature_mat = np.concatenate([feat.max(2),  feat.mean(2) ], axis = 1)
 feature_mat = np.concatenate([feat.max(2),  feat.mean(2) , feat.std(2)], axis = 1)
-# feature_mat = np.concatenate([feat.mean(2) , feat.std(2)], axis = 1)
-
 # feature_mat = feat.max(2)
 # feature_mat = feat.mean(2)
 feature_mat.shape
@@ -198,7 +196,7 @@ feature_mat_scaled_2.shape
 imfiles.dtype
 feature_mat_scaled_2.dtype
 
-path_save_mini = os.path.join(path_features, 'features_reduced_4.npz')
+path_save_mini = os.path.join(path_features, 'features_reduced_5.npz')
 np.savez(file = path_save_mini, feat=feature_mat_scaled_2, imfiles=imfiles)
 
 

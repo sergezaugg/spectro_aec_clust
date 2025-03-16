@@ -23,8 +23,12 @@ model_path = "C:/xc_real_projects/models"
 # epotag = '_epo_15'
 # model_enc = EncoderAvgpool()
 
-tstmp = '20250315_132629'
-epotag = '_epo_20'
+# tstmp = '20250315_132629'
+# epotag = '_epo_20'
+
+tstmp = '20250315_235946'
+epotag = '_epo_10'
+
 model_enc = EncoderAvgpool()
 
 path_save = os.path.join(path_features, 'features_medium' + tstmp + '.npz')

@@ -19,8 +19,10 @@ imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_2400
 
 model_path = "C:/xc_real_projects/models"
 
-tstmp = '20250315_132629'
-epotag = '_epo_20'
+# tstmp = '20250315_132629'
+# epotag = '_epo_20'
+tstmp = '20250315_235946'
+epotag = '_epo_10'
 model_enc = EncoderAvgpool()
 model_dec = DecoderTranspNew()
 
@@ -55,7 +57,7 @@ encoded = model_enc(data).to(device)
 decoded = model_dec(encoded).to(device)
 
 # ii = 489 
-# np.random.seed(45623)
+np.random.seed(45623)
 for ii in np.random.randint(data.shape[0], size = 15):
 # for ii in [0,1,2]:
     img_orig = data[ii].cpu().numpy()
