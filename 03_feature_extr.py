@@ -42,7 +42,7 @@ _ = model_enc.eval()
 
 train_dataset = SpectroImageDataset(imgpath, edge_attenuation = False)
 train_dataset.__len__()
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=256, shuffle=True)
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=128, shuffle=True)
 
 # extract features (by batches)
 feat_li = []
@@ -55,7 +55,7 @@ for i, (data, _, fi) in enumerate(train_loader, 0):
     feat_li.append(encoded)
     imfiles.append(fi)
     print(len(imfiles))
-    # if i > 200:
+    # if i > 100:
     #     break
 
 # transform lists to array 
