@@ -15,6 +15,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
 imgpath = "C:/xc_real_projects/xc_streamlit_sw_eur/downloaded_data_img_24000sps"
+#          C:\xc_real_projects\xc_streamlit_sw_eur\downloaded_data_img_24000sps
 
 path_features = "C:/xc_real_projects/features"
 model_path = "C:/xc_real_projects/models"
@@ -42,21 +43,21 @@ _ = model_enc.eval()
 
 train_dataset = SpectroImageDataset(imgpath, edge_attenuation = False)
 train_dataset.__len__()
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=256, shuffle=True)
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True)
 
 # extract features (by batches)
 feat_li = []
 imfiles = []
 for i, (data, _, fi) in enumerate(train_loader, 0):    
-    # print(data.shape)
+    print(data.shape)
     data = data.to(device)
     encoded = model_enc(data).detach().cpu().numpy()
-    # encoded.shape
+    encoded.shape
     feat_li.append(encoded)
     imfiles.append(fi)
     print(len(imfiles))
-    # if i > 200:
-    #     break
+    if i > 600:
+        break
 
 # transform lists to array 
 feat = np.concatenate(feat_li)

@@ -21,12 +21,9 @@ path_features = "C:/xc_real_projects/features"
 # imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
 imgpath = "C:/xc_real_projects/xc_streamlit_sw_eur/downloaded_data_img_24000sps"
 
-
 path_clust_images = "C:/xc_real_projects/clusters"
 
-# path_save = os.path.join(path_features, 'features_medium20250313_185849.npz')
 path_save = os.path.join(path_features, 'features_medium20250315_235946.npz')
-#                                        features_medium20250315_132629
 
 #-------------------------
 # parame Reduce dimensionality
@@ -55,12 +52,6 @@ feat    = data['feat']
 imfiles = data['imfiles']
 feat.shape
 imfiles.shape
-# feat = feat[0:100000,:]
-# imfiles = imfiles[0:100000]
-feat.shape
-imfiles.shape
-
-
 
 # shuffle
 feat, imfiles = shuffle(feat, imfiles)
@@ -69,27 +60,62 @@ imfiles.shape
 
 
 #-------------------------
-# (x)
+# apply slidine witndow 
 #-------------------------
 
-# atak only center time bins 
+num_files = imfiles.shape[0]
+
+n_feats_per_clip = feat.shape[2]
+
+moving_wind_siz = 8
+
+feat = np.lib.stride_tricks.sliding_window_view(feat, window_shape = (moving_wind_siz,), axis=2)
 feat.shape
-feat = feat[:, :,1:7] # better 
-# feat = feat[:, :,3:5] # performs poorly
+feat = np.moveaxis(feat, 2, 1)
+feat.shape
+the_multiplier = feat.shape[1]
+feat = feat.reshape(feat.shape[0]*feat.shape[1], feat.shape[2], feat.shape[3])
 feat.shape
 
 
+imfiles.shape
+imfiles = np.repeat(a = imfiles, repeats = the_multiplier)
+imfiles.shape
 
 
-# # 
-# # select only where average feature value high
-# per_image_mean = feat.mean((1,2))
-# per_image_mean.shape
-# pimm = per_image_mean.mean()
-# feat = feat[per_image_mean > pimm]
-# feat.shape
-# imfiles = imfiles[per_image_mean > pimm]
-# imfiles.shape
+time_position = (((np.arange(the_multiplier))/the_multiplier) * n_feats_per_clip).astype(int)
+time_position = np.concatenate([time_position]*num_files)
+time_position.shape
+
+
+# check
+feat.shape
+imfiles.shape
+time_position.shape
+
+
+
+
+
+
+
+# subsamples 
+feat.shape
+imfiles.shape
+time_position.shape
+
+
+feat = feat[::4]
+imfiles         = imfiles[::4]
+time_position   = time_position[::4]
+
+
+# check
+feat.shape
+imfiles.shape
+time_position.shape
+
+
 
 
 
@@ -109,33 +135,6 @@ feature_mat_red = feature_mat[:,sel_feats]
 feature_mat_red.shape
 
 
-# check features's univariate distribution
-if False: 
-    XX = feature_mat_red[0:2000, :]
-    jit = np.random.uniform(size=XX.shape[0])
-    for ii in np.random.randint(0, XX.shape[1], size = 3):
-        print(ii)
-        xx = XX[:,ii]
-        figa = px.scatter(x = xx, y = jit)
-        figa.show()
-
-if False: 
-# look for correlations 
-    XX = pd.DataFrame(feature_mat_red)
-    XX.shape
-    corr_mat = XX.corr()
-    corr_mat = corr_mat.values
-    type(corr_mat)
-    np.fill_diagonal(a = corr_mat, val = 0.0)
-    np.diag(corr_mat)
-    corr_mat.max()
-    corr_mat.min()
-    u = (np.tril(corr_mat, 0)).flatten()
-    u.shape
-    np.sort(u) 
-    jit = np.random.uniform(size=u.shape[0])
-    figa = px.scatter(x = u, y = jit)
-    figa.show()
 
 
 
@@ -166,10 +165,7 @@ if True:
     X_trans = reducer.transform(feature_mat_scaled_1)
     X_trans.shape
 
-# skip umap    
-if False:
-    X_trans = feature_mat_scaled_1
-    X_trans.shape
+
 
 #-------------------------
 # (x) standardize 2
@@ -189,15 +185,15 @@ feature_mat_scaled_2.shape
 
 
 
-# save smaller data just befor clustering 
+# # save smaller data just befor clustering 
 
-imfiles.shape
-feature_mat_scaled_2.shape
-imfiles.dtype
-feature_mat_scaled_2.dtype
+# imfiles.shape
+# feature_mat_scaled_2.shape
+# imfiles.dtype
+# feature_mat_scaled_2.dtype
 
-path_save_mini = os.path.join(path_features, 'features_reduced_5.npz')
-np.savez(file = path_save_mini, feat=feature_mat_scaled_2, imfiles=imfiles)
+# path_save_mini = os.path.join(path_features, 'features_reduced_99.npz')
+# np.savez(file = path_save_mini, feat=feature_mat_scaled_2, imfiles=imfiles)
 
 
 
@@ -224,6 +220,8 @@ for eps_i in eps_search:
     try:
         cluster_ids_sel    = cluster_ids[pd.Series(cluster_ids).isin(sel2)]
         finle_name_arr_sel = imfiles[pd.Series(cluster_ids).isin(sel2)]
+        time_position_sel  = time_position[pd.Series(cluster_ids).isin(sel2)]
+
         cluster_ids_sel.shape
         finle_name_arr_sel.shape
 
@@ -231,6 +229,7 @@ for eps_i in eps_search:
         df = pd.DataFrame({
             'file_name' :finle_name_arr_sel,
             'cluster_id' :cluster_ids_sel,
+            'time_position' :time_position_sel,
             })
         df['newname'] = df['cluster_id'].astype(str).str.cat(others=df['file_name'], sep='_')
         df = df.sort_values(by = 'cluster_id')
@@ -244,6 +243,14 @@ for eps_i in eps_search:
         horiz_counter = gap
         for i,r in df.iterrows():
             im = Image.open(os.path.join(imgpath, r['file_name']))
+
+            # tak only relevan part of image  in time
+            w, h = im.size
+            c1 = r['time_position']
+            c2 = r['time_position']+128
+            im = im.crop((c1, 0, c2, h))
+            # im.size
+
             if r['cluster_id'] > current_id: 
                 vert_counter = vert_counter + 128 + gap
                 horiz_counter = 0 + gap
