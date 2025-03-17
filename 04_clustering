@@ -248,6 +248,9 @@ for eps_i in eps_search:
             w, h = im.size
             c1 = r['time_position']
             c2 = r['time_position']+128
+
+            # im.crop((left, top, right, bottom))
+
             im = im.crop((c1, 0, c2, h))
             # im.size
 
