@@ -27,7 +27,7 @@ model_path = "C:/xc_real_projects/models"
 
 batch_size = 8
 
-n_epochs = 10
+n_epochs = 20
 
 #----------------------
 # define data loader 
@@ -64,15 +64,15 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,  
 model_enc = EncoderAvgpool()
 model_dec = DecoderTranspNew()
 
-#----------------------
-# load pre-trained  models 
-if True: 
-    tstmp_old = '20250315_215407'
-    epotag = '_epo_20'
-    path_enc = 'encoder_model_' + tstmp_old + epotag + '.pth'
-    path_dec = 'decoder_model_' + tstmp_old + epotag + '.pth'
-    model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
-    model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights_only=True))
+# #----------------------
+# # load pre-trained  models 
+# if True: 
+#     tstmp_old = '20250315_215407'
+#     epotag = '_epo_20'
+#     path_enc = 'encoder_model_' + tstmp_old + epotag + '.pth'
+#     path_dec = 'decoder_model_' + tstmp_old + epotag + '.pth'
+#     model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
+#     model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights_only=True))
 
 
 model_enc = model_enc.to(device)
@@ -81,7 +81,8 @@ summary(model_enc, (1, 128, 1152))
 
 model_dec = model_dec.to(device)
 # summary(model_dec, (512, 1, 8))
-summary(model_dec, (512, 1, 72))
+# summary(model_dec, (512, 1, 72))
+summary(model_dec, (32, 1, 72))
 
    
 
@@ -100,8 +101,8 @@ summary(model_dec, (512, 1, 72))
 
 # instantiate loss, optimizer
 criterion = nn.MSELoss() #nn.BCELoss()
-# optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001)
-optimizer = optim.SGD(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001, momentum=0.9)
+optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001)
+# optimizer = optim.SGD(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001, momentum=0.9)
 
 # torch.optim.SGD(params, lr=0.001, momentum=0,
 

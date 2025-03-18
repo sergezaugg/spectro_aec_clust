@@ -19,15 +19,9 @@ imgpath = "C:/xc_real_projects/xc_streamlit_sw_eur/downloaded_data_img_24000sps"
 path_features = "C:/xc_real_projects/features"
 model_path = "C:/xc_real_projects/models"
 
-# tstmp = '20250313_185849'
-# epotag = '_epo_15'
-# model_enc = EncoderAvgpool()
 
-# tstmp = '20250315_132629'
-# epotag = '_epo_20'
-
-tstmp = '20250315_235946'
-epotag = '_epo_10'
+tstmp = '20250318_235043'
+epotag = '_epo_20'
 
 model_enc = EncoderAvgpool()
 

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import os 
-from sklearn.cluster import DBSCAN, AgglomerativeClustering
+from sklearn.cluster import DBSCAN, AgglomerativeClustering, OPTICS
 from sklearn.preprocessing import StandardScaler
 from sklearn.manifold import Isomap
 import umap.umap_ as umap
@@ -21,10 +21,15 @@ path_features = "C:/xc_real_projects/features"
 # imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
 imgpath = "C:/xc_real_projects/xc_streamlit_sw_eur/downloaded_data_img_24000sps"
 
-path_clust_images = "C:/xc_real_projects/clusters2"
+path_clust_images = "C:/xc_real_projects/clusters_new_aec"
 
-# path_save = os.path.join(path_features, 'features_medium20250313_185849.npz')
-path_save = os.path.join(path_features, 'features_medium20250315_235946.npz')
+if not os.path.exists(path_clust_images):
+    os.makedirs(path_clust_images)
+
+
+# path_save = os.path.join(path_features, 'features_medium20250315_235946.npz')
+path_save = os.path.join(path_features, 'features_medium20250318_235043.npz')
+
 
 #-------------------------
 # parame Reduce dimensionality
@@ -33,7 +38,7 @@ n_dims_red = 32 # 32 seems goooood
 # n_neighbors = 10 # between 5-15 seems ok
 n_neighbors = 15 # between 5-15 seems ok
 
-eps_search = np.arange(0.03, 0.5, 0.03) # defaults 32
+eps_search = np.arange(0.05, 0.5, 0.05) # defaults 32
 # eps_search = np.arange(0.30, 0.70, 0.05) # dim  64
 # eps_search = np.arange(0.10, 3.60, 0.20) # large  256
 # eps_search = np.arange(14, 19, 0.50) # super large  1500
@@ -54,12 +59,6 @@ feat    = data['feat']
 imfiles = data['imfiles']
 feat.shape
 imfiles.shape
-# feat = feat[0:100000,:]
-# imfiles = imfiles[0:100000]
-feat.shape
-imfiles.shape
-
-
 
 # shuffle
 feat, imfiles = shuffle(feat, imfiles)
@@ -74,16 +73,12 @@ imfiles.shape
 # atak only center time bins 
 feat.shape
 feat = feat[:, :,4:12] #  better 
-# feat = feat[:, :,5:11] #  
+# feat = feat[:, :,6:10] #  
 feat.shape
 
-
-# # 
-
-
 # take a pooling function over time to get classic feature vector 
-# feature_mat = np.concatenate([feat.max(2),  feat.mean(2) , feat.std(2)], axis = 1) # default
-feature_mat = np.concatenate([feat.mean(2) , feat.std(2)], axis = 1) # new 
+feature_mat = np.concatenate([feat.max(2),  feat.mean(2) , feat.std(2)], axis = 1) # default
+# feature_mat = np.concatenate([feat.mean(2) , feat.std(2)], axis = 1) # new 
 # feature_mat = feat.max(2)
 # feature_mat = feat.mean(2)
 feature_mat.shape
@@ -93,38 +88,6 @@ feature_mat.std(0).shape
 sel_feats = feature_mat.std(0) != 0.000 # or feature_mat.std(0) != 0.0
 feature_mat_red = feature_mat[:,sel_feats]
 feature_mat_red.shape
-
-
-# check features's univariate distribution
-if False: 
-    XX = feature_mat_red[0:2000, :]
-    jit = np.random.uniform(size=XX.shape[0])
-    for ii in np.random.randint(0, XX.shape[1], size = 3):
-        print(ii)
-        xx = XX[:,ii]
-        figa = px.scatter(x = xx, y = jit)
-        figa.show()
-
-if False: 
-# look for correlations 
-    XX = pd.DataFrame(feature_mat_red)
-    XX.shape
-    corr_mat = XX.corr()
-    corr_mat = corr_mat.values
-    type(corr_mat)
-    np.fill_diagonal(a = corr_mat, val = 0.0)
-    np.diag(corr_mat)
-    corr_mat.max()
-    corr_mat.min()
-    u = (np.tril(corr_mat, 0)).flatten()
-    u.shape
-    np.sort(u) 
-    jit = np.random.uniform(size=u.shape[0])
-    figa = px.scatter(x = u, y = jit)
-    figa.show()
-
-
-
 
 
 #-------------------------
@@ -152,9 +115,8 @@ if True:
     X_trans = reducer.transform(feature_mat_scaled_1)
     X_trans.shape
 
-# skip umap    
 if False:
-    X_trans = feature_mat_scaled_1
+    X_trans = feature_mat_scaled_1    
     X_trans.shape
 
 #-------------------------
@@ -166,27 +128,10 @@ scaler.fit(X_trans)
 feature_mat_scaled_2 = scaler.transform(X_trans)
 feature_mat_scaled_2.shape
 
-# fig01 = px.scatter(
-#     x = feature_mat_scaled_2[:,0],
-#     y = feature_mat_scaled_2[:,1]
-#     )
-# fig01.show()
 
-
-
-
-# save smaller data just befor clustering 
-
-imfiles.shape
-feature_mat_scaled_2.shape
-imfiles.dtype
-feature_mat_scaled_2.dtype
-
+# save smaller data just before clustering 
 path_save_mini = os.path.join(path_features, 'features_reduced_5.npz')
 np.savez(file = path_save_mini, feat=feature_mat_scaled_2, imfiles=imfiles)
-
-
-
 
 
 #-------------------------
@@ -196,7 +141,17 @@ np.savez(file = path_save_mini, feat=feature_mat_scaled_2, imfiles=imfiles)
 for eps_i in eps_search:
     print("-----------")
     print(">> eps_i", eps_i)
-    clu = DBSCAN(eps = eps_i, min_samples=dbscan_min_samples, metric='euclidean', n_jobs = 6) 
+
+    clu = DBSCAN(eps = eps_i, min_samples=dbscan_min_samples, metric = 'euclidean', n_jobs = 8) 
+
+    # clu = OPTICS(min_samples = dbscan_min_samples, 
+    #              max_eps = eps_i, 
+    #              metric = 'euclidean', 
+    #             #  cluster_method = 'dbscan', 
+    #              cluster_method = 'xi', 
+    #              n_jobs = 8, min_cluster_size = 30)
+                                 
+
     cluster_ids = clu.fit_predict(feature_mat_scaled_2)
     pd.Series(cluster_ids).value_counts()[0:10]
  
