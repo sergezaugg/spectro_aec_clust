@@ -79,7 +79,7 @@ class EncoderAvgpool(nn.Module):
         super(EncoderAvgpool, self).__init__()
         n_ch_in = 1
         # ch = [64, 128, 256, 512]
-        ch = [64, 128, 256, 32]
+        ch = [64, 128, 256, 128]
         po = [(2, 2), (4, 2), (4, 2), (4, 2)]
         self.padding =  "same"
         self.conv0 = nn.Sequential(
@@ -118,7 +118,7 @@ class DecoderTranspNew(nn.Module):
         super(DecoderTranspNew, self).__init__()
         n_ch_out=1
         # ch =  [512, 256, 128, 64]
-        ch =  [32, 256, 128, 64]
+        ch =  [128, 256, 128, 64]
         po =  [(4, 2), (4, 2), (4, 2), (2, 2)]
            
         self.tconv0 = nn.Sequential(
@@ -357,7 +357,7 @@ if __name__ == "__main__":
     model_dec = model_dec.to(device)
     # summary(model_dec, (512, 1, 8))
     # summary(model_dec, (512, 1, 72))
-    summary(model_dec, (32, 1, 72))
+    summary(model_dec, (128, 1, 72))
 
 
 

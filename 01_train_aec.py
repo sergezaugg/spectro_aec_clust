@@ -20,8 +20,8 @@ from plotly.subplots import make_subplots
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# imgpath_train = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
-imgpath_train = "C:/xc_real_projects/xc_aec_n_eur_longclips/downloaded_data_img_24000sps"
+imgpath_train = "C:/xc_real_projects/xc_aec_n_eur/downloaded_data_img_24000sps_longclips"
+imgpath_test  = "C:/xc_real_projects/xc_streamlit_sw_eur/downloaded_data_img_24000sps_longclips"
 
 model_path = "C:/xc_real_projects/models"
 
@@ -36,7 +36,7 @@ train_dataset.__len__()
 xx = train_dataset.__getitem__(45)
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
 for i, (da_orig, data_augm, fi) in enumerate(train_loader, 0):
-    if i > 3:
+    if i > 2:
         break
     print(data_augm.shape)
     print(da_orig.shape)
@@ -45,22 +45,12 @@ n_batches = train_dataset.__len__() // batch_size
 n_batches
 
 
-
-
-# test set 
-# imgpath_test = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
-imgpath_test = "C:/xc_real_projects/xc_aec_n_eur_longclips/downloaded_data_img_24000sps"
-
 test_dataset = SpectroImageDataset(imgpath_test, edge_attenuation = False)
 test_dataset.__len__()
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
 
-
-
-
 #----------------------
 # define untrained models 
-
 model_enc = EncoderAvgpool()
 model_dec = DecoderTranspNew()
 
@@ -82,40 +72,19 @@ summary(model_enc, (1, 128, 1152))
 model_dec = model_dec.to(device)
 # summary(model_dec, (512, 1, 8))
 # summary(model_dec, (512, 1, 72))
-summary(model_dec, (32, 1, 72))
-
-   
-
-
-
-
-
-
-
-
-
-
-# --------------------------------
-# torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, 
-#                  amsgrad=False, *, foreach=None, maximize=False, capturable=False, differentiable=False, fused=None)
+summary(model_dec, (128, 1, 72))
 
 # instantiate loss, optimizer
 criterion = nn.MSELoss() #nn.BCELoss()
 optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001)
 # optimizer = optim.SGD(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001, momentum=0.9)
 
-# torch.optim.SGD(params, lr=0.001, momentum=0,
-
-
-
 mse_test_li = []
 mse_trai_li = []
-
 for epoch in range(n_epochs):
     print(f"Epoch: {epoch + 1}/{n_epochs}")
     # set the encoder and decoder models to training mode
     loss_tra =[]
-        
     _ = model_enc.train()
     _ = model_dec.train()
     trai_perf_li = []
