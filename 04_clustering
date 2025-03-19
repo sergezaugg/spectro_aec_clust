@@ -18,7 +18,7 @@ path_features = "C:/xc_real_projects/features"
 
 imgpath = "C:/xc_real_projects/xc_streamlit_sw_eur/downloaded_data_img_24000sps_rect"
 
-path_clust_images = "C:/xc_real_projects/clusters_2"
+path_clust_images = "C:/xc_real_projects/clusters_3"
 
 if not os.path.exists(path_clust_images):
     os.makedirs(path_clust_images)
@@ -108,7 +108,7 @@ feature_mat_scaled_1 = scaler.transform(feature_mat_red)
 if True:
     reducer = umap.UMAP(n_neighbors=n_neighbors, n_components=n_dims_red, metric = 'euclidean')
     # reducer =    Isomap(n_neighbors=n_neighbors, n_components=n_dims_red, metric = "euclidean")
-    reducer.fit(feature_mat_scaled_1[0:30000])
+    reducer.fit(feature_mat_scaled_1[0:35000])
     X_trans = reducer.transform(feature_mat_scaled_1)
     X_trans.shape
 
@@ -127,7 +127,7 @@ feature_mat_scaled_2.shape
 
 
 # save smaller data just before clustering 
-path_save_mini = os.path.join(path_features, 'features_reduced_5.npz')
+path_save_mini = os.path.join(path_features, 'features_reduced_6.npz')
 np.savez(file = path_save_mini, feat=feature_mat_scaled_2, imfiles=imfiles)
 
 
@@ -175,7 +175,7 @@ for eps_i in eps_search:
         df.shape
 
         # MAKE NICE MOSAIK PLOT 
-        imall = Image.new('L', (20000, 20000), '#55ff00')
+        imall = Image.new('L', (25000, 25000), '#55ff00')
         gap = 25
         current_id = df['cluster_id'].min()
         vert_counter = gap
