@@ -13,6 +13,8 @@ from sklearn.manifold import Isomap
 import umap.umap_ as umap
 from PIL import Image
 from sklearn.utils import shuffle
+import datetime
+
 
 path_features = "C:/xc_real_projects/features"
 
@@ -42,69 +44,74 @@ dbscan_min_samples = 10
 # centf01 = 4
 # centf02 = 12
 
-# good 
-centf01 = 3
-centf02 = 13
+# # good 
+# centf01 = 3
+# centf02 = 13
 
 
 #-------------------------
 # (x) Load AEC features 
 #-------------------------
 
-data = np.load(file = path_save)
-feat    = data['feat']
-imfiles = data['imfiles']
-feat.shape
-imfiles.shape
+# data = np.load(file = path_save)
+# feat    = data['feat']
+# imfiles = data['imfiles']
+# feat.shape
+# imfiles.shape
 
-# shuffle
-feat, imfiles = shuffle(feat, imfiles)
-feat.shape
-imfiles.shape
+# # shuffle
+# feat, imfiles = shuffle(feat, imfiles)
+# feat.shape
+# imfiles.shape
 
 
 #-------------------------
 # (x)
 #-------------------------
 
-# atak only center time bins 
-feat.shape
-feat = feat[:, :,centf01:centf02] #  better 
-feat.shape
+# # atak only center time bins 
+# feat.shape
+# feat = feat[:, :,centf01:centf02] #  better 
+# feat.shape
 
-# take a pooling function over time to get classic feature vector 
-# feature_mat = np.concatenate([feat.max(2),  feat.mean(2) , feat.std(2)], axis = 1) # default
-feature_mat = np.concatenate([feat.mean(2) , feat.std(2)], axis = 1) # also good 
-# feature_mat = feat.max(2)
-# feature_mat = feat.mean(2)
-feature_mat.shape
+# # take a pooling function over time to get classic feature vector 
+# # feature_mat = np.concatenate([feat.max(2),  feat.mean(2) , feat.std(2)], axis = 1) # default
+# feature_mat = np.concatenate([feat.mean(2) , feat.std(2)], axis = 1) # also good 
+# # feature_mat = feat.max(2)
+# # feature_mat = feat.mean(2)
+# feature_mat.shape
 
-# select valid features 
-feature_mat.std(0).shape
-sel_feats = feature_mat.std(0) != 0.000 # or feature_mat.std(0) != 0.0
-feature_mat_red = feature_mat[:,sel_feats]
-feature_mat_red.shape
-
-
-#-------------------------
-# (x) standardize 1
-#-------------------------
-
-scaler = StandardScaler()
-scaler.fit(feature_mat_red)
-feature_mat_scaled_1 = scaler.transform(feature_mat_red)
-# feature_mat_scaled_1.mean(0)
-# feature_mat_scaled_1.std(0)
+# # select valid features 
+# feature_mat.std(0).shape
+# sel_feats = feature_mat.std(0) != 0.000 # or feature_mat.std(0) != 0.0
+# feature_mat_red = feature_mat[:,sel_feats]
+# feature_mat_red.shape
 
 
+# #-------------------------
+# # (x) standardize 1
+# #-------------------------
 
-# got to 16 bit float to have small e npz files ()
-feature_mat_scaled_1 = feature_mat_scaled_1.astype('float16')
+# scaler = StandardScaler()
+# scaler.fit(feature_mat_red)
+# feature_mat_scaled_1 = scaler.transform(feature_mat_red)
+# # feature_mat_scaled_1.mean(0)
+# # feature_mat_scaled_1.std(0)
 
 
-# save smaller data just before clustering 
-path_save_mini = os.path.join(path_features, 'features_semi_reduced.npz')
-np.savez(file = path_save_mini, feat=feature_mat_scaled_1, imfiles=imfiles)
+
+# # got to 16 bit float to have small e npz files ()
+# feature_mat_scaled_1 = feature_mat_scaled_1.astype('float16')
+
+
+# # save smaller data just before clustering 
+
+# tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
+
+
+
+# path_save_mini = os.path.join(path_features, 'features_sr' + tstmp + '.npz')
+# np.savez(file = path_save_mini, feat=feature_mat_scaled_1, imfiles=imfiles)
 
 
 #-------------------------
@@ -132,9 +139,9 @@ feature_mat_scaled_2 = scaler.transform(X_trans)
 feature_mat_scaled_2.shape
 
 
-# save smaller data just before clustering 
-path_save_mini = os.path.join(path_features, 'features_full_reduced.npz')
-np.savez(file = path_save_mini, feat=feature_mat_scaled_2, imfiles=imfiles)
+# # save smaller data just before clustering 
+# path_save_mini = os.path.join(path_features, 'features_full_reduced.npz')
+# np.savez(file = path_save_mini, feat=feature_mat_scaled_2, imfiles=imfiles)
 
 
 #-------------------------
@@ -214,7 +221,7 @@ for eps_i in eps_search:
         str02 = '_dims_' + "{:1.0f}".format(n_dims_red)  
         str03 = '_eps_' +   "{:5.4f}".format(eps_i) 
         str04 = '_min_samp_' +  "{:5.4f}".format(dbscan_min_samples)       
-        str05 = '_centf_' +  "{:5.4f}".format(centf01)  + "_{:5.4f}".format(centf02)  
+        # str05 = '_centf_' +  "{:5.4f}".format(centf01)  + "_{:5.4f}".format(centf02)  
 
         finam = str01 + str02 + str03 + str04 + str05
 
