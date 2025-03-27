@@ -13,11 +13,11 @@ import datetime
 path_features = "C:/xc_real_projects/features"
 
 path_features_full = os.path.join(path_features, 'features_medium20250319_210308.npz')
-
+#                                                 features_medium20250319_210308.npz
 
 par = {
-    'centf01' : 5,
-    'centf02' : 11,
+    'centf01' : 7,
+    'centf02' : 9,
     }
 
 #-------------------------

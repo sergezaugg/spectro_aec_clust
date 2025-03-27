@@ -13,7 +13,8 @@ import pickle
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-imgpath = "C:/xc_real_projects/xc_streamlit_sw_eur/downloaded_data_img_24000sps_rect"
+# imgpath = "C:/xc_real_projects/xc_streamlit_sw_eur/downloaded_data_img_24000sps_rect"
+imgpath = "C:/xc_real_projects/xc_sw_europe/downloaded_data_img_24000sps"
 
 path_features = "C:/xc_real_projects/features"
 model_path = "C:/xc_real_projects/models"
