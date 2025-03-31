@@ -43,21 +43,18 @@ for i, (data, _, fi) in enumerate(test_loader, 0):
     feat_li.append(encoded)
     imfiles.append(fi)
     print(len(imfiles))
-    if i > 2:
-        break
+    # if i > 2:
+    #     break
 
 # transform lists to array 
 feat = np.concatenate(feat_li)
 feat = feat.squeeze()
 imfiles = np.concatenate(imfiles)
 
-
-#-------------------------
 # shuffle
 feat, imfiles = shuffle(feat, imfiles)
 feat.shape
 imfiles.shape
-
 
 # save all relevant objects 
 tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
