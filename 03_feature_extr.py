@@ -16,7 +16,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # define paths
 model_path = "C:/xc_real_projects/models/encoder_model_20250319_210308_epo_20.pth"
 
-path_xc = "C:/xc_real_projects/xc_parus_01/"
+path_xc = "C:/xc_real_projects/xc_parus_02/"
 
 imgpath = os.path.join(path_xc, "downloaded_data_img_24000sps")
 
