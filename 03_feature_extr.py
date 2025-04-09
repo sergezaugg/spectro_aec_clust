@@ -4,8 +4,11 @@
 #----------------------
 
 import numpy as np
+import pandas as pd
 import os 
-from sklearn.preprocessing import StandardScaler
+import pickle
+import shutil
+# from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle
 import datetime
 import torch
@@ -16,10 +19,15 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # define paths
 model_path = "C:/xc_real_projects/models/encoder_model_20250319_210308_epo_20.pth"
 
-path_xc = "C:/xc_real_projects/xc_parus_02/"
+path_xc = "C:/xc_real_projects/xc_sw_europe/"
 
-imgpath = os.path.join(path_xc, "downloaded_data_img_24000sps")
+imgpath = os.path.join(path_xc, "images_24000sps_20250406_092522")
+meta_path = os.path.join(path_xc, "downloaded_data_meta.pkl")
 
+# load metadata 
+df_meta = pd.read_pickle(meta_path)
+# df_meta.head()
+# df_meta.shape
 
 # load a trained encoder 
 model_enc = EncoderAvgpool()
@@ -43,8 +51,8 @@ for i, (data, _, fi) in enumerate(test_loader, 0):
     feat_li.append(encoded)
     imfiles.append(fi)
     print(len(imfiles))
-    # if i > 2:
-    #     break
+    if i > 6:
+        break
 
 # transform lists to array 
 feat = np.concatenate(feat_li)
@@ -61,43 +69,44 @@ tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
 features_save_path = os.path.join(path_xc, "features" + tstmp) 
 if not os.path.exists(features_save_path):
     os.makedirs(features_save_path)
-path_save_npz = os.path.join(features_save_path, 'features_from_encoder' + tstmp + '.npz')
+path_save_npz = os.path.join(features_save_path, 'features_from_encoder' + tstmp + '.pkl')
 encoder_id = np.array(model_path)
-np.savez(file = path_save_npz, feat=feat, imfiles=imfiles, encoder_id = encoder_id)
+
+dat_di = {
+    'feat': feat,
+    'imfiles': imfiles,
+     'encoder_id' : encoder_id,
+    'meta': df_meta
+    }
+
+with open(path_save_npz, 'wb') as handle:
+    pickle.dump(dat_di, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+# with open('filename.pickle', 'rb') as handle:
+#     b = pickle.load(handle)
+
+shutil.make_archive(os.path.join(features_save_path, 'images'), 'zip', imgpath)
 
 
 
-#----------------------
-# Time-pooling 
+feat.shape
+imfiles.shape
+encoder_id.shape
+df_meta.shape
 
-edge_cut_li = [[0,16], [2,14], [4,12], [6,10]]
 
-for edgcut in edge_cut_li:
-    print(edgcut)
-  
-    #-------------------------
-    # exclude time-edge bins
-    feat_cut = feat[:, :, edgcut[0]:edgcut[1]] 
-    feat_cut.shape
 
-    #-------------------------
-    # pooling over time to get classic feature vector 
-    feat_cut.max(2).shape
-    # feature_mat = np.concatenate([feat_cut.max(2),  feat_cut.mean(2) , feat_cut.std(2)], axis = 1) # default
-    feature_mat = np.concatenate([feat_cut.mean(2) , feat_cut.std(2)], axis = 1) # default
 
-    #-------------------------
-    # standardize
-    scaler = StandardScaler()
-    scaler.fit(feature_mat)
-    feature_mat_scaled = scaler.transform(feature_mat)
-    feature_mat_scaled.shape
 
-    #-------------------------
-    # save 
-    feature_mat_scaled = feature_mat_scaled.astype('float16') # got to 16 bit float to have small e npz files ()
-    path_save_mini = os.path.join(features_save_path, 'features_timepooled_' + str(edgcut[0]) + '_' + str(edgcut[1]) + '.npz')
-    np.savez(file = path_save_mini, feat=feature_mat_scaled, imfiles=imfiles)
+
+
+
+
+
+
+
+
+
 
 
 
