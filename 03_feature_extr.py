@@ -8,7 +8,6 @@ import pandas as pd
 import os 
 import pickle
 import shutil
-# from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle
 import datetime
 import torch
@@ -19,15 +18,20 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # define paths
 model_path = "C:/xc_real_projects/models/encoder_model_20250319_210308_epo_20.pth"
 
-path_xc = "C:/xc_real_projects/xc_sw_europe/"
 
-imgpath = os.path.join(path_xc, "images_24000sps_20250406_092522")
+# path_xc = "C:/xc_real_projects/xc_sw_europe/"
+# imgpath = os.path.join(path_xc, "images_24000sps_20250406_092522")
+# meta_path = os.path.join(path_xc, "downloaded_data_meta.pkl")
+
+
+path_xc = "C:/xc_real_projects/xc_parus_01/"
+imgpath = os.path.join(path_xc, "images_24000sps_20250406_081430")
 meta_path = os.path.join(path_xc, "downloaded_data_meta.pkl")
+
+
 
 # load metadata 
 df_meta = pd.read_pickle(meta_path)
-# df_meta.head()
-# df_meta.shape
 
 # load a trained encoder 
 model_enc = EncoderAvgpool()
@@ -51,8 +55,8 @@ for i, (data, _, fi) in enumerate(test_loader, 0):
     feat_li.append(encoded)
     imfiles.append(fi)
     print(len(imfiles))
-    if i > 6:
-        break
+    # if i > 6:
+    #     break
 
 # transform lists to array 
 feat = np.concatenate(feat_li)
@@ -75,19 +79,15 @@ encoder_id = np.array(model_path)
 dat_di = {
     'feat': feat,
     'imfiles': imfiles,
-     'encoder_id' : encoder_id,
+    'encoder_id' : encoder_id,
     'meta': df_meta
     }
 
 with open(path_save_npz, 'wb') as handle:
     pickle.dump(dat_di, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-# with open('filename.pickle', 'rb') as handle:
-#     b = pickle.load(handle)
-
 shutil.make_archive(os.path.join(features_save_path, 'images'), 'zip', imgpath)
-
-
+shutil.move(os.path.join(features_save_path, 'images.zip'), os.path.join(features_save_path, 'images.speczip'))
 
 feat.shape
 imfiles.shape
