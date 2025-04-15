@@ -16,14 +16,14 @@ torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # define paths
-model_path = "C:/xc_real_projects/models/encoder_model_20250319_210308_epo_20.pth"
+model_path = "D:/xc_real_projects/models/encoder_model_20250319_210308_epo_20.pth"
 
 
-# path_xc = "C:/xc_real_projects/xc_sw_europe/"
+# path_xc = "D:/xc_real_projects/xc_sw_europe/"
 # imgpath = os.path.join(path_xc, "images_24000sps_20250406_092522")
 # meta_path = os.path.join(path_xc, "downloaded_data_meta.pkl")
 
-# path_xc = "C:/xc_real_projects/xc_parus_01/"
+# path_xc = "D:/xc_real_projects/xc_parus_01/"
 # imgpath = os.path.join(path_xc, "images_24000sps_20250406_081430")
 # meta_path = os.path.join(path_xc, "downloaded_data_meta.pkl")
 
