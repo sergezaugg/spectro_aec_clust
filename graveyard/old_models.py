@@ -381,7 +381,36 @@ if __name__ == "__main__":
     # model_dec = model_dec.to(device)
     # summary(model_dec, (512, 1, 8))
 
-  
+
+    # get size of receptive field 
+
+    class Convnet00(nn.Module):
+        def __init__(self):
+            super(Convnet00, self).__init__()
+            ch = 55
+            po = [(2, 2), (2, 2), (2, 2), (2, 2)]
+            self.conv0 = nn.Sequential(
+                nn.Conv2d(1,  ch, kernel_size=(5,5), stride=1, padding=0),
+                nn.AvgPool2d(po[0], stride=po[0]))
+            self.conv1 = nn.Sequential(
+                nn.Conv2d(ch, ch, kernel_size=(5,5), stride=1, padding=0),
+                nn.AvgPool2d(po[1], stride=po[1]))
+            self.conv2 = nn.Sequential(
+                nn.Conv2d(ch, ch, kernel_size=(5,5), stride=1, padding=0),
+                nn.AvgPool2d(po[2], stride=po[2]))
+            self.conv3 = nn.Sequential(
+                nn.Conv2d(ch, ch, kernel_size=(5,5), stride=1, padding=0),
+                nn.AvgPool2d(po[3], stride=po[3]))
+        def forward(self, x):
+            x = self.conv0(x)
+            x = self.conv1(x)
+            x = self.conv2(x)
+            x = self.conv3(x)
+            return(x)
+        
+    model_enc = Convnet00() 
+    model_enc = model_enc.to(device)
+    summary(model_enc, (1, 92, 76))
 
 
 

@@ -12,18 +12,19 @@ import torch.nn as nn
 import torch.optim as optim
 import os 
 import datetime
-from custom_models import SpectroImageDataset
-from custom_models import EncoderAvgpool, DecoderTranspNew
+from utils import SpectroImageDataset
+from custom_models_2 import EncoderAvgpool, DecoderTranspNew
 from plotly.subplots import make_subplots
 
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-imgpath_train = "C:/xc_real_projects/xc_aec_n_eur/downloaded_data_img_24000sps_longclips"
-imgpath_test  = "C:/xc_real_projects/xc_streamlit_sw_eur/downloaded_data_img_24000sps_longclips"
+imgpath_train = "D:/xc_real_projects/xc_ne_europe/images_24000sps_20250406_095331"
 
-model_path = "C:/xc_real_projects/models"
+imgpath_test  = "D:/xc_real_projects/xc_sw_europe/images_24000sps_20250406_092522"
+
+model_path = "D:/xc_real_projects/models"
 
 batch_size = 8
 
@@ -72,7 +73,7 @@ summary(model_enc, (1, 128, 1152))
 model_dec = model_dec.to(device)
 # summary(model_dec, (512, 1, 8))
 # summary(model_dec, (512, 1, 72))
-summary(model_dec, (128, 1, 72))
+summary(model_dec, (128, 1, 36))
 
 # instantiate loss, optimizer
 criterion = nn.MSELoss() #nn.BCELoss()
