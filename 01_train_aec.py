@@ -32,7 +32,7 @@ n_epochs = 20
 
 #----------------------
 # define data loader 
-train_dataset = SpectroImageDataset(imgpath_train, edge_attenuation = False)
+train_dataset = SpectroImageDataset(imgpath_train, edge_attenuation = False, do_augment = True)
 train_dataset.__len__()
 xx = train_dataset.__getitem__(45)
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
@@ -46,7 +46,7 @@ n_batches = train_dataset.__len__() // batch_size
 n_batches
 
 
-test_dataset = SpectroImageDataset(imgpath_test, edge_attenuation = False)
+test_dataset = SpectroImageDataset(imgpath_test, edge_attenuation = False, do_augment = False)
 test_dataset.__len__()
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
 
@@ -55,15 +55,18 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,  
 model_enc = EncoderAvgpool()
 model_dec = DecoderTranspNew()
 
-# #----------------------
-# # load pre-trained  models 
-# if True: 
-#     tstmp_old = '20250315_215407'
-#     epotag = '_epo_20'
-#     path_enc = 'encoder_model_' + tstmp_old + epotag + '.pth'
-#     path_dec = 'decoder_model_' + tstmp_old + epotag + '.pth'
-#     model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
-#     model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights_only=True))
+#----------------------
+# load pre-trained  models 
+if True: 
+    tstmp_old = '20250418_223302'
+    epotag = '_epo_14'
+    path_enc = 'encoder_model_' + tstmp_old + epotag + '.pth'
+    path_dec = 'decoder_model_' + tstmp_old + epotag + '.pth'
+    model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
+    model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights_only=True))
+
+# encoder_model_20250418_223302_epo_14.pth
+# encoder_model_20250418_223302_epo_14.pth
 
 
 model_enc = model_enc.to(device)

@@ -11,12 +11,14 @@ import shutil
 from sklearn.utils import shuffle
 import datetime
 import torch
-from custom_models import SpectroImageDataset, EncoderAvgpool
+from utils import SpectroImageDataset
+from custom_models_2 import EncoderAvgpool
+
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # define paths
-model_path = "D:/xc_real_projects/models/encoder_model_20250319_210308_epo_20.pth"
+model_path = "D:/xc_real_projects/models/encoder_model_20250419_033651_epo_20.pth"
 
 
 # path_xc = "D:/xc_real_projects/xc_sw_europe/"
@@ -43,7 +45,7 @@ model_enc = model_enc.to(device)
 _ = model_enc.eval()
 
 # prepare dataloader
-test_dataset = SpectroImageDataset(imgpath, edge_attenuation = False)
+test_dataset = SpectroImageDataset(imgpath, edge_attenuation = False, do_augment = False)
 test_dataset.__len__()
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128, shuffle=True)
 

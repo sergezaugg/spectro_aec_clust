@@ -6,14 +6,15 @@
 import plotly.express as px
 import torch
 import numpy as np
-from custom_models import SpectroImageDataset
+from utils import SpectroImageDataset
 from plotly.subplots import make_subplots
 
-# imgpath_train = "C:/xc_real_projects/da_examples/1"
-imgpath_train = "C:/xc_real_projects/da_examples/4"
+# imgpath_train = "D:/xc_real_projects/da_examples/4"
+imgpath_train = "D:/xc_real_projects/xc_ne_europe/images_24000sps_20250406_095331"
 
 # define data loader 
-train_dataset = SpectroImageDataset(imgpath_train, edge_attenuation = True)
+train_dataset = SpectroImageDataset(imgpath_train, augment_1=True, augment_2=True)
+
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=16,  shuffle=True, drop_last=True)
 for i, (da_orig, data, fi) in enumerate(train_loader, 0):
     if i > 0:

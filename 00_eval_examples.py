@@ -7,22 +7,22 @@ import pandas as pd
 import torch
 import plotly.express as px
 import os 
-from custom_models import EncoderSimple, DecoderTransp, DecoderUpsample, EncoderAvgpool, EncoderSimple2, EncoderNopad, DecoderTranspNew
-from custom_models import SpectroImageDataset
+from custom_models_2 import EncoderAvgpool, DecoderTranspNew
+from utils import SpectroImageDataset
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-imgpath = "C:/xc_real_projects/xc_aec_project_sw_europe/downloaded_data_img_24000sps"
+imgpath = "D:/xc_real_projects/xc_corvidae_01/images_24000sps_20250415_181912"
 
-model_path = "C:/xc_real_projects/models"
+model_path = "D:/xc_real_projects/models"
 
 # tstmp = '20250315_132629'
 # epotag = '_epo_20'
-tstmp = '20250315_235946'
-epotag = '_epo_10'
+tstmp = '20250419_033651'
+epotag = '_epo_20'
 model_enc = EncoderAvgpool()
 model_dec = DecoderTranspNew()
 
@@ -39,7 +39,7 @@ model_dec = model_dec.to(device)
 _ = model_dec.eval()
 
 # test 
-test_dataset = SpectroImageDataset(imgpath, edge_attenuation = False)
+test_dataset = SpectroImageDataset(imgpath, edge_attenuation = False, do_augment = False)
 test_loader  = torch.utils.data.DataLoader(test_dataset, batch_size=128,  shuffle=True, drop_last=False)
 
 # test loss 
