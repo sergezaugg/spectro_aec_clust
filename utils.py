@@ -28,7 +28,7 @@ class SpectroImageDataset(Dataset):
         self.dataaugm = transforms.Compose([
             transforms.RandomAffine(translate=(self.par['da']['trans_prop'], 0.0), degrees=(-self.par['da']['rot_deg'], self.par['da']['rot_deg'])),
             transforms.RandomApply(torch.nn.ModuleList([transforms.GaussianNoise(mean = 0.0, sigma = self.par['da']['gnoisesigm'], clip=True),]), p=self.par['da']['gnoiseprob']),
-            transforms.ColorJitter(brightness = self.par['da']['brightness'] , contrast = self.par['da']['contrast'], saturation = self.par['da']['saturation']),
+            transforms.ColorJitter(brightness = self.par['da']['brightness'] , contrast = self.par['da']['contrast']),
             ])
  
     def __getitem__(self, index):     

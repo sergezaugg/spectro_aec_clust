@@ -30,9 +30,29 @@ batch_size = 8
 
 n_epochs = 20
 
+
+# default 1 
+par = {
+    'da': {
+        'rot_deg'    : 0.30,  # ok
+        'trans_prop' : 0.005, # ok
+        'brightness' : 0.40,  # ok
+        'contrast'   : 0.40,  # ok
+        'gnoisesigm' : 0.10,  # ok
+        'gnoiseprob' : 0.50,  # ok
+        },
+    'den': {  
+       'thld' :   0.25, 
+        } 
+    }
+
+
+
 #----------------------
 # define data loader 
-train_dataset = SpectroImageDataset(imgpath_train, edge_attenuation = False, do_augment = True)
+train_dataset = SpectroImageDataset(imgpath_train, par = par , augment_1 = True, denoise_1 = False,    augment_2 = True, denoise_2 = True)
+
+
 train_dataset.__len__()
 xx = train_dataset.__getitem__(45)
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
@@ -45,8 +65,8 @@ for i, (da_orig, data_augm, fi) in enumerate(train_loader, 0):
 n_batches = train_dataset.__len__() // batch_size
 n_batches
 
+test_dataset = SpectroImageDataset(imgpath_test, par = par , augment_1 = True, denoise_1 = False,    augment_2 = False, denoise_2 = True)
 
-test_dataset = SpectroImageDataset(imgpath_test, edge_attenuation = False, do_augment = False)
 test_dataset.__len__()
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
 
@@ -57,7 +77,7 @@ model_dec = DecoderTranspNew()
 
 #----------------------
 # load pre-trained  models 
-if True: 
+if False: 
     tstmp_old = '20250418_223302'
     epotag = '_epo_14'
     path_enc = 'encoder_model_' + tstmp_old + epotag + '.pth'
