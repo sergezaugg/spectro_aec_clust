@@ -12,7 +12,7 @@ import torch.nn as nn
 import torch.optim as optim
 import os 
 import datetime
-from utils import SpectroImageDataset
+from utils import SpectroImageDataset, make_data_augment_examples
 from custom_models_2 import EncoderAvgpool, DecoderTranspNew
 from plotly.subplots import make_subplots
 
@@ -29,7 +29,7 @@ model_path = "D:/xc_real_projects/models"
 batch_size_tr = 8
 batch_size_te = 32
 
-n_epochs = 40
+n_epochs = 3
 
 
 # default 1 
@@ -51,12 +51,19 @@ par = {
 
 #----------------------
 # define data loader 
-train_dataset = SpectroImageDataset(imgpath_train, par = par, augment_1 = True, denoise_1 = False, augment_2 = True, denoise_2 = True)
+train_dataset = SpectroImageDataset(imgpath_train, par = par, augment_1 = True, denoise_1 = False, augment_2 = False, denoise_2 = True)
 train_loader  = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size_tr,  shuffle=True, drop_last=True)
 
 test_dataset  = SpectroImageDataset(imgpath_test, par = None, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = False)
 test_loader   = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size_te,  shuffle=True, drop_last=True)
 
+
+
+fig01 = make_data_augment_examples(pt_dataset = train_dataset, batch_size = 16)
+fig01.show()
+
+fig02 = make_data_augment_examples(pt_dataset = test_dataset, batch_size = 16)
+fig02.show()
 
 # get some info 
 train_dataset.__len__()
@@ -140,14 +147,6 @@ for epoch in range(n_epochs):
             print("-")
     mse_trai_li.append(np.array(trai_perf_li).mean())        
     #----------------
-
-
-
-
-
-
-
-
 
     #----------------------------------
     # Testing the model at end of epoch 

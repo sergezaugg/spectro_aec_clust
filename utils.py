@@ -10,6 +10,9 @@ from torchvision.transforms.functional import pil_to_tensor
 from PIL import Image
 import os 
 import torchvision.transforms.v2 as transforms
+from plotly.subplots import make_subplots
+import plotly.express as px
+
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -53,6 +56,38 @@ class SpectroImageDataset(Dataset):
     
     def __len__(self):
         return (len(self.all_img_files))
+
+
+
+
+
+
+
+
+def make_data_augment_examples(pt_dataset, batch_size = 12):
+    """
+    # assess one realization of data augmentation 
+    pt_dataset : an instance of torch.utils.data.Dataset
+    """
+    pt_loader = torch.utils.data.DataLoader(pt_dataset, batch_size=batch_size,  shuffle=False, drop_last=True)
+    # take only first batch 
+    for i, (da_1, da_2, fi) in enumerate(pt_loader, 0):
+        if i > 0: break
+    fig = make_subplots(rows=batch_size, cols=2)
+    for ii in range(batch_size): 
+        # print(ii)
+        img_1 = da_1[ii].cpu().detach().numpy()
+        img_1 = img_1.squeeze() 
+        img_1 = 255*img_1 
+        img_2 = da_2[ii].cpu().detach().numpy()
+        img_2 = img_2.squeeze() 
+        img_2 = 255*img_2 
+        fig.add_trace(px.imshow(img_1).data[0], row=ii+1, col=1)
+        fig.add_trace(px.imshow(img_2).data[0], row=ii+1, col=2)
+    fig.update_layout(autosize=True,height=400*batch_size, width = 2000)
+    return(fig)
+
+
 
 
 
