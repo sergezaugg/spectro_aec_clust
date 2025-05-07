@@ -28,7 +28,7 @@ model_path = "D:/xc_real_projects/models"
 
 batch_size = 8
 
-n_epochs = 20
+n_epochs = 40
 
 
 # default 1 
@@ -65,7 +65,7 @@ for i, (da_orig, data_augm, fi) in enumerate(train_loader, 0):
 n_batches = train_dataset.__len__() // batch_size
 n_batches
 
-test_dataset = SpectroImageDataset(imgpath_test, par = par , augment_1 = True, denoise_1 = False,    augment_2 = False, denoise_2 = True)
+test_dataset = SpectroImageDataset(imgpath_test, par = par , augment_1 = False, denoise_1 = False,    augment_2 = False, denoise_2 = True)
 
 test_dataset.__len__()
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,  shuffle=True, drop_last=True)
