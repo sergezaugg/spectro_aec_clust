@@ -29,7 +29,7 @@ model_path = "D:/xc_real_projects/models"
 batch_size_tr = 8
 batch_size_te = 32
 
-n_epochs = 3
+n_epochs = 50
 
 
 # default 1 
@@ -54,7 +54,7 @@ par = {
 train_dataset = SpectroImageDataset(imgpath_train, par = par, augment_1 = True, denoise_1 = False, augment_2 = False, denoise_2 = True)
 train_loader  = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size_tr,  shuffle=True, drop_last=True)
 
-test_dataset  = SpectroImageDataset(imgpath_test, par = None, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = False)
+test_dataset  = SpectroImageDataset(imgpath_test, par = None, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = True)
 test_loader   = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size_te,  shuffle=True, drop_last=True)
 
 
@@ -93,13 +93,17 @@ model_dec = DecoderTranspNew()
 
 #----------------------
 # load pre-trained  models 
-if False: 
-    tstmp_old = '20250418_223302'
-    epotag = '_epo_14'
-    path_enc = 'encoder_model_' + tstmp_old + epotag + '.pth'
-    path_dec = 'decoder_model_' + tstmp_old + epotag + '.pth'
+if True: 
+    tstmp = '20250507_190237'
+
+    path_enc = [a for a in os.listdir(model_path) if tstmp in a and 'encoder_model_' in a][0]
+    path_dec = [a for a in os.listdir(model_path) if tstmp in a and 'decoder_model_' in a][0]
+
     model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
     model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights_only=True))
+
+
+
 
 
 model_enc = model_enc.to(device)
