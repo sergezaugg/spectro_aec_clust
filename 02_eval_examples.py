@@ -61,8 +61,14 @@ for i_test, (data_1, data_2 , _ ) in enumerate(test_loader, 0):
 # (2) predict 
 model_path = "D:/xc_real_projects/models"
 
-tstmp = '20250507_190237'
+
 # tstmp = '20250508_042928'
+# tstmp = '20250508_143034'
+tstmp = '20250508_160005'
+
+
+
+
 
 path_enc = [a for a in os.listdir(model_path) if tstmp in a and 'encoder_model_' in a][0]
 path_dec = [a for a in os.listdir(model_path) if tstmp in a and 'decoder_model_' in a][0]

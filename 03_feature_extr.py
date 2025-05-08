@@ -17,21 +17,32 @@ from custom_models_2 import EncoderAvgpool
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# define paths
-model_path = "D:/xc_real_projects/models/encoder_model_20250419_033651_epo_20.pth"
 
 
-# path_xc = "D:/xc_real_projects/xc_sw_europe/"
-# imgpath = os.path.join(path_xc, "images_24000sps_20250406_092522")
-# meta_path = os.path.join(path_xc, "downloaded_data_meta.pkl")
+
+model_path = "D:/xc_real_projects/models"
+
+tstmp = '20250508_160005'
+
+path_enc = [a for a in os.listdir(model_path) if tstmp in a and 'encoder_model_' in a][0]
+
+
+
+
+
+
+
+path_xc = "D:/xc_real_projects/xc_sw_europe/"
+imgpath = os.path.join(path_xc, "images_24000sps_20250406_092522")
+meta_path = os.path.join(path_xc, "downloaded_data_meta.pkl")
 
 # path_xc = "D:/xc_real_projects/xc_parus_01/"
 # imgpath = os.path.join(path_xc, "images_24000sps_20250406_081430")
 # meta_path = os.path.join(path_xc, "downloaded_data_meta.pkl")
 
-path_xc = "D:/xc_real_projects/xc_corvidae_01/"
-imgpath = os.path.join(path_xc, "images_24000sps_20250415_181912")
-meta_path = os.path.join(path_xc, "downloaded_data_meta.pkl")
+# path_xc = "D:/xc_real_projects/xc_corvidae_01/"
+# imgpath = os.path.join(path_xc, "images_24000sps_20250415_181912")
+# meta_path = os.path.join(path_xc, "downloaded_data_meta.pkl")
 
 
 
@@ -40,12 +51,15 @@ df_meta = pd.read_pickle(meta_path)
 
 # load a trained encoder 
 model_enc = EncoderAvgpool()
-model_enc.load_state_dict(torch.load(os.path.join(model_path), weights_only=True))
+model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
 model_enc = model_enc.to(device)
 _ = model_enc.eval()
 
 # prepare dataloader
-test_dataset = SpectroImageDataset(imgpath, edge_attenuation = False, do_augment = False)
+
+test_dataset = SpectroImageDataset(imgpath, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = False)
+
+
 test_dataset.__len__()
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=128, shuffle=True)
 
@@ -79,7 +93,7 @@ features_save_path = os.path.join(path_xc, "features" + tstmp)
 if not os.path.exists(features_save_path):
     os.makedirs(features_save_path)
 path_save_npz = os.path.join(features_save_path, 'features_from_encoder' + tstmp + '.pkl')
-encoder_id = np.array(model_path)
+encoder_id = np.array(os.path.join(model_path, path_enc))
 
 dat_di = {
     'feat': feat,
