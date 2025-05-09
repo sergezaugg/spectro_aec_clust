@@ -14,7 +14,6 @@ import os
 import datetime
 from utils import SpectroImageDataset, make_data_augment_examples
 from custom_models_2 import EncoderAvgpool, DecoderTranspNew
-# from plotly.subplots import make_subplots
 
 
 torch.cuda.is_available()
@@ -26,7 +25,7 @@ imgpath_test  = "D:/xc_real_projects/xc_sw_europe/images_24000sps_20250406_09252
 
 model_path = "D:/xc_real_projects/models"
 
-batch_size_tr = 6 # 8
+batch_size_tr = 8 # 8
 batch_size_te = 32
 
 n_epochs = 10
@@ -43,7 +42,7 @@ par = {
         'gnoiseprob' : 0.50,  # ok
         },
     'den': {  
-       'thld' :   0.30, 
+       'thld' :  0.50, #  0.30, 
         } 
     }
 
@@ -59,11 +58,11 @@ test_loader   = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size_
 
 
 
-# fig01 = make_data_augment_examples(pt_dataset = train_dataset, batch_size = 16)
-# fig01.show()
+fig01 = make_data_augment_examples(pt_dataset = train_dataset, batch_size = 16)
+fig01.show()
 
-# fig02 = make_data_augment_examples(pt_dataset = test_dataset, batch_size = 16)
-# fig02.show()
+fig02 = make_data_augment_examples(pt_dataset = test_dataset, batch_size = 16)
+fig02.show()
 
 # get some info 
 train_dataset.__len__()
@@ -93,7 +92,7 @@ model_dec = DecoderTranspNew()
 
 #----------------------
 # load pre-trained  models 
-if True: 
+if False: 
     tstmp_1 = '20250508_143034'
 
     path_enc = [a for a in os.listdir(model_path) if tstmp_1 in a and 'encoder_model_' in a][0]
@@ -114,8 +113,8 @@ summary(model_dec, (128, 1, 36))
 
 # instantiate loss, optimizer
 criterion = nn.MSELoss() #nn.BCELoss()
-# optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001)
-optimizer = optim.SGD(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.01, momentum=0.9)
+optimizer = optim.Adam(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.001)
+# optimizer = optim.SGD(list(model_enc.parameters()) + list(model_dec.parameters()), lr=0.01, momentum=0.9)
 
 mse_test_li = []
 mse_trai_li = []

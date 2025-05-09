@@ -65,6 +65,7 @@ model_path = "D:/xc_real_projects/models"
 # tstmp = '20250508_042928'
 # tstmp = '20250508_143034'
 tstmp = '20250508_160005'
+# tstmp = '20250508_191719'
 
 
 
@@ -83,6 +84,7 @@ model_dec = DecoderTranspNew()
 model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights_only=True))
 model_dec = model_dec.to(device)
 _ = model_dec.eval()
+
 
 # predict 
 data = data_1.to(device)
