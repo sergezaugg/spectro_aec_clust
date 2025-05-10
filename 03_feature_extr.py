@@ -12,19 +12,18 @@ from sklearn.utils import shuffle
 import datetime
 import torch
 from utils import SpectroImageDataset
-from custom_models_2 import EncoderAvgpool
-
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 
 
-model_path = "D:/xc_real_projects/models"
+path_trained_models = "D:/xc_real_projects/trained_models"
 
-tstmp = '20250508_160005'
+# tstmp = '20250510_131637'
+tstmp = '20250510_173055'
 
-path_enc = [a for a in os.listdir(model_path) if tstmp in a and 'encoder_model_' in a][0]
+path_enc = [a for a in os.listdir(path_trained_models) if tstmp in a and 'encoder_model_' in a][0]
 
 
 
@@ -45,15 +44,16 @@ meta_path = os.path.join(path_xc, "downloaded_data_meta.pkl")
 # meta_path = os.path.join(path_xc, "downloaded_data_meta.pkl")
 
 
-
 # load metadata 
 df_meta = pd.read_pickle(meta_path)
 
-# load a trained encoder 
-model_enc = EncoderAvgpool()
-model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
+
+# load trained AEC
+model_enc = torch.load( os.path.join(path_trained_models, path_enc),  weights_only = False)
 model_enc = model_enc.to(device)
 _ = model_enc.eval()
+
+
 
 # prepare dataloader
 
@@ -93,7 +93,7 @@ features_save_path = os.path.join(path_xc, "features" + tstmp)
 if not os.path.exists(features_save_path):
     os.makedirs(features_save_path)
 path_save_npz = os.path.join(features_save_path, 'features_from_encoder' + tstmp + '.pkl')
-encoder_id = np.array(os.path.join(model_path, path_enc))
+encoder_id = np.array(os.path.join(path_trained_models, path_enc))
 
 dat_di = {
     'feat': feat,

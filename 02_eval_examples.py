@@ -58,25 +58,21 @@ for i_test, (data_1, data_2 , _ ) in enumerate(test_loader, 0):
 
 # ---------------------
 # (2) predict 
-model_path = "D:/xc_real_projects/models"
+path_trained_models = "D:/xc_real_projects/trained_models"
 
 
-# tstmp = '20250508_042928'
-# tstmp = '20250508_143034'
-# tstmp = '20250508_160005'
-# tstmp = '20250508_191719'
 # tstmp = '20250510_120104'
-tstmp = '20250510_131637'
+tstmp = '20250510_173055'
 
 
 
 
-path_enc = [a for a in os.listdir(model_path) if tstmp in a and 'encoder_model_' in a][0]
-path_dec = [a for a in os.listdir(model_path) if tstmp in a and 'decoder_model_' in a][0]
+path_enc = [a for a in os.listdir(path_trained_models) if tstmp in a and 'encoder_model_' in a][0]
+path_dec = [a for a in os.listdir(path_trained_models) if tstmp in a and 'decoder_model_' in a][0]
 
 # load trained AEC
-model_enc = torch.load( os.path.join(model_path, path_enc),  weights_only = False)
-model_dec = torch.load( os.path.join(model_path, path_dec),  weights_only = False)
+model_enc = torch.load( os.path.join(path_trained_models, path_enc),  weights_only = False)
+model_dec = torch.load( os.path.join(path_trained_models, path_dec),  weights_only = False)
 
 model_enc = model_enc.to(device)
 _ = model_enc.eval()

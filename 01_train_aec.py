@@ -13,8 +13,6 @@ import torch.optim as optim
 import os 
 import datetime
 from utils import SpectroImageDataset, make_data_augment_examples
-
-
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -24,13 +22,12 @@ imgpath_test  = "D:/xc_real_projects/xc_sw_europe/images_24000sps_20250406_09252
 
 path_untrained_models = "D:/xc_real_projects/untrained_models"
 
-model_path = "D:/xc_real_projects/models"
+path_trained_models = "D:/xc_real_projects/trained_models"
 
 batch_size_tr = 8 # 8
 batch_size_te = 32
 
-n_epochs = 5
-
+n_epochs = 15
 
 # default 1 
 par = {
@@ -78,8 +75,6 @@ tes_itm[1].shape
 
 
 
-
-
 n_batches_tr = train_dataset.__len__() // batch_size_tr
 n_batches_tr
 
@@ -89,22 +84,23 @@ n_batches_te
 #----------------------
 # load untrained models 
 if False: 
-    model_enc = torch.load(os.path.join(path_untrained_models, 'encoder_gen_A.pth'), weights_only = False)
-    model_dec = torch.load(os.path.join(path_untrained_models, 'decoder_gen_A.pth'), weights_only = False)
+    model_enc = torch.load(os.path.join(path_untrained_models, 'encoder_gen_B.pth'), weights_only = False)
+    model_dec = torch.load(os.path.join(path_untrained_models, 'decoder_gen_B.pth'), weights_only = False)
 
 
 
 #----------------------
 # load pre-trained  models 
 if True: 
-    tstmp_1 = '20250510_120104'
+    # tstmp_1 = '20250510_120104'
+    tstmp_1 = '20250510_173055'
 
-    path_enc = [a for a in os.listdir(model_path) if tstmp_1 in a and 'encoder_model_' in a][0]
-    path_dec = [a for a in os.listdir(model_path) if tstmp_1 in a and 'decoder_model_' in a][0]
-    # model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
-    # model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights_only=True))
-    model_enc = torch.load(os.path.join(model_path, path_enc), weights_only = False)
-    model_dec = torch.load(os.path.join(model_path, path_dec), weights_only = False)
+
+    path_enc = [a for a in os.listdir(path_trained_models) if tstmp_1 in a and 'encoder_model_' in a][0]
+    path_dec = [a for a in os.listdir(path_trained_models) if tstmp_1 in a and 'decoder_model_' in a][0]
+   
+    model_enc = torch.load(os.path.join(path_trained_models, path_enc), weights_only = False)
+    model_dec = torch.load(os.path.join(path_trained_models, path_dec), weights_only = False)
 
 
 
@@ -165,7 +161,7 @@ for epoch in range(n_epochs):
     with torch.no_grad():
         test_perf_li = []
         for btchi, (da_te_1, da_te_2, fi) in enumerate(test_loader, 0):
-            if btchi > 150: break
+            if btchi > 100: break
             da_te_1 = da_te_1.to(device)
             da_te_2 = da_te_2.to(device)
             # forward 
@@ -182,16 +178,6 @@ for epoch in range(n_epochs):
     #----------------------------------
       
 
-  
-
-
-
-
-
-
-
-
-
 
 
 # reshape performance metrics to a neat lil df
@@ -204,7 +190,6 @@ df_trai['role'] = "train"
 df_mse = pd.concat([df_test, df_trai], axis = 0)
 df_mse.shape
 
-
 fig_mse = px.line(
     df_mse,
     y = "mse",
@@ -214,24 +199,18 @@ fig_mse.show()
 
 
 
-
-
-
 # Save the model
 if True:
     tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
 
     model_save_name = "encoder_model"+tstmp+f"_epo_{epoch + 1}" +  ".pth"
-    # torch.save(model_enc.state_dict(), os.path.join(model_path, model_save_name))
-    torch.save(model_enc, os.path.join(model_path, model_save_name))
-
+    torch.save(model_enc, os.path.join(path_trained_models, model_save_name))
 
     model_save_name = "decoder_model"+tstmp+f"_epo_{epoch + 1}" + ".pth"
-    # torch.save(model_dec.state_dict(), os.path.join(model_path, model_save_name))
-    torch.save(model_dec, os.path.join(model_path, model_save_name))
+    torch.save(model_dec, os.path.join(path_trained_models, model_save_name))
 
     mse_save_name = "df_mse"+tstmp+f"_epo_{epoch + 1}" + ".pkl"
-    df_mse.to_pickle(path=os.path.join(model_path, mse_save_name))
+    df_mse.to_pickle(path=os.path.join(path_trained_models, mse_save_name))
 
 
 

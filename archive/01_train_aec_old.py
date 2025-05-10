@@ -23,7 +23,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 imgpath_train = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
 imgpath_test  = "C:/xc_real_projects/xc_aec_project_n_europe/downloaded_data_img_24000sps"
 
-model_path = "C:/xc_real_projects/models"
+path_trained_models = "C:/xc_real_projects/trained_models"
 
 
 batch_size = 64
@@ -134,7 +134,7 @@ for epoch in range(n_epochs):
 # Save the model
 datetimestamp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
 model_save_name = "encoder_model"+f"_epo_{epoch + 1}" + f"_nlat_{latsha }" + f"_nblk_{n_blck }" ".pth"
-torch.save(model_enc.state_dict(), os.path.join(model_path, model_save_name))
+torch.save(model_enc.state_dict(), os.path.join(path_trained_models, model_save_name))
 
 
 
