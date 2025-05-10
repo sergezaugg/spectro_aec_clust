@@ -7,7 +7,6 @@ import numpy as np
 import torch
 import plotly.express as px
 import os 
-from custom_models_2 import EncoderAvgpool, DecoderTranspNew
 from utils import SpectroImageDataset, make_data_augment_examples
 from plotly.subplots import make_subplots
 torch.cuda.is_available()
@@ -64,9 +63,10 @@ model_path = "D:/xc_real_projects/models"
 
 # tstmp = '20250508_042928'
 # tstmp = '20250508_143034'
-tstmp = '20250508_160005'
+# tstmp = '20250508_160005'
 # tstmp = '20250508_191719'
-
+# tstmp = '20250510_120104'
+tstmp = '20250510_131637'
 
 
 
@@ -75,15 +75,16 @@ path_enc = [a for a in os.listdir(model_path) if tstmp in a and 'encoder_model_'
 path_dec = [a for a in os.listdir(model_path) if tstmp in a and 'decoder_model_' in a][0]
 
 # load trained AEC
-model_enc = EncoderAvgpool()
-model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
+model_enc = torch.load( os.path.join(model_path, path_enc),  weights_only = False)
+model_dec = torch.load( os.path.join(model_path, path_dec),  weights_only = False)
+
 model_enc = model_enc.to(device)
 _ = model_enc.eval()
 
-model_dec = DecoderTranspNew()
-model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights_only=True))
 model_dec = model_dec.to(device)
 _ = model_dec.eval()
+
+
 
 
 # predict 

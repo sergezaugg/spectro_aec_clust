@@ -13,7 +13,6 @@ import torch.optim as optim
 import os 
 import datetime
 from utils import SpectroImageDataset, make_data_augment_examples
-from custom_models_2 import EncoderAvgpool, DecoderTranspNew
 
 
 torch.cuda.is_available()
@@ -23,12 +22,14 @@ imgpath_train = "D:/xc_real_projects/xc_ne_europe/images_24000sps_20250406_09533
 
 imgpath_test  = "D:/xc_real_projects/xc_sw_europe/images_24000sps_20250406_092522"
 
+path_untrained_models = "D:/xc_real_projects/untrained_models"
+
 model_path = "D:/xc_real_projects/models"
 
 batch_size_tr = 8 # 8
 batch_size_te = 32
 
-n_epochs = 10
+n_epochs = 5
 
 
 # default 1 
@@ -86,20 +87,25 @@ n_batches_te = test_dataset.__len__() // batch_size_te
 n_batches_te
 
 #----------------------
-# define untrained models 
-model_enc = EncoderAvgpool()
-model_dec = DecoderTranspNew()
+# load untrained models 
+if False: 
+    model_enc = torch.load(os.path.join(path_untrained_models, 'encoder_gen_A.pth'), weights_only = False)
+    model_dec = torch.load(os.path.join(path_untrained_models, 'decoder_gen_A.pth'), weights_only = False)
+
+
 
 #----------------------
 # load pre-trained  models 
-if False: 
-    tstmp_1 = '20250508_143034'
+if True: 
+    tstmp_1 = '20250510_120104'
 
     path_enc = [a for a in os.listdir(model_path) if tstmp_1 in a and 'encoder_model_' in a][0]
     path_dec = [a for a in os.listdir(model_path) if tstmp_1 in a and 'decoder_model_' in a][0]
+    # model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
+    # model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights_only=True))
+    model_enc = torch.load(os.path.join(model_path, path_enc), weights_only = False)
+    model_dec = torch.load(os.path.join(model_path, path_dec), weights_only = False)
 
-    model_enc.load_state_dict(torch.load(os.path.join(model_path, path_enc), weights_only=True))
-    model_dec.load_state_dict(torch.load(os.path.join(model_path, path_dec), weights_only=True))
 
 
 
@@ -110,6 +116,7 @@ summary(model_enc, (1, 128, 1152))
 
 model_dec = model_dec.to(device)
 summary(model_dec, (128, 1, 36))
+summary(model_dec, (128, 1, 72))
 
 # instantiate loss, optimizer
 criterion = nn.MSELoss() #nn.BCELoss()
@@ -215,10 +222,13 @@ if True:
     tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
 
     model_save_name = "encoder_model"+tstmp+f"_epo_{epoch + 1}" +  ".pth"
-    torch.save(model_enc.state_dict(), os.path.join(model_path, model_save_name))
+    # torch.save(model_enc.state_dict(), os.path.join(model_path, model_save_name))
+    torch.save(model_enc, os.path.join(model_path, model_save_name))
+
 
     model_save_name = "decoder_model"+tstmp+f"_epo_{epoch + 1}" + ".pth"
-    torch.save(model_dec.state_dict(), os.path.join(model_path, model_save_name))
+    # torch.save(model_dec.state_dict(), os.path.join(model_path, model_save_name))
+    torch.save(model_dec, os.path.join(model_path, model_save_name))
 
     mse_save_name = "df_mse"+tstmp+f"_epo_{epoch + 1}" + ".pkl"
     df_mse.to_pickle(path=os.path.join(model_path, mse_save_name))
