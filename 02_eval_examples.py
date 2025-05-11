@@ -9,35 +9,34 @@ import plotly.express as px
 import os 
 from utils import SpectroImageDataset, make_data_augment_examples
 from plotly.subplots import make_subplots
+import pickle
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
+imgpath = "D:/xc_real_projects/xc_corvidae_01/images_24000sps_20250415_181912"
+
+n_images = 32
+
+path_trained_models = "D:/xc_real_projects/trained_models"
+
+# tstmp = '20250510_193201'
+# tstmp = '20250511_110104'
+# tstmp = '20250511_112656'
+tstmp = '20250511_123216'
 
 
 
 
 # ---------------------
 # (1) load a few images 
-# set paths 
-imgpath = "D:/xc_real_projects/xc_corvidae_01/images_24000sps_20250415_181912"
 
-n_images = 32
+# lod info from training session 
+with open(os.path.join(path_trained_models, tstmp + "_session_info" + ".pkl"), 'rb') as f:
+    di_sess = pickle.load(f)
 
-
-# default 1 
-par = {
-    'da': {
-        'rot_deg'    : 0.30,  # ok
-        'trans_prop' : 0.005, # ok
-        'brightness' : 0.40,  # ok
-        'contrast'   : 0.40,  # ok
-        'gnoisesigm' : 0.10,  # ok
-        'gnoiseprob' : 0.50,  # ok
-        },
-    'den': {  
-       'thld' :   0.50, 
-        } 
-    }
-
+# load data generator params used during training 
+par = di_sess['sess_info']['data_generator']
 
 # get a few images in array format 
 test_dataset = SpectroImageDataset(imgpath, par = par, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = True)
@@ -57,34 +56,22 @@ for i_test, (data_1, data_2 , _ ) in enumerate(test_loader, 0):
 
 
 # ---------------------
-# (2) predict 
-path_trained_models = "D:/xc_real_projects/trained_models"
-
-
-# tstmp = '20250510_193201'
-# tstmp = '20250511_005328'
-tstmp = '20250511_032255'
-
-
-
-
-path_enc = [a for a in os.listdir(path_trained_models) if tstmp in a and 'encoder_model_' in a][0]
-path_dec = [a for a in os.listdir(path_trained_models) if tstmp in a and 'decoder_model_' in a][0]
-
+# (2) load models  
+path_enc = [a for a in os.listdir(path_trained_models) if tstmp in a and 'encoder_model' in a][0]
+path_dec = [a for a in os.listdir(path_trained_models) if tstmp in a and 'decoder_model' in a][0]
 # load trained AEC
-model_enc = torch.load( os.path.join(path_trained_models, path_enc),  weights_only = False)
-model_dec = torch.load( os.path.join(path_trained_models, path_dec),  weights_only = False)
-
+model_enc = torch.load( os.path.join(path_trained_models, path_enc), weights_only = False)
+model_dec = torch.load( os.path.join(path_trained_models, path_dec), weights_only = False)
 model_enc = model_enc.to(device)
-_ = model_enc.eval()
-
 model_dec = model_dec.to(device)
+_ = model_enc.eval()
 _ = model_dec.eval()
 
 
 
 
-# predict 
+# ---------------------
+# (3) predict 
 data = data_1.to(device)
 encoded = model_enc(data).to(device)
 decoded = model_dec(encoded).to(device)

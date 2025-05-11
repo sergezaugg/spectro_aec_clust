@@ -26,15 +26,15 @@ path_trained_models = "D:/xc_real_projects/trained_models"
 sess_info = {
     'imgpath_train' : "D:/xc_real_projects/xc_ne_europe/images_24000sps_20250406_095331",
     'imgpath_test'  : "D:/xc_real_projects/xc_sw_europe/images_24000sps_20250406_092522",
-    'batch_size_tr' : 8,
+    'batch_size_tr' : 8,  # 8,
     'batch_size_te' : 32,
-    'n_epochs' : 20,
+    'n_epochs' : 10,
 
-    'hot_start' : False, 
-    'model_tag' : 'gen_A',  
+    # 'hot_start' : False, 
+    # 'model_tag' : 'gen_B1',  
 
-    # 'hot_start' : True, 
-    # 'model_tag' : '20250511_094437',  
+    'hot_start' : True, 
+    'model_tag' : '20250511_123216',  
 
     # 
     'data_generator' : {
@@ -113,8 +113,8 @@ if sess_info['hot_start'] == False:
     model_dec = torch.load(os.path.join(path_untrained_models, path_dec), weights_only = False)
 elif sess_info['hot_start'] == True:
     tstmp_1 = sess_info['model_tag']
-    path_enc = [a for a in os.listdir(path_trained_models) if tstmp_1 in a and 'encoder_model_' in a][0]
-    path_dec = [a for a in os.listdir(path_trained_models) if tstmp_1 in a and 'decoder_model_' in a][0]
+    path_enc = [a for a in os.listdir(path_trained_models) if tstmp_1 in a and 'encoder_model' in a][0]
+    path_dec = [a for a in os.listdir(path_trained_models) if tstmp_1 in a and 'decoder_model' in a][0]
     model_enc = torch.load(os.path.join(path_trained_models, path_enc), weights_only = False)
     model_dec = torch.load(os.path.join(path_trained_models, path_dec), weights_only = False)
 else:
@@ -129,7 +129,7 @@ summary(model_enc, (1, 128, 1152))
 
 model_dec = model_dec.to(device)
 summary(model_dec, (128, 1, 36))
-summary(model_dec, (128, 1, 72))
+summary(model_dec, (128, 1, 144))
 
 # instantiate loss, optimizer
 criterion = nn.MSELoss() #nn.BCELoss()
@@ -220,14 +220,14 @@ df_mse.shape
 
 tstmp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
-model_save_name = tstmp+"_encoder_model"+f"_epo_{epoch + 1}" +  ".pth"
+model_save_name = tstmp + "_encoder_model" +  ".pth"
 torch.save(model_enc, os.path.join(path_trained_models, model_save_name))
 
-model_save_name = tstmp+"_decoder_model"+f"_epo_{epoch + 1}" + ".pth"
+model_save_name = tstmp + "_decoder_model" + ".pth"
 torch.save(model_dec, os.path.join(path_trained_models, model_save_name))
 
 di_sess = {'df_mse' : df_mse,'sess_info' : sess_info}
-sess_save_name =   tstmp+"_session_info"+f"_epo_{epoch + 1}" + ".pkl"
+sess_save_name = tstmp + "_session_info" + ".pkl"
 with open(os.path.join(path_trained_models, sess_save_name), 'wb') as f:
     pickle.dump(di_sess, f)
         

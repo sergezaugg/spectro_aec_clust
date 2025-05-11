@@ -21,9 +21,9 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 path_trained_models = "D:/xc_real_projects/trained_models"
 
 # tstmp = '20250510_131637'
-tstmp = '20250510_173055'
+tstmp = '20250511_112656'
 
-path_enc = [a for a in os.listdir(path_trained_models) if tstmp in a and 'encoder_model_' in a][0]
+path_enc = [a for a in os.listdir(path_trained_models) if tstmp in a and 'encoder_model' in a][0]
 
 
 
