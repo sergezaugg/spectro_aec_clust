@@ -34,7 +34,7 @@ par = {
         'gnoiseprob' : 0.50,  # ok
         },
     'den': {  
-       'thld' :   0.25, 
+       'thld' :   0.50, 
         } 
     }
 
@@ -61,8 +61,9 @@ for i_test, (data_1, data_2 , _ ) in enumerate(test_loader, 0):
 path_trained_models = "D:/xc_real_projects/trained_models"
 
 
-# tstmp = '20250510_120104'
-tstmp = '20250510_173055'
+# tstmp = '20250510_193201'
+# tstmp = '20250511_005328'
+tstmp = '20250511_032255'
 
 
 
