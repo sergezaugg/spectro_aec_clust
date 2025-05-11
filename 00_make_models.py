@@ -12,19 +12,19 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 path_untrained_models = "D:/xc_real_projects/untrained_models"
 
 # load untrained models 
-from custom_models import EncoderGenA, DecoderGenA, EncoderGenB0, DecoderGenB0, EncoderGenB1, DecoderGenB1
+from custom_models import EncoderGenB0, DecoderGenB0, EncoderGenB1, DecoderGenB1, EncoderGenB2, DecoderGenB2
 
-# save_file_name = "_gen_A"
-# model_enc = EncoderGenA()
-# model_dec = DecoderGenA()
-
-# save_file_name = "_gen_B0"
-# model_enc = EncoderGenB0()
-# model_dec = DecoderGenB0()
+save_file_name = "_gen_B0"
+model_enc = EncoderGenB0()
+model_dec = DecoderGenB0()
 
 save_file_name = "_gen_B1"
 model_enc = EncoderGenB1()
 model_dec = DecoderGenB1()
+
+save_file_name = "_gen_B2"
+model_enc = EncoderGenB2()
+model_dec = DecoderGenB2()
 
 model_enc = model_enc.to(device)
 model_dec = model_dec.to(device)

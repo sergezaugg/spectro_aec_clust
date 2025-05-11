@@ -31,10 +31,10 @@ sess_info = {
     'n_epochs' : 10,
 
     # 'hot_start' : False, 
-    # 'model_tag' : 'gen_B1',  
+    # 'model_tag' : 'gen_B0',  
 
     'hot_start' : True, 
-    'model_tag' : '20250511_123216',  
+    'model_tag' : '20250511_180123',  
 
     # 
     'data_generator' : {
@@ -64,7 +64,6 @@ sess_info = {
 
 
 
-
 #----------------------
 # define data loader 
 train_dataset = SpectroImageDataset(sess_info['imgpath_train'], par = sess_info['data_generator'], augment_1 = True, denoise_1 = False, augment_2 = False, denoise_2 = True)
@@ -75,11 +74,11 @@ test_loader   = torch.utils.data.DataLoader(test_dataset, batch_size=sess_info['
 
 
 
-fig01 = make_data_augment_examples(pt_dataset = train_dataset, batch_size = 16)
-fig01.show()
+# fig01 = make_data_augment_examples(pt_dataset = train_dataset, batch_size = 16)
+# fig01.show()
 
-fig02 = make_data_augment_examples(pt_dataset = test_dataset, batch_size = 16)
-fig02.show()
+# fig02 = make_data_augment_examples(pt_dataset = test_dataset, batch_size = 16)
+# fig02.show()
 
 # get some info 
 train_dataset.__len__()
@@ -111,14 +110,27 @@ if sess_info['hot_start'] == False:
     path_dec = [a for a in os.listdir(path_untrained_models) if tstmp_0 in a and 'cold_decoder' in a][0]
     model_enc = torch.load(os.path.join(path_untrained_models, path_enc), weights_only = False)
     model_dec = torch.load(os.path.join(path_untrained_models, path_dec), weights_only = False)
+
+    sess_info['model_gen'] = sess_info['model_tag']
+
+
 elif sess_info['hot_start'] == True:
     tstmp_1 = sess_info['model_tag']
     path_enc = [a for a in os.listdir(path_trained_models) if tstmp_1 in a and 'encoder_model' in a][0]
     path_dec = [a for a in os.listdir(path_trained_models) if tstmp_1 in a and 'decoder_model' in a][0]
     model_enc = torch.load(os.path.join(path_trained_models, path_enc), weights_only = False)
-    model_dec = torch.load(os.path.join(path_trained_models, path_dec), weights_only = False)
+    model_dec = torch.load(os.path.join(path_trained_models, path_dec), weights_only = False) 
+    # load info from previous training session 
+    path_sess = [a for a in os.listdir(path_trained_models) if tstmp_1 in a and '_session_info' in a][0]
+    with open(os.path.join(path_trained_models, path_sess), 'rb') as f:
+        di_origin_sess = pickle.load(f)
+    # load model generation 
+    sess_info['model_gen'] = di_origin_sess['sess_info']['model_gen']
+
 else:
     print("something is wrong with sess_info['hot_start']")
+
+
 
 
 
@@ -147,6 +159,8 @@ for epoch in range(sess_info['n_epochs']):
     _ = model_dec.train()
     trai_perf_li = []
     for batch_tr, (da_tr_1, da_tr_2, fi) in enumerate(train_loader, 0):
+        # if True:
+        #     if batch_tr > 10: break
         da_tr_1 = da_tr_1.to(device)
         da_tr_2 = da_tr_2.to(device)
         # reset the gradients 
@@ -177,7 +191,7 @@ for epoch in range(sess_info['n_epochs']):
     with torch.no_grad():
         test_perf_li = []
         for btchi, (da_te_1, da_te_2, fi) in enumerate(test_loader, 0):
-            if btchi > 100: break
+            if btchi > 10: break # 100
             da_te_1 = da_te_1.to(device)
             da_te_2 = da_te_2.to(device)
             # forward 
@@ -217,21 +231,18 @@ df_mse.shape
 
 # Save the model and all params 
 
-
 tstmp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
-model_save_name = tstmp + "_encoder_model" +  ".pth"
+model_save_name = tstmp + "_encoder_model_" + sess_info['model_gen'] + ".pth"
 torch.save(model_enc, os.path.join(path_trained_models, model_save_name))
 
-model_save_name = tstmp + "_decoder_model" + ".pth"
+model_save_name = tstmp + "_decoder_model_" + sess_info['model_gen'] + ".pth"
 torch.save(model_dec, os.path.join(path_trained_models, model_save_name))
 
 di_sess = {'df_mse' : df_mse,'sess_info' : sess_info}
-sess_save_name = tstmp + "_session_info" + ".pkl"
+sess_save_name = tstmp + "_session_info_" + sess_info['model_gen'] + ".pkl"
 with open(os.path.join(path_trained_models, sess_save_name), 'wb') as f:
     pickle.dump(di_sess, f)
         
-# with open('saved_dictionary.pkl', 'rb') as f:
-#     loaded_dict = pickle.load(f)
 
 

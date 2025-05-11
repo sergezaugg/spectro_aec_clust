@@ -23,7 +23,7 @@ path_trained_models = "D:/xc_real_projects/trained_models"
 # tstmp = '20250510_193201'
 # tstmp = '20250511_110104'
 # tstmp = '20250511_112656'
-tstmp = '20250511_123216'
+tstmp = '20250511_180510'
 
 
 
@@ -32,7 +32,8 @@ tstmp = '20250511_123216'
 # (1) load a few images 
 
 # lod info from training session 
-with open(os.path.join(path_trained_models, tstmp + "_session_info" + ".pkl"), 'rb') as f:
+path_sess = [a for a in os.listdir(path_trained_models) if tstmp in a and '_session_info' in a][0]
+with open(os.path.join(path_trained_models, path_sess), 'rb') as f:
     di_sess = pickle.load(f)
 
 # load data generator params used during training 
