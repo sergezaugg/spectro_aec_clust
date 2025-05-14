@@ -34,7 +34,7 @@ sess_info = {
     # 'model_tag' : 'gen_B0',  
 
     'hot_start' : True, 
-    'model_tag' : '20250512_124428',  
+    'model_tag' : '20250513_001557',  
 
     # 
     'data_generator' : {
