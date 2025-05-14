@@ -7,9 +7,8 @@ import plotly.express as px
 import torch
 from torchsummary import summary
 from utils import SpectroImageDataset, make_data_augment_examples
-from mlutils import get_models, train_autoencoder
-from mlutils import evaluate_reconstruction_on_examples, encoder_based_feature_extraction, wrap_to_dataset
-
+from utils import get_models, train_autoencoder
+from utils import evaluate_reconstruction_on_examples, encoder_based_feature_extraction, wrap_to_dataset
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -19,11 +18,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #----------------------------------------------------------------------
 # (1) train 
 
-path_untrained_models = "D:/xc_real_projects/untrained_models"
-
-path_trained_models = "D:/xc_real_projects/trained_models"
 
 sess_info = {
+    'path_untrained_models' : "D:/xc_real_projects/untrained_models",
+    'path_trained_models' : "D:/xc_real_projects/trained_models",
     'imgpath_train' : "D:/xc_real_projects/xc_ne_europe/images_24000sps_20250406_095331",
     'imgpath_test'  : "D:/xc_real_projects/xc_sw_europe/images_24000sps_20250406_092522",
     'batch_size_tr' : 8,  # 8,
@@ -54,6 +52,8 @@ sess_info = {
 
 
 
+
+
 train_dataset = SpectroImageDataset(sess_info['imgpath_train'], par = sess_info['data_generator'], augment_1 = True, denoise_1 = False, augment_2 = False, denoise_2 = True)
 test_dataset  = SpectroImageDataset(sess_info['imgpath_test'],  par = sess_info['data_generator'], augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = True)
 
@@ -64,16 +64,14 @@ fig02 = make_data_augment_examples(pt_dataset = test_dataset, batch_size = 16)
 fig02.show()
 
 
-model_enc, model_dec = get_models(sess_info, path_untrained_models, path_trained_models)
-
-model_enc = model_enc.to(device)
+model_enc, model_dec = get_models(sess_info)
+# model_enc = model_enc.to(device)
 summary(model_enc, (1, 128, 1152))
-
-model_dec = model_dec.to(device)
+# model_dec = model_dec.to(device)
 summary(model_dec, (128, 1, 72))
 summary(model_dec, (128, 1, 144))
 
-train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_dec, path_trained_models)
+train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_dec)
 
 
 
@@ -92,7 +90,7 @@ model_list_B2 = ['20250511_205505','20250512_025001','20250512_215905','20250513
 model_list_B1 = ['20250511_231810','20250512_100933','20250513_001557', '20250514_013412']
 model_list_B0 = ['20250512_002141','20250512_124428','20250513_021206',]
 
-for tstmp in model_list_B2:
+for tstmp in model_list_B0:
     evaluate_reconstruction_on_examples(path_images = imgpath, path_models = path_trained_models, time_stamp_model = tstmp, n_images = 32,)
 
 
