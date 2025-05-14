@@ -128,12 +128,10 @@ def encoder_based_feature_extraction(
     return(feat, imfiles)
 
 
-def wrap_to_dataset(feat, imfiles, path_xc_dir, path_images):
-
+def wrap_to_dataset(feat, imfiles, path_xc_dir, image_dir):
     # load metadata 
     meta_path = os.path.join(path_xc_dir, "downloaded_data_meta.pkl")
     df_meta = pd.read_pickle(meta_path)
-
     # save all relevant objects 
     tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
     features_save_path = os.path.join(path_xc_dir, "features" + tstmp) 
@@ -141,17 +139,16 @@ def wrap_to_dataset(feat, imfiles, path_xc_dir, path_images):
         os.makedirs(features_save_path)
     path_save_npz = os.path.join(features_save_path, 'features_from_encoder' + tstmp + '.pkl')
     # encoder_id = np.array(os.path.join(path_models, path_enc))
-
     dat_di = {
         'feat': feat,
         'imfiles': imfiles,
         # 'encoder_id' : encoder_id,
         'meta': df_meta
         }
-
     with open(path_save_npz, 'wb') as handle:
         pickle.dump(dat_di, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
+    # make zip
+    path_images = os.path.join(path_xc_dir, image_dir)
     shutil.make_archive(os.path.join(features_save_path, 'images'), 'zip', path_images)
     shutil.move(os.path.join(features_save_path, 'images.zip'), os.path.join(features_save_path, 'images.speczip'))
 
@@ -164,18 +161,10 @@ def wrap_to_dataset(feat, imfiles, path_xc_dir, path_images):
 # devel 
 if __name__ == "__main__":
 
-
-
-
     # # imgpath ="D:/xc_real_projects/example_images/rectangular_1"
-
     # # n_images = 32
-
     # # path_trained_models = "D:/xc_real_projects/trained_models"
-
     # # tstmp = '20250512_025001'
-
-
     # evaluate_reconstruction_on_examples(
     #         path_images ="D:/xc_real_projects/example_images/rectangular_1",
     #         path_models = "D:/xc_real_projects/trained_models",
@@ -184,13 +173,12 @@ if __name__ == "__main__":
     #         )
     
 
-
         
     path_images = "D:/xc_real_projects/xc_sw_europe/images_24000sps_20250406_092522"
     path_models = "D:/xc_real_projects/trained_models"
     time_stamp_model = '20250511_231810'
 
-    feat, imfiles = encoder_based_feature_extraction(path_images,path_models,time_stamp_model,devel = True)
+    feat, imfiles = encoder_based_feature_extraction(path_images, path_models, time_stamp_model, devel = True)
 
     feat.shape
     imfiles.shape
@@ -200,9 +188,9 @@ if __name__ == "__main__":
 
 
     path_xc_dir = "D:/xc_real_projects/xc_sw_europe/"
-    path_images = os.path.join(path_xc_dir, "images_24000sps_20250406_092522")
+    image_dir = "images_24000sps_20250406_092522"
 
-    wrap_to_dataset(feat, imfiles, path_xc_dir, path_images)
+    wrap_to_dataset(feat, imfiles, path_xc_dir, image_dir)
 
 
 
