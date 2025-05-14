@@ -46,9 +46,6 @@ def get_models(sess_info, path_untrained_models, path_trained_models):
     return(model_enc, model_dec)
 
 
-
-
-
 def train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_dec, path_trained_models):
 
     # train 
@@ -141,11 +138,6 @@ def train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_d
     with open(os.path.join(path_trained_models, sess_save_name), 'wb') as f:
         pickle.dump(di_sess, f)
             
-
-
-
-
-
 
 def evaluate_reconstruction_on_examples(
         path_images,
