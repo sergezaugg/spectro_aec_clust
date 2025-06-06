@@ -7,7 +7,7 @@
 "batch_size_te" : 32,
 "n_epochs" : 10,
 "hot_start" : false, 
-"model_tag" : "gen_B0",  
+"model_tag" : "gen_B21",  
 "data_generator" : {
     "da": {
         "rot_deg"    : 0.30,  
