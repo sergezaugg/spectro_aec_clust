@@ -1,7 +1,7 @@
 # Compact auto-encoders for feature extraction from acoustic spectrograms  
 
 ### Overview
-* Allows to define simple custom Pytorch auto-encoders
+* Allows to define and train simple custom Pytorch auto-encoders
 * With partial pooling of time axis (latent representation is 2D -> channel by time)
 * Has a specific data loader for spectrogram data
 * Intended to experiment training under de-noising regime
