@@ -215,6 +215,11 @@ def train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_d
     sess_save_name = tstmp + "_session_info_" + sess_info['model_gen'] + ".pkl"
     with open(os.path.join(sess_info['path_trained_models'], sess_save_name), 'wb') as f:
         pickle.dump(di_sess, f)
+
+    # save model for external projects    
+    model_save_name = tstmp + "_encoder_script_" + sess_info['model_gen'] + ".pth"
+    model_enc_scripted = torch.jit.script(model_enc) # Export to TorchScript
+    model_enc_scripted.save(os.path.join(sess_info['path_trained_models'], model_save_name))   
             
 
 def evaluate_reconstruction_on_examples(

@@ -52,7 +52,6 @@ di['image_file_name_array'].shape
 
 
 
-# wrap_to_dataset(di)
 
 
 
