@@ -1,6 +1,6 @@
 #----------------------
 # Author : Serge Zaugg
-# Description : Creat a freezed version of an AEC architecture and save to file 
+# Description : Create a freezed version of an AEC architecture and save to file 
 #----------------------
 
 import torch
@@ -12,7 +12,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 path_untrained_models = "D:/xc_real_projects/untrained_models"
 
 # load untrained models 
-from custom_models import EncoderGenB0, DecoderGenB0, EncoderGenB1, DecoderGenB1, EncoderGenB2, DecoderGenB2, EncoderGenB21, DecoderGenB21
+from prepare_models.model_collection import EncoderGenB0, DecoderGenB0, EncoderGenB1, DecoderGenB1, EncoderGenB2, DecoderGenB2, EncoderGenB21, DecoderGenB21
 
 # save_file_name = "_gen_B0"
 # model_enc = EncoderGenB0()
