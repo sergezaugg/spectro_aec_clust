@@ -20,8 +20,6 @@ from torchvision.transforms.functional import pil_to_tensor
 import torchvision.transforms.v2 as transforms
 import torch.optim as optim
 
-# from utils import SpectroImageDataset
-
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
