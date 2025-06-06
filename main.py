@@ -5,23 +5,22 @@
 
 import os
 import json
-import plotly.express as px
+# import plotly.express as px
 import torch
 from torchsummary import summary
 from utils import SpectroImageDataset, make_data_augment_examples, get_models, train_autoencoder
-from utils import evaluate_reconstruction_on_examples, encoder_based_feature_extraction, wrap_to_dataset
+from utils import evaluate_reconstruction_on_examples, encoder_based_feature_extraction #, wrap_to_dataset
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 #----------------------------------------------------------------------
 # (1) train 
-with open(os.path.join('./session_params', 'sess_02.json' )) as f:
+with open(os.path.join('./session_params', 'sess_01.json' )) as f:
     sess_info = json.load(f)
 
 train_dataset = SpectroImageDataset(sess_info['imgpath_train'], par = sess_info['data_generator'], augment_1 = True, denoise_1 = False, augment_2 = False, denoise_2 = True)
 test_dataset  = SpectroImageDataset(sess_info['imgpath_test'],  par = sess_info['data_generator'], augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = True)
 make_data_augment_examples(pt_dataset = train_dataset, batch_size = 16).show()
-fig02 = make_data_augment_examples(pt_dataset = test_dataset, batch_size = 16).show()
 model_enc, model_dec = get_models(sess_info)
 summary(model_enc, (1, 128, 1152))
 summary(model_dec, (64, 1, 144))
@@ -45,12 +44,15 @@ for tstmp in model_list_B21:
 # path_images = "D:/xc_real_projects/xc_sw_europe/images_24000sps_20250406_092522"
 path_images = "D:/xc_real_projects/xc_parus_01/images_24000sps_20250406_081430"
 path_models = "D:/xc_real_projects/trained_models"
-time_stamp_model = '20250514_184030'
+time_stamp_model = '20250606_173954'
 
-di = encoder_based_feature_extraction(path_images, path_models, time_stamp_model, devel = False)
+di = encoder_based_feature_extraction(path_images, path_models, time_stamp_model, devel = True)
 di['feature_array'].shape
 di['image_file_name_array'].shape
-wrap_to_dataset(di)
+
+
+
+# wrap_to_dataset(di)
 
 
 

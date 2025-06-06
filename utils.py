@@ -148,8 +148,8 @@ def train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_d
         _ = model_dec.train()
         trai_perf_li = []
         for batch_tr, (da_tr_1, da_tr_2, fi) in enumerate(train_loader, 0):
-            # if True:
-            #     if batch_tr > 10: break
+            if True:
+                if batch_tr > 10: break
             da_tr_1 = da_tr_1.to(device)
             da_tr_2 = da_tr_2.to(device)
             # reset the gradients 
@@ -333,37 +333,37 @@ def encoder_based_feature_extraction(
     return(out_di)
 
 
-def wrap_to_dataset(di): 
-    """
-    Description:
-    Arguments:
-    """
-    feat        = di['feature_array']
-    imfiles     = di['image_file_name_array']
-    path_images = di['path_images']
-    path_enc    = di['path_encoder']
-    # load metadata 
-    path_xc_dir = os.path.dirname(path_images)
-    meta_path = os.path.join(path_xc_dir, "downloaded_data_meta.pkl")
-    df_meta = pd.read_pickle(meta_path)
-    # save all relevant objects 
-    tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
-    features_save_path = os.path.join(path_xc_dir, "features" + tstmp) 
-    if not os.path.exists(features_save_path):
-        os.makedirs(features_save_path)
-    path_save_npz = os.path.join(features_save_path, 'features_from_encoder' + tstmp + '.pkl')
-    # encoder_id = np.array(os.path.join(path_models, path_enc))
-    dat_di = {
-        'feat': feat,
-        'imfiles': imfiles,
-        'encoder_id' : path_enc,
-        'meta': df_meta
-        }
-    with open(path_save_npz, 'wb') as handle:
-        pickle.dump(dat_di, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    # make zip of image dir 
-    shutil.make_archive(os.path.join(features_save_path, 'images'), 'zip', path_images)
-    shutil.move(os.path.join(features_save_path, 'images.zip'), os.path.join(features_save_path, 'images.speczip'))
+# def wrap_to_dataset(di): 
+#     """
+#     Description:
+#     Arguments:
+#     """
+#     feat        = di['feature_array']
+#     imfiles     = di['image_file_name_array']
+#     path_images = di['path_images']
+#     path_enc    = di['path_encoder']
+#     # load metadata 
+#     path_xc_dir = os.path.dirname(path_images)
+#     meta_path = os.path.join(path_xc_dir, "downloaded_data_meta.pkl")
+#     df_meta = pd.read_pickle(meta_path)
+#     # save all relevant objects 
+#     tstmp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
+#     features_save_path = os.path.join(path_xc_dir, "features" + tstmp) 
+#     if not os.path.exists(features_save_path):
+#         os.makedirs(features_save_path)
+#     path_save_npz = os.path.join(features_save_path, 'features_from_encoder' + tstmp + '.pkl')
+#     # encoder_id = np.array(os.path.join(path_models, path_enc))
+#     dat_di = {
+#         'feat': feat,
+#         'imfiles': imfiles,
+#         'encoder_id' : path_enc,
+#         'meta': df_meta
+#         }
+#     with open(path_save_npz, 'wb') as handle:
+#         pickle.dump(dat_di, handle, protocol=pickle.HIGHEST_PROTOCOL)
+#     # make zip of image dir 
+#     shutil.make_archive(os.path.join(features_save_path, 'images'), 'zip', path_images)
+#     shutil.move(os.path.join(features_save_path, 'images.zip'), os.path.join(features_save_path, 'images.speczip'))
 
       
 

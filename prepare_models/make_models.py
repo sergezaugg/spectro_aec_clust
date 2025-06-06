@@ -36,18 +36,13 @@ model_dec = model_dec.to(device)
 
 # check architecture 
 summary(model_enc, (1, 128, 1152))
-summary(model_dec, (128, 1, 36))
-summary(model_dec, (128, 1, 72))
+# summary(model_dec, (128, 1, 36))
+# summary(model_dec, (128, 1, 72))
 summary(model_dec, (64, 1, 144))
 
 # save for later use 
 torch.save(model_enc, os.path.join(path_untrained_models, 'cold_encoder' + save_file_name + '.pth'))
 torch.save(model_dec, os.path.join(path_untrained_models, 'cold_decoder' + save_file_name + '.pth'))
-
-
-
-
-
 
 
 
