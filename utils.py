@@ -86,10 +86,12 @@ def make_data_augment_examples(pt_dataset, batch_size = 12):
     for ii in range(batch_size): 
         # print(ii)
         img_1 = da_1[ii].cpu().detach().numpy()
-        img_1 = img_1.squeeze() 
+        # img_1 = img_1.squeeze() # 1 ch
+        img_1 = np.moveaxis(img_1, 0, 2) # 3 ch
         img_1 = 255*img_1 
         img_2 = da_2[ii].cpu().detach().numpy()
-        img_2 = img_2.squeeze() 
+        # img_2 = img_2.squeeze()  # 1 ch
+        img_2 = np.moveaxis(img_2, 0, 2) # 3 ch
         img_2 = 255*img_2 
         fig.add_trace(px.imshow(img_1).data[0], row=ii+1, col=1)
         fig.add_trace(px.imshow(img_2).data[0], row=ii+1, col=2)
@@ -126,7 +128,7 @@ def get_models(sess_info):
     return(model_enc, model_dec)
 
 
-def train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_dec, devel):
+def train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_dec, devel = False):
 
     # train 
     train_loader  = torch.utils.data.DataLoader(train_dataset, batch_size=sess_info['batch_size_tr'],  shuffle=True, drop_last=True)
@@ -150,8 +152,8 @@ def train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_d
         _ = model_dec.train()
         trai_perf_li = []
         for batch_tr, (da_tr_1, da_tr_2, fi) in enumerate(train_loader, 0):
-            if devel:
-                if batch_tr > 5: break
+            if devel and batch_tr > 2:
+                break
             da_tr_1 = da_tr_1.to(device)
             da_tr_2 = da_tr_2.to(device)
             # reset the gradients 
@@ -277,11 +279,13 @@ def evaluate_reconstruction_on_examples(
     for ii in range(n_images) : 
 
         img_orig = data_2[ii].cpu().numpy()
-        img_orig = img_orig.squeeze() # 1 ch
+        # img_orig = img_orig.squeeze() # 1 ch
+        img_orig = np.moveaxis(img_orig, 0, 2) # 3 ch
         img_orig = 255.0*img_orig  
 
         img_reco = decoded[ii].cpu().detach().numpy()
-        img_reco = img_reco.squeeze()  # 1 ch
+        # img_reco = img_reco.squeeze()  # 1 ch
+        img_reco = np.moveaxis(img_reco, 0, 2) # 3 ch
         img_reco = 255.0*img_reco   
         _ = fig.add_trace(px.imshow(img_orig).data[0], row=ii+1, col=1)
         _ = fig.add_trace(px.imshow(img_reco).data[0], row=ii+1, col=2)
@@ -291,28 +295,23 @@ def evaluate_reconstruction_on_examples(
     # ---------------------
 
 
-def encoder_based_feature_extraction(
-    path_images,
-    path_models ,
-    time_stamp_model ,
-    batch_size = 128,
-    shuffle = True,
-    devel = False,
-    ):
+def encoder_based_feature_extraction(path_enc, path_images, batch_size = 128, shuffle = True, devel = False):
     """
-    Description:
+    Description: Applies a trained encoder to images in a dir and extracts the latent representation as a 2D feature array
     Arguments:
+        path_enc (str) : 
+        path_images (str) :
     """
     # get the file corresponding to the time stamp
-    path_enc = [a for a in os.listdir(path_models) if time_stamp_model in a and 'encoder_model' in a][0]
+    # path_enc = [a for a in os.listdir(path_models) if time_stamp_model in a and 'encoder_model' in a][0]
     # load trained AEC
-    model_enc = torch.load( os.path.join(path_models, path_enc),  weights_only = False)
+    model_enc = torch.load(path_enc, weights_only = False)
     model_enc = model_enc.to(device)
     _ = model_enc.eval()
-    # prepare dataloader ()
+    # prepare dataloader
     test_dataset = SpectroImageDataset(path_images, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = False)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size = batch_size, shuffle = shuffle)
-    # extract features (by batches)
+    # extract features
     feat_li = []
     imfiles = []
     for i, (data, _, fi) in enumerate(test_loader, 0):    
@@ -323,9 +322,8 @@ def encoder_based_feature_extraction(
         feat_li.append(encoded)
         imfiles.append(fi)
         print(len(imfiles))
-        if devel:
-            if i > 1:
-                break
+        if devel and i > 2:
+            break
     # transform lists to array 
     feat = np.concatenate(feat_li)
     feat = feat.squeeze()

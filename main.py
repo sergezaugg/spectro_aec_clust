@@ -6,8 +6,6 @@
 import os
 import json
 import numpy as np
-import datetime
-# import plotly.express as px
 import torch
 from torchsummary import summary
 from utils import SpectroImageDataset, make_data_augment_examples, get_models, train_autoencoder
@@ -24,33 +22,38 @@ train_dataset = SpectroImageDataset(sess_info['imgpath_train'], par = sess_info[
 test_dataset  = SpectroImageDataset(sess_info['imgpath_test'],  par = sess_info['data_generator'], augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = True)
 make_data_augment_examples(pt_dataset = train_dataset, batch_size = 16).show()
 model_enc, model_dec = get_models(sess_info)
-summary(model_enc, (1, 128, 1152))
+summary(model_enc, (3, 128, 1152))
 summary(model_dec, (256, 1, 144))
 train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_dec, devel = False)
 
 #----------------------------------------------------------------------
 # (2) evaluate 
-imgpath ="D:/xc_real_projects/example_images/rectangular_1"
+imgpath ="D:/xc_real_projects/xc_sw_europe/xc_spectrograms"
 n_images = 32
 path_trained_models = "D:/xc_real_projects/trained_models"
-model_list_spec = ['20250607_083009',]
-for tstmp in model_list_spec:
-    evaluate_reconstruction_on_examples(path_images = imgpath, path_models = path_trained_models, time_stamp_model = tstmp, n_images = 32)
+tstmp = '20250607_112041'
+# "D:\xc_real_projects\trained_models\20250607_112041_encoder_model_gen_B2.pth"
+evaluate_reconstruction_on_examples(path_images = imgpath, path_models = path_trained_models, time_stamp_model = tstmp, n_images = 32)
 
 #----------------------------------------------------------------------
 # (3) extract 
 # path_images = "D:/xc_real_projects/xc_sw_europe/images_24000sps_20250406_092522"
-path_images = "D:/xc_real_projects/xc_parus_01/images_24000sps_20250406_081430"
-path_models = "D:/xc_real_projects/trained_models"
-time_stamp_model = '20250607_083009'
+path_images = "D:/xc_real_projects/xc_parus_01/xc_spectrograms"
 
-di = encoder_based_feature_extraction(path_images, path_models, time_stamp_model, devel = True)
+path_enc = "D:/xc_real_projects/trained_models/20250607_112041_encoder_model_gen_B2.pth"
+
+
+
+di = encoder_based_feature_extraction(path_enc, path_images, devel = True)
 di['feature_array'].shape
 di['image_file_name_array'].shape
 
 # save as npz
+
+tag = '_'.join(os.path.basename(path_enc).split('_')[0:2])
+         
 # tstmp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_")
-out_name = os.path.join(os.path.dirname(path_images), 'full_features_' + 'saec_' + time_stamp_model + '.npz')
+out_name = os.path.join(os.path.dirname(path_images), 'full_features_' + 'saec_' + tag + '.npz')
 np.savez(file = out_name, X = di['feature_array'], N = di['image_file_name_array'])
 
 
@@ -65,7 +68,8 @@ np.savez(file = out_name, X = di['feature_array'], N = di['image_file_name_array
 #----------------------------------------------------------------------
 # (4) dim reduce 
 
-npzfile_full_path = "D:/xc_real_projects/xc_parus_01/full_features_saec_20250607_083009.npz"
+# npzfile_full_path = "D:/xc_real_projects/xc_parus_01/full_features_saec_20250607_083009.npz"
+npzfile_full_path = "D:/xc_real_projects/xc_parus_01/full_features_saec_20250607_112041.npz"
 file_name_in = os.path.basename(npzfile_full_path)
 
 # n neighbors of UMAP currently fixed to 10 !!!!

@@ -23,17 +23,12 @@ from prepare_models.model_collection import EncoderGenB0, DecoderGenB0, EncoderG
 # model_dec = DecoderGenB1()
 
 save_file_name = "_gen_B2"
-model_enc = EncoderGenB2()
-model_dec = DecoderGenB2()
-
-# save_file_name = "_gen_B21"
-# model_enc = EncoderGenB21()
-# model_dec = DecoderGenB21()
-
+model_enc = EncoderGenB2(n_ch_in = 3)
+model_dec = DecoderGenB2(n_ch_out= 3)
 
 model_enc = model_enc.to(device)
 model_dec = model_dec.to(device)
-summary(model_enc, (1, 128, 1152))
+summary(model_enc, (3, 128, 1152))
 summary(model_dec, (256, 1, 144))
 
 # # check architecture 
