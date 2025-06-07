@@ -22,23 +22,25 @@ from prepare_models.model_collection import EncoderGenB0, DecoderGenB0, EncoderG
 # model_enc = EncoderGenB1()
 # model_dec = DecoderGenB1()
 
-# save_file_name = "_gen_B2"
-# model_enc = EncoderGenB2()
-# model_dec = DecoderGenB2()
+save_file_name = "_gen_B2"
+model_enc = EncoderGenB2()
+model_dec = DecoderGenB2()
 
-save_file_name = "_gen_B21"
-model_enc = EncoderGenB21()
-model_dec = DecoderGenB21()
+# save_file_name = "_gen_B21"
+# model_enc = EncoderGenB21()
+# model_dec = DecoderGenB21()
 
 
 model_enc = model_enc.to(device)
 model_dec = model_dec.to(device)
-
-# check architecture 
 summary(model_enc, (1, 128, 1152))
-# summary(model_dec, (128, 1, 36))
-# summary(model_dec, (128, 1, 72))
-summary(model_dec, (64, 1, 144))
+summary(model_dec, (256, 1, 144))
+
+# # check architecture 
+# summary(model_enc, (1, 128, 1152))
+# # summary(model_dec, (128, 1, 36))
+# # summary(model_dec, (128, 1, 72))
+# summary(model_dec, (256, 1, 144))
 
 # save for later use 
 torch.save(model_enc, os.path.join(path_untrained_models, 'cold_encoder' + save_file_name + '.pth'))

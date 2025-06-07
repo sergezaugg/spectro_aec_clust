@@ -11,6 +11,8 @@ import pandas as pd
 import shutil
 import datetime
 from PIL import Image
+from sklearn.preprocessing import StandardScaler
+import umap.umap_ as umap
 import plotly.express as px
 from plotly.subplots import make_subplots
 import torch
@@ -124,7 +126,7 @@ def get_models(sess_info):
     return(model_enc, model_dec)
 
 
-def train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_dec):
+def train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_dec, devel):
 
     # train 
     train_loader  = torch.utils.data.DataLoader(train_dataset, batch_size=sess_info['batch_size_tr'],  shuffle=True, drop_last=True)
@@ -148,8 +150,8 @@ def train_autoencoder(sess_info, train_dataset, test_dataset, model_enc, model_d
         _ = model_dec.train()
         trai_perf_li = []
         for batch_tr, (da_tr_1, da_tr_2, fi) in enumerate(train_loader, 0):
-            if True:
-                if batch_tr > 10: break
+            if devel:
+                if batch_tr > 5: break
             da_tr_1 = da_tr_1.to(device)
             da_tr_2 = da_tr_2.to(device)
             # reset the gradients 
@@ -336,6 +338,24 @@ def encoder_based_feature_extraction(
         "path_encoder" : path_enc,
         }
     return(out_di)
+
+
+
+def dim_reduce(X, n_neigh, n_dims_red):
+    """
+    UMAP dim reduction for clustering
+    """
+    scaler = StandardScaler()
+    reducer = umap.UMAP(
+        n_neighbors = n_neigh, 
+        n_components = n_dims_red, 
+        metric = 'euclidean',
+        n_jobs = -1
+        )
+    X_scaled = scaler.fit_transform(X)
+    X_trans = reducer.fit_transform(X_scaled)
+    X_out = scaler.fit_transform(X_trans)
+    return(X_out)
 
 
 # def wrap_to_dataset(di): 
