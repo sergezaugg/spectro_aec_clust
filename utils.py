@@ -231,32 +231,6 @@ class AutoencoderTrain:
 
 
 
-
-
-
-
-
-def dim_reduce(X, n_neigh, n_dims_red):
-    """
-    Conveniant wrapper around UMAP dim reduction with pre and post scaling
-    """
-    scaler = StandardScaler()
-    reducer = umap.UMAP(
-        n_neighbors = n_neigh, 
-        n_components = n_dims_red, 
-        metric = 'euclidean',
-        n_jobs = -1
-        )
-    X_scaled = scaler.fit_transform(X)
-    X_trans = reducer.fit_transform(X_scaled)
-    X_out = scaler.fit_transform(X_trans)
-    return(X_out)
-
-
-
-
-
-
 class AutoencoderExtract:
   
     def __init__(self, path_images, path_models, time_stamp_model):  
@@ -269,6 +243,25 @@ class AutoencoderExtract:
         self.path_images = path_images
         self.path_models = path_models
         self.time_stamp_model = time_stamp_model
+
+
+            
+
+    def dim_reduce(self, X, n_neigh, n_dims_red):
+        """
+        Conveniant wrapper around UMAP dim reduction with pre and post scaling
+        """
+        scaler = StandardScaler()
+        reducer = umap.UMAP(
+            n_neighbors = n_neigh, 
+            n_components = n_dims_red, 
+            metric = 'euclidean',
+            n_jobs = -1
+            )
+        X_scaled = scaler.fit_transform(X)
+        X_trans = reducer.fit_transform(X_scaled)
+        X_out = scaler.fit_transform(X_trans)
+        return(X_out)
 
     def evaluate_reconstruction_on_examples(self, n_images = 16):
         """
@@ -352,7 +345,7 @@ class AutoencoderExtract:
         out_name = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + tag + '.npz')
         np.savez(file = out_name, X = feat, N = imfiles)
 
-    def time_pool_and_dim_reduce(self, n_neigh = 10):
+    def time_pool_and_dim_reduce(self, n_neigh = 10, reduced_dim = [2,4,8,16,32]):
         """
         """
         npzfile_full_path = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + self.time_stamp_model + '.npz')
@@ -376,9 +369,9 @@ class AutoencoderExtract:
         # X.shape
         # N.shape
         # make 2d feats needed for plot 
-        X_2D = dim_reduce(X, n_neigh, 2)
-        for n_dims_red in [2,4,8,16, 32]:
-            X_red = dim_reduce(X, n_neigh, n_dims_red)
+        X_2D = self.dim_reduce(X, n_neigh, 2)
+        for n_dims_red in reduced_dim:
+            X_red = self.dim_reduce(X, n_neigh, n_dims_red)
             print(X.shape, X_red.shape, X_2D.shape, N.shape)
             # save as npz
             tag_dim_red = "dimred_" + str(n_dims_red) + "_neigh_" + str(n_neigh) + "_"

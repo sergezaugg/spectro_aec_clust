@@ -12,7 +12,7 @@ path_images = "D:/xc_real_projects/xc_sw_europe/xc_spectrograms"
 path_models = "D:/xc_real_projects/trained_models"
 time_stamp_model = '20250607_173742'
 
-
+# Initialize a AEC-extractor instance
 ae = AutoencoderExtract(path_images, path_models, time_stamp_model)
 
 # evaluate reconstruction
@@ -22,7 +22,7 @@ ae.evaluate_reconstruction_on_examples(n_images = 32).show()
 ae.encoder_based_feature_extraction(devel = True)
 
 # time_pool_and_dim_reduce
-ae.time_pool_and_dim_reduce()
+ae.time_pool_and_dim_reduce(n_neigh = 10, reduced_dim = [2,4,6,8])
 
 
 
