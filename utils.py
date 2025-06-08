@@ -327,10 +327,10 @@ class AutoencoderExtract:
         feat_li = []
         imfiles = []
         for i, (data, _, fi) in enumerate(test_loader, 0):    
-            print(data.shape)
+            print('input data shape', data.shape)
             data = data.to(device)
             encoded = model_enc(data).detach().cpu().numpy()
-            encoded.shape
+            print('encoded.shape', encoded.shape)
             feat_li.append(encoded)
             imfiles.append(fi)
             print(len(imfiles))
