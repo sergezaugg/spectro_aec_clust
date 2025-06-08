@@ -10,7 +10,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 path_images = "D:/xc_real_projects/xc_sw_europe/xc_spectrograms"
 path_models = "D:/xc_real_projects/trained_models"
-time_stamp_model = '20250607_173742'
+time_stamp_model = '20250608_124252'
 
 # Initialize a AEC-extractor instance
 ae = AutoencoderExtract(path_images, path_models, time_stamp_model)

@@ -11,7 +11,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 # -------------------------------------------------
-# GEN B0
+# GEN B0 (freq-pool : 128 - time-pool : 32)
 
 class EncoderGenB0(nn.Module):
     def __init__(self, n_ch_in = 3):
@@ -104,7 +104,7 @@ class DecoderGenB0(nn.Module):
 
 
 # -------------------------------------------------
-# GEN B1
+# GEN B1 (freq-pool : 128 - time-pool : 16)
 
 class EncoderGenB1(nn.Module):
     def __init__(self, n_ch_in = 3):
@@ -197,7 +197,7 @@ class DecoderGenB1(nn.Module):
 
 
 # -------------------------------------------------
-# GEN B2
+# GEN B2 (freq-pool : 128 - time-pool : 8)
 
 class EncoderGenB2(nn.Module):
     def __init__(self, n_ch_in = 3):
@@ -302,16 +302,16 @@ class DecoderGenB2(nn.Module):
 # devel code - supress execution if this is imported as module 
 if __name__ == "__main__":
 
-    model_enc = EncoderGenB2() 
-    model_enc = model_enc.to(device)
-    summary(model_enc, (1, 128, 1152))
+    # model_enc = EncoderGenB2() 
+    # model_enc = model_enc.to(device)
+    # summary(model_enc, (1, 128, 1152))
 
-    model_dec = DecoderGenB2()
-    model_dec = model_dec.to(device)
-    # summary(model_dec, (128, 1, 36))
-    # summary(model_dec, (128, 1, 72))
-    # summary(model_dec, (128, 1, 144))
-    summary(model_dec, (64, 1, 144))
+    # model_dec = DecoderGenB2()
+    # model_dec = model_dec.to(device)
+    # # summary(model_dec, (128, 1, 36))
+    # # summary(model_dec, (128, 1, 72))
+    # # summary(model_dec, (128, 1, 144))
+    # summary(model_dec, (64, 1, 144))
 
 
     # get size of receptive field 
