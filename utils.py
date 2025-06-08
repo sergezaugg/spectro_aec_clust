@@ -70,14 +70,6 @@ class SpectroImageDataset(Dataset):
 
 
 
-
-
-
-
-
-
-
-
 class AutoencoderTrain:
   
     def __init__(self, sess_json):
@@ -236,98 +228,9 @@ class AutoencoderTrain:
         model_save_name = tstmp + "_encoder_script_" + self.sess_info['model_gen'] + ".pth"
         model_enc_scripted = torch.jit.script(self.model_enc) # Export to TorchScript
         model_enc_scripted.save(os.path.join(self.sess_info['path_trained_models'], model_save_name))   
-                
-
-def evaluate_reconstruction_on_examples(path_images, path_models, time_stamp_model, n_images = 32):
-    """
-    Assess trained models by direct comparison of a few reconstructed images
-    """
-
-    # ---------------------
-    # (1) load a few images 
-    test_dataset = SpectroImageDataset(path_images, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = False)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size = n_images, shuffle = True)
-    for i_test, (data_1, data_2 , _ ) in enumerate(test_loader, 0):
-        if i_test > 0: break
-        print(data_1.shape)
-        print(data_2.shape)
-
-    # ---------------------
-    # (2) load models  
-    path_enc = [a for a in os.listdir(path_models) if time_stamp_model in a and 'encoder_model' in a][0]
-    path_dec = [a for a in os.listdir(path_models) if time_stamp_model in a and 'decoder_model' in a][0]
-    # load trained AEC
-    model_enc = torch.load( os.path.join(path_models, path_enc), weights_only = False)
-    model_dec = torch.load( os.path.join(path_models, path_dec), weights_only = False)
-    model_enc = model_enc.to(device)
-    model_dec = model_dec.to(device)
-    _ = model_enc.eval()
-    _ = model_dec.eval()
-
-    # ---------------------
-    # (3) predict 
-    data = data_1.to(device)
-    encoded = model_enc(data).to(device)
-    decoded = model_dec(encoded).to(device)
-
-    # plot 
-    fig = make_subplots(rows=n_images, cols=2,)
-    for ii in range(n_images) : 
-
-        img_orig = data_2[ii].cpu().numpy()
-        # img_orig = img_orig.squeeze() # 1 ch
-        img_orig = np.moveaxis(img_orig, 0, 2) # 3 ch
-        img_orig = 255.0*img_orig  
-
-        img_reco = decoded[ii].cpu().detach().numpy()
-        # img_reco = img_reco.squeeze()  # 1 ch
-        img_reco = np.moveaxis(img_reco, 0, 2) # 3 ch
-        img_reco = 255.0*img_reco   
-        _ = fig.add_trace(px.imshow(img_orig).data[0], row=ii+1, col=1)
-        _ = fig.add_trace(px.imshow(img_reco).data[0], row=ii+1, col=2)
-    _ = fig.update_layout(autosize=True,height=400*n_images, width = 800)
-    _ = fig.update_layout(title="Model ID: " + time_stamp_model)
-    return(fig)
 
 
-def encoder_based_feature_extraction(path_images, path_models, time_stamp_model, batch_size = 128, shuffle = True, devel = False):
-    """
-    Description: Applies a trained encoder to images in a dir and extracts the latent representation as a 2D feature array
-    Arguments:
-        path_enc (str) : 
-        path_images (str) :
-    """
-    # get the file corresponding to the time stamp
-    path_enc = [a for a in os.listdir(path_models) if time_stamp_model in a and 'encoder_model' in a][0]
-    # load trained AEC
-    model_enc = torch.load(os.path.join(path_models, path_enc), weights_only = False)
-    model_enc = model_enc.to(device)
-    _ = model_enc.eval()
-    # prepare dataloader
-    test_dataset = SpectroImageDataset(path_images, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = False)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size = batch_size, shuffle = shuffle)
-    # extract features
-    feat_li = []
-    imfiles = []
-    for i, (data, _, fi) in enumerate(test_loader, 0):    
-        print(data.shape)
-        data = data.to(device)
-        encoded = model_enc(data).detach().cpu().numpy()
-        encoded.shape
-        feat_li.append(encoded)
-        imfiles.append(fi)
-        print(len(imfiles))
-        if devel and i > 2:
-            break
-    # transform lists to array 
-    feat = np.concatenate(feat_li)
-    feat = feat.squeeze()
-    imfiles = np.concatenate(imfiles)
-   
-    # save as npz
-    tag = '_'.join(os.path.basename(path_enc).split('_')[0:2])     
-    out_name = os.path.join(os.path.dirname(path_images), 'full_features_' + 'saec_' + tag + '.npz')
-    np.savez(file = out_name, X = feat, N = imfiles)
+
 
 
 
@@ -335,7 +238,7 @@ def encoder_based_feature_extraction(path_images, path_models, time_stamp_model,
 
 def dim_reduce(X, n_neigh, n_dims_red):
     """
-    UMAP dim reduction for clustering
+    Conveniant wrapper around UMAP dim reduction with pre and post scaling
     """
     scaler = StandardScaler()
     reducer = umap.UMAP(
@@ -351,50 +254,139 @@ def dim_reduce(X, n_neigh, n_dims_red):
 
 
 
-def time_pool_and_dim_reduce(path_images, time_stamp_model):
-    """
-    
-    """
-    npzfile_full_path = os.path.join(os.path.dirname(path_images), 'full_features_' + 'saec_' + time_stamp_model + '.npz')
-    file_name_in = os.path.basename(npzfile_full_path)
 
-    # n neighbors of UMAP currently fixed to 10 !!!!
-    n_neigh = 10
 
-    # load full features 
-    npzfile = np.load(npzfile_full_path)
-    X = npzfile['X']
-    N = npzfile['N']
-    # X.shape
-    # N.shape
 
-    # combine information over time
-    # cutting time edges (currently hard coded to 20% on each side)
-    ecut = np.ceil(0.10 * X.shape[2]).astype(int)
-    X = X[:, :, ecut:(-1*ecut)] 
-    print('NEW - After cutting time edges:', X.shape)
-    # full average pool over time 
-    X_mea = X.mean(axis=2)
-    X_std = X.std(axis=2)
-    X_mea.shape
-    X_std.shape
-    X = np.concatenate([X_mea, X_std], axis = 1)
-    print('After average/std pool along time:', X.shape)
-    X.shape
-    N.shape
+class AutoencoderExtract:
+  
+    def __init__(self, path_images, path_models, time_stamp_model):  
+        """
+        Arguments :
+            path_images : 
+            path_models : 
+            time_stamp_model :
+        """    
+        self.path_images = path_images
+        self.path_models = path_models
+        self.time_stamp_model = time_stamp_model
 
-    # make 2d feats needed for plot 
-    X_2D = dim_reduce(X, n_neigh, 2)
-    for n_dims_red in [2,4,8,16, 32]:
-        X_red = dim_reduce(X, n_neigh, n_dims_red)
-        print(X.shape, X_red.shape, X_2D.shape, N.shape)
+    def evaluate_reconstruction_on_examples(self, n_images = 16):
+        """
+        Assess trained models by direct comparison of a few reconstructed images
+        """
+        # ---------------------
+        # (1) load a few images 
+        test_dataset = SpectroImageDataset(self.path_images, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = False)
+        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size = n_images, shuffle = True)
+        for i_test, (data_1, data_2 , _ ) in enumerate(test_loader, 0):
+            if i_test > 0: break
+            print(data_1.shape)
+            print(data_2.shape)
+        # ---------------------
+        # (2) load models  
+        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_model' in a][0]
+        path_dec = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'decoder_model' in a][0]
+        # load trained AEC
+        model_enc = torch.load( os.path.join(self.path_models, path_enc), weights_only = False)
+        model_dec = torch.load( os.path.join(self.path_models, path_dec), weights_only = False)
+        model_enc = model_enc.to(device)
+        model_dec = model_dec.to(device)
+        _ = model_enc.eval()
+        _ = model_dec.eval()
+        # ---------------------
+        # (3) predict 
+        data = data_1.to(device)
+        encoded = model_enc(data).to(device)
+        decoded = model_dec(encoded).to(device)
+        # ---------------------
+        # plot 
+        fig = make_subplots(rows=n_images, cols=2,)
+        for ii in range(n_images) : 
+            img_orig = data_2[ii].cpu().numpy()
+            # img_orig = img_orig.squeeze() # 1 ch
+            img_orig = np.moveaxis(img_orig, 0, 2) # 3 ch
+            img_orig = 255.0*img_orig  
+            img_reco = decoded[ii].cpu().detach().numpy()
+            # img_reco = img_reco.squeeze()  # 1 ch
+            img_reco = np.moveaxis(img_reco, 0, 2) # 3 ch
+            img_reco = 255.0*img_reco   
+            _ = fig.add_trace(px.imshow(img_orig).data[0], row=ii+1, col=1)
+            _ = fig.add_trace(px.imshow(img_reco).data[0], row=ii+1, col=2)
+        _ = fig.update_layout(autosize=True,height=400*n_images, width = 800)
+        _ = fig.update_layout(title="Model ID: " + self.time_stamp_model)
+        return(fig)
+
+    def encoder_based_feature_extraction(self, batch_size = 128, shuffle = True, devel = False):
+        """
+        Description: Applies a trained encoder to images in a dir and extracts the latent representation as a 2D feature array
+        Arguments:
+        """
+        # get the file corresponding to the time stamp
+        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_model' in a][0]
+        # load trained AEC
+        model_enc = torch.load(os.path.join(self.path_models, path_enc), weights_only = False)
+        model_enc = model_enc.to(device)
+        _ = model_enc.eval()
+        # prepare dataloader
+        test_dataset = SpectroImageDataset(self.path_images, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = False)
+        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size = batch_size, shuffle = shuffle)
+        # extract features
+        feat_li = []
+        imfiles = []
+        for i, (data, _, fi) in enumerate(test_loader, 0):    
+            print(data.shape)
+            data = data.to(device)
+            encoded = model_enc(data).detach().cpu().numpy()
+            encoded.shape
+            feat_li.append(encoded)
+            imfiles.append(fi)
+            print(len(imfiles))
+            if devel and i > 2:
+                break
+        # transform lists to array 
+        feat = np.concatenate(feat_li)
+        feat = feat.squeeze()
+        imfiles = np.concatenate(imfiles)
         # save as npz
-        tag_dim_red = "dimred_" + str(n_dims_red) + "_neigh_" + str(n_neigh) + "_"
-        file_name_out = tag_dim_red + '_'.join(file_name_in.split('_')[2:5])
-        out_name = os.path.join(os.path.dirname(npzfile_full_path), file_name_out)
-        np.savez(file = out_name, X_red = X_red, X_2D = X_2D, N = N)
+        tag = '_'.join(os.path.basename(path_enc).split('_')[0:2])     
+        out_name = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + tag + '.npz')
+        np.savez(file = out_name, X = feat, N = imfiles)
 
-        
+    def time_pool_and_dim_reduce(self, n_neigh = 10):
+        """
+        """
+        npzfile_full_path = os.path.join(os.path.dirname(self.path_images), 'full_features_' + 'saec_' + self.time_stamp_model + '.npz')
+        file_name_in = os.path.basename(npzfile_full_path)        
+        # load full features 
+        npzfile = np.load(npzfile_full_path)
+        X = npzfile['X']
+        N = npzfile['N']
+        # combine information over time
+        # cutting time edges (currently hard coded to 20% on each side)
+        ecut = np.ceil(0.10 * X.shape[2]).astype(int)
+        X = X[:, :, ecut:(-1*ecut)] 
+        print('Feature dim After cutting time edges:', X.shape)
+        # full average pool over time 
+        X_mea = X.mean(axis=2)
+        X_std = X.std(axis=2)
+        X_mea.shape
+        X_std.shape
+        X = np.concatenate([X_mea, X_std], axis = 1)
+        print('Feature dim After average/std pool along time:', X.shape)
+        # X.shape
+        # N.shape
+        # make 2d feats needed for plot 
+        X_2D = dim_reduce(X, n_neigh, 2)
+        for n_dims_red in [2,4,8,16, 32]:
+            X_red = dim_reduce(X, n_neigh, n_dims_red)
+            print(X.shape, X_red.shape, X_2D.shape, N.shape)
+            # save as npz
+            tag_dim_red = "dimred_" + str(n_dims_red) + "_neigh_" + str(n_neigh) + "_"
+            file_name_out = tag_dim_red + '_'.join(file_name_in.split('_')[2:5])
+            out_name = os.path.join(os.path.dirname(npzfile_full_path), file_name_out)
+            np.savez(file = out_name, X_red = X_red, X_2D = X_2D, N = N)
+
+            
 
 
 
