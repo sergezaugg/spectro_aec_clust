@@ -14,10 +14,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class EncoderGenA0(nn.Module):
     def __init__(self):
-        super(EncoderGenA, self).__init__()
-        n_ch_in = 1
+        super(EncoderGenA0, self).__init__()
+        n_ch_in = 3
         # ch = [64, 128, 256, 512]
-        ch = [64, 128, 256, 128]
+        ch = [64, 128, 256, 256]
         po = [(2, 2), (4, 2), (4, 2), (4, 2)]
         self.padding =  "same"
         self.conv0 = nn.Sequential(
@@ -51,10 +51,10 @@ class EncoderGenA0(nn.Module):
     
 class DecoderGenA0(nn.Module):
     def __init__(self) :
-        super(DecoderGenA, self).__init__()
-        n_ch_out=1
+        super(DecoderGenA0, self).__init__()
+        n_ch_out=3
         # ch =  [512, 256, 128, 64]
-        ch =  [128, 256, 128, 64]
+        ch =  [256, 256, 128, 64]
         po =  [(4, 2), (4, 2), (4, 2), (2, 2)]
            
         self.tconv0 = nn.Sequential(
@@ -298,10 +298,10 @@ class DecoderGenB1(nn.Module):
 # GEN B2
 
 class EncoderGenB2(nn.Module):
-    def __init__(self):
+    def __init__(self, n_ch_in = 3):
         super(EncoderGenB2, self).__init__()
-        n_ch_in = 1
-        ch = [64, 128, 128, 128, 128]
+        # n_ch_in = 3
+        ch = [64, 128, 128, 128, 256]
         po = [(2, 2), (4, 2), (4, 2), (2, 1), (2, 1)]
         self.padding =  "same"
         self.conv0 = nn.Sequential(
@@ -341,10 +341,10 @@ class EncoderGenB2(nn.Module):
         return(x)
     
 class DecoderGenB2(nn.Module):
-    def __init__(self) :
+    def __init__(self, n_ch_out=3) :
         super(DecoderGenB2, self).__init__()
-        n_ch_out=1
-        ch =  [128, 128, 128, 128, 64]
+        # n_ch_out=3
+        ch =  [256, 128, 128, 128, 64]
         po =  [(2, 2), (2, 2), (4, 2), (4, 1), (2, 1)]
            
         self.tconv0 = nn.Sequential(
