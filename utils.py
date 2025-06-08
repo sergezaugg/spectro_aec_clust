@@ -239,26 +239,14 @@ class AutoencoderTrain:
                 
 
 def evaluate_reconstruction_on_examples(path_images, path_models, time_stamp_model, n_images = 32):
-    
     """
     Assess trained models by direct comparison of a few reconstructed images
     """
 
     # ---------------------
     # (1) load a few images 
-
-    # lod info from training session 
-    path_sess = [a for a in os.listdir(path_models) if time_stamp_model in a and '_session_info' in a][0]
-    with open(os.path.join(path_models, path_sess), 'rb') as f:
-        di_sess = pickle.load(f)
-
-    # load data generator params used during training 
-    par = di_sess['sess_info']['data_generator']
-
-    # get a few images in array format 
-    test_dataset = SpectroImageDataset(path_images, par = par, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = True)
-    test_loader  = torch.utils.data.DataLoader(test_dataset, batch_size=n_images,  shuffle = False, drop_last = False)
-
+    test_dataset = SpectroImageDataset(path_images, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = False)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size = n_images, shuffle = True)
     for i_test, (data_1, data_2 , _ ) in enumerate(test_loader, 0):
         if i_test > 0: break
         print(data_1.shape)
@@ -299,11 +287,10 @@ def evaluate_reconstruction_on_examples(path_images, path_models, time_stamp_mod
         _ = fig.add_trace(px.imshow(img_reco).data[0], row=ii+1, col=2)
     _ = fig.update_layout(autosize=True,height=400*n_images, width = 800)
     _ = fig.update_layout(title="Model ID: " + time_stamp_model)
-    fig.show()
-    # ---------------------
+    return(fig)
 
 
-def encoder_based_feature_extraction(path_enc, path_images, batch_size = 128, shuffle = True, devel = False):
+def encoder_based_feature_extraction(path_images, path_models, time_stamp_model, batch_size = 128, shuffle = True, devel = False):
     """
     Description: Applies a trained encoder to images in a dir and extracts the latent representation as a 2D feature array
     Arguments:
@@ -311,9 +298,9 @@ def encoder_based_feature_extraction(path_enc, path_images, batch_size = 128, sh
         path_images (str) :
     """
     # get the file corresponding to the time stamp
-    # path_enc = [a for a in os.listdir(path_models) if time_stamp_model in a and 'encoder_model' in a][0]
+    path_enc = [a for a in os.listdir(path_models) if time_stamp_model in a and 'encoder_model' in a][0]
     # load trained AEC
-    model_enc = torch.load(path_enc, weights_only = False)
+    model_enc = torch.load(os.path.join(path_models, path_enc), weights_only = False)
     model_enc = model_enc.to(device)
     _ = model_enc.eval()
     # prepare dataloader
@@ -336,14 +323,13 @@ def encoder_based_feature_extraction(path_enc, path_images, batch_size = 128, sh
     feat = np.concatenate(feat_li)
     feat = feat.squeeze()
     imfiles = np.concatenate(imfiles)
-    # organize as a dict
-    out_di = {
-        "feature_array" : feat,
-        "image_file_name_array" : imfiles,
-        "path_images" : path_images,
-        "path_encoder" : path_enc,
-        }
-    return(out_di)
+   
+    # save as npz
+    tag = '_'.join(os.path.basename(path_enc).split('_')[0:2])     
+    out_name = os.path.join(os.path.dirname(path_images), 'full_features_' + 'saec_' + tag + '.npz')
+    np.savez(file = out_name, X = feat, N = imfiles)
+
+
 
 
 
@@ -365,7 +351,50 @@ def dim_reduce(X, n_neigh, n_dims_red):
 
 
 
-      
+def time_pool_and_dim_reduce(path_images, time_stamp_model):
+    """
+    
+    """
+    npzfile_full_path = os.path.join(os.path.dirname(path_images), 'full_features_' + 'saec_' + time_stamp_model + '.npz')
+    file_name_in = os.path.basename(npzfile_full_path)
+
+    # n neighbors of UMAP currently fixed to 10 !!!!
+    n_neigh = 10
+
+    # load full features 
+    npzfile = np.load(npzfile_full_path)
+    X = npzfile['X']
+    N = npzfile['N']
+    # X.shape
+    # N.shape
+
+    # combine information over time
+    # cutting time edges (currently hard coded to 20% on each side)
+    ecut = np.ceil(0.10 * X.shape[2]).astype(int)
+    X = X[:, :, ecut:(-1*ecut)] 
+    print('NEW - After cutting time edges:', X.shape)
+    # full average pool over time 
+    X_mea = X.mean(axis=2)
+    X_std = X.std(axis=2)
+    X_mea.shape
+    X_std.shape
+    X = np.concatenate([X_mea, X_std], axis = 1)
+    print('After average/std pool along time:', X.shape)
+    X.shape
+    N.shape
+
+    # make 2d feats needed for plot 
+    X_2D = dim_reduce(X, n_neigh, 2)
+    for n_dims_red in [2,4,8,16, 32]:
+        X_red = dim_reduce(X, n_neigh, n_dims_red)
+        print(X.shape, X_red.shape, X_2D.shape, N.shape)
+        # save as npz
+        tag_dim_red = "dimred_" + str(n_dims_red) + "_neigh_" + str(n_neigh) + "_"
+        file_name_out = tag_dim_red + '_'.join(file_name_in.split('_')[2:5])
+        out_name = os.path.join(os.path.dirname(npzfile_full_path), file_name_out)
+        np.savez(file = out_name, X_red = X_red, X_2D = X_2D, N = N)
+
+        
 
 
 
