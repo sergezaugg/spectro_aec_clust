@@ -30,6 +30,8 @@ pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu12
 ```
 * If other CUDA version or other OS, check official instructions [here](https://pytorch.org/get-started/locally)
 
+### ML details
 
+![](pics/flow_chart_01.png)
 
 

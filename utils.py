@@ -263,14 +263,14 @@ class AutoencoderExtract:
         X_out = scaler.fit_transform(X_trans)
         return(X_out)
 
-    def evaluate_reconstruction_on_examples(self, n_images = 16):
+    def evaluate_reconstruction_on_examples(self, n_images = 16, shuffle = True):
         """
         Assess trained models by direct comparison of a few reconstructed images
         """
         # ---------------------
         # (1) load a few images 
         test_dataset = SpectroImageDataset(self.path_images, augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = False)
-        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size = n_images, shuffle = True)
+        test_loader = torch.utils.data.DataLoader(test_dataset, batch_size = n_images, shuffle = shuffle)
         for i_test, (data_1, data_2 , _ ) in enumerate(test_loader, 0):
             if i_test > 0: break
             print(data_1.shape)
