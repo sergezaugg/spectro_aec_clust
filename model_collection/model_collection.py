@@ -6,8 +6,8 @@
 import torch
 import torch.nn as nn
 from torchsummary import summary
-torch.cuda.is_available()
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# torch.cuda.is_available()
+# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 # -------------------------------------------------
@@ -393,6 +393,9 @@ class DecoderGenB0L(nn.Module):
 
 # devel code - supress execution if this is imported as module 
 if __name__ == "__main__":
+
+    # torch.cuda.is_available()
+    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # get size of receptive field 
     class Convnet00(nn.Module):

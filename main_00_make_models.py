@@ -29,21 +29,10 @@ model_enc = Encoder(n_ch_in = 3)
 model_dec = Decoder(n_ch_out = 3)
 summary(model_enc, (3, 128, 1152), device = "CPU")
 summary(model_dec, (512, 1, 36), device = "CPU")
-# save for later use 
 torch.save(model_enc, os.path.join(path_untrained_models, 'cold_encoder' + save_file_name + '.pth'))
 torch.save(model_dec, os.path.join(path_untrained_models, 'cold_decoder' + save_file_name + '.pth'))
 
 
-
-
-
-
-
-# torch.cuda.is_available()
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-# device = torch.device("cpu")
-# model_enc = model_enc.to(device)
-# model_dec = model_dec.to(device)
 
 
 
