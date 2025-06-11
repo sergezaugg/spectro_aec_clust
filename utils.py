@@ -314,10 +314,25 @@ class AutoencoderExtract:
         Description: Applies a trained encoder to images in a dir and extracts the latent representation as a 2D feature array
         Arguments:
         """
-        # get the file corresponding to the time stamp
-        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_model' in a][0]
-        # load trained AEC
-        model_enc = torch.load(os.path.join(self.path_models, path_enc), weights_only = False)
+
+
+
+        # # ORIG ....
+        # # get the file corresponding to the time stamp
+        # path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_model' in a][0]
+        # # load trained AEC
+        # model_enc = torch.load(os.path.join(self.path_models, path_enc), weights_only = False)
+
+
+        
+        # NEW with scripted models 
+        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_script' in a][0]
+        model_enc = torch.jit.load(os.path.join(self.path_models, path_enc))
+     
+
+
+
+
         model_enc = model_enc.to(device)
         _ = model_enc.eval()
         # prepare dataloader
