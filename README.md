@@ -8,7 +8,7 @@
 * Extracted features are meant to be used in companion [project](https://github.com/sergezaugg/spectrogram_image_clustering) and its [frontend](https://spectrogram-image-clustering.streamlit.app/)
 
 ### Usage 
-*  Prepare a naive autoencoder model with **prepare_models/make_models.py**
+*  Prepare a naive autoencoder model with **main_00_make_models.py**
 *  Prepare PNG formatted color images of spectrograms, e.g. with [this tool](https://github.com/sergezaugg/xeno_canto_organizer)
 *  All functionality is called from 3 classes defined in **utils.py**
 *  **main_01_train.py** illustrates a pipeline to train an auto-encoders with these images
