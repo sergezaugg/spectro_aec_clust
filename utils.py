@@ -219,6 +219,7 @@ class AutoencoderTrain:
         torch.save(self.model_enc, os.path.join(self.sess_info['path_trained_models'], model_save_name))
         model_save_name = tstmp + "_decoder_model_" + self.sess_info['model_gen'] + ".pth"
         torch.save(self.model_dec, os.path.join(self.sess_info['path_trained_models'], model_save_name))
+
         di_sess = {'df_mse' : df_mse,'sess_info' : self.sess_info}
         sess_save_name = tstmp + "_session_info_" + self.sess_info['model_gen'] + ".pkl"
         with open(os.path.join(self.sess_info['path_trained_models'], sess_save_name), 'wb') as f:
@@ -228,6 +229,10 @@ class AutoencoderTrain:
         model_save_name = tstmp + "_encoder_script_" + self.sess_info['model_gen'] + ".pth"
         model_enc_scripted = torch.jit.script(self.model_enc) # Export to TorchScript
         model_enc_scripted.save(os.path.join(self.sess_info['path_trained_models'], model_save_name))   
+
+        model_save_name = tstmp + "_decoder_script_" + self.sess_info['model_gen'] + ".pth"
+        model_dec_scripted = torch.jit.script(self.model_dec) # Export to TorchScript
+        model_dec_scripted.save(os.path.join(self.sess_info['path_trained_models'], model_save_name))   
 
 
 
@@ -276,12 +281,22 @@ class AutoencoderExtract:
             print(data_1.shape)
             print(data_2.shape)
         # ---------------------
-        # (2) load models  
-        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_model' in a][0]
-        path_dec = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'decoder_model' in a][0]
-        # load trained AEC
-        model_enc = torch.load( os.path.join(self.path_models, path_enc), weights_only = False)
-        model_dec = torch.load( os.path.join(self.path_models, path_dec), weights_only = False)
+        # (2) load models 
+        
+        # OLD 
+        # path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_model' in a][0]
+        # path_dec = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'decoder_model' in a][0]
+        # # load trained AEC
+        # model_enc = torch.load( os.path.join(self.path_models, path_enc), weights_only = False)
+        # model_dec = torch.load( os.path.join(self.path_models, path_dec), weights_only = False)
+
+        # NEW with TorchScript models 
+        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_script' in a][0]
+        path_dec = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'decoder_script' in a][0]
+        model_enc = torch.jit.load(os.path.join(self.path_models, path_enc))
+        model_dec = torch.jit.load(os.path.join(self.path_models, path_dec))
+
+
         model_enc = model_enc.to(device)
         model_dec = model_dec.to(device)
         _ = model_enc.eval()
@@ -315,23 +330,16 @@ class AutoencoderExtract:
         Arguments:
         """
 
-
-
         # # ORIG ....
         # # get the file corresponding to the time stamp
         # path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_model' in a][0]
         # # load trained AEC
         # model_enc = torch.load(os.path.join(self.path_models, path_enc), weights_only = False)
 
-
-        
-        # NEW with scripted models 
+        # NEW with TorchScript models 
         path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_script' in a][0]
         model_enc = torch.jit.load(os.path.join(self.path_models, path_enc))
      
-
-
-
 
         model_enc = model_enc.to(device)
         _ = model_enc.eval()

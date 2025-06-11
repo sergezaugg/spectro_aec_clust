@@ -20,7 +20,7 @@ summary(at.model_enc, (3, 128, 1152))
 summary(at.model_dec, (512, 1, 36))
 
 # Start training (.pth files will be saved to disk)
-at.train_autoencoder(devel = False)
+at.train_autoencoder(devel = True)
 
 
 

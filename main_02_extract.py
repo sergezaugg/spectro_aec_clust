@@ -15,7 +15,9 @@ path_models = "D:/xc_real_projects/trained_models"
 # time_stamp_model = '20250608_155900' # gen_B0 old training set
 # time_stamp_model = '20250609_025355' # gen_B0 new big training set
 # time_stamp_model = '20250609_135101' # gen_B1 new big training set
-time_stamp_model = '20250609_212853' # gen_B0L (large) new big training set
+# time_stamp_model = '20250609_212853' # gen_B0L (large) new big training set
+
+time_stamp_model = 'xxxxx' # dev
 
 
 
