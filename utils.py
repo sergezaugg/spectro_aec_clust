@@ -74,9 +74,9 @@ class AutoencoderTrain:
   
     def __init__(self, sess_json):
         """
-        sess_json : name of one of the session configuration json files that are stored in ./session_params
+        sess_json : name of one of the session configuration json files that are stored in ./training_session_params
         """
-        with open(os.path.join('./session_params', sess_json )) as f:
+        with open(os.path.join('./training_session_params', sess_json )) as f:
             sess_info = json.load(f)
         self.sess_info = sess_info    
         self.train_dataset = SpectroImageDataset(self.sess_info['imgpath_train'], par = self.sess_info['data_generator'], augment_1 = True, denoise_1 = False, augment_2 = False, denoise_2 = True)
