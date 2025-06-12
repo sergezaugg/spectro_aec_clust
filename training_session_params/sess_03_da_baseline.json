@@ -1,0 +1,22 @@
+ {
+"imgpath_train" : "D:/xc_real_projects/xc_all_4_pooled/images_24000sps_20250608_221808",
+"imgpath_test"  : "D:/xc_real_projects/xc_sw_europe/xc_spectrograms",  
+"batch_size_tr" : 8,  
+"batch_size_te" : 32,
+"n_epochs" : 1,
+"hot_start" : false, 
+"model_tag" : "GenBTP32_CH0256",  
+"data_generator" : {
+    "da": {
+        "rot_deg"    : 0.00,  
+        "trans_prop" : 0.00, 
+        "brightness" : 0.00,  
+        "contrast"   : 0.00,  
+        "gnoisesigm" : 0.00,  
+        "gnoiseprob" : 0.00
+        },
+    "den": {  
+    "thld" :  0.00
+        } 
+    }
+}
