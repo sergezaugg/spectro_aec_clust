@@ -21,6 +21,7 @@ from torchvision.transforms.functional import pil_to_tensor
 import torchvision.transforms.v2 as transforms
 import torch.optim as optim
 import json
+import yaml
 # from torchsummary import summary
 
 
@@ -79,27 +80,32 @@ class AutoencoderTrain:
         self.train_dataset = SpectroImageDataset(self.sess_info['imgpath_train'], par = self.sess_info['data_generator'], augment_1 = True, denoise_1 = False, augment_2 = False, denoise_2 = True)
         self.test_dataset  = SpectroImageDataset(self.sess_info['imgpath_test'],  par = self.sess_info['data_generator'], augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = True)
         self.device = device
+        # load path from config 
+        with open('./config.yaml') as f:
+            self.conf = yaml.safe_load(f)
+        # self.conf['path_untrained_models']
+        # self.conf['path_trained_models']
 
         if sess_info['hot_start'] == False:
             tstmp_0 = sess_info['model_tag']
-            path_enc = [a for a in os.listdir(sess_info['path_untrained_models']) if tstmp_0 in a and 'cold_encoder' in a][0]
-            path_dec = [a for a in os.listdir(sess_info['path_untrained_models']) if tstmp_0 in a and 'cold_decoder' in a][0]
-            self.model_enc = torch.load(os.path.join(sess_info['path_untrained_models'], path_enc), weights_only = False)
-            self.model_dec = torch.load(os.path.join(sess_info['path_untrained_models'], path_dec), weights_only = False)
+            path_enc = [a for a in os.listdir(self.conf['path_untrained_models']) if tstmp_0 in a and 'cold_encoder' in a][0]
+            path_dec = [a for a in os.listdir(self.conf['path_untrained_models']) if tstmp_0 in a and 'cold_decoder' in a][0]
+            self.model_enc = torch.load(os.path.join(self.conf['path_untrained_models'], path_enc), weights_only = False)
+            self.model_dec = torch.load(os.path.join(self.conf['path_untrained_models'], path_dec), weights_only = False)
             self.model_enc = self.model_enc.to(self.device)
             self.model_dec = self.model_dec.to(self.device)
             sess_info['model_gen'] = sess_info['model_tag']
         elif sess_info['hot_start'] == True:
             tstmp_1 = sess_info['model_tag']
-            path_enc = [a for a in os.listdir(sess_info['path_trained_models']) if tstmp_1 in a and 'encoder_model' in a][0]
-            path_dec = [a for a in os.listdir(sess_info['path_trained_models']) if tstmp_1 in a and 'decoder_model' in a][0]
-            self.model_enc = torch.load(os.path.join(sess_info['path_trained_models'], path_enc), weights_only = False)
-            self.model_dec = torch.load(os.path.join(sess_info['path_trained_models'], path_dec), weights_only = False)
+            path_enc = [a for a in os.listdir(self.conf['path_trained_models']) if tstmp_1 in a and 'encoder_model' in a][0]
+            path_dec = [a for a in os.listdir(self.conf['path_trained_models']) if tstmp_1 in a and 'decoder_model' in a][0]
+            self.model_enc = torch.load(os.path.join(self.conf['path_trained_models'], path_enc), weights_only = False)
+            self.model_dec = torch.load(os.path.join(self.conf['path_trained_models'], path_dec), weights_only = False)
             self.model_enc = self.model_enc.to(self.device)
             self.model_dec = self.model_dec.to(self.device) 
             # load info from previous training session 
-            path_sess = [a for a in os.listdir(sess_info['path_trained_models']) if tstmp_1 in a and '_session_info' in a][0]
-            with open(os.path.join(sess_info['path_trained_models'], path_sess), 'rb') as f:
+            path_sess = [a for a in os.listdir(self.conf['path_trained_models']) if tstmp_1 in a and '_session_info' in a][0]
+            with open(os.path.join(self.conf['path_trained_models'], path_sess), 'rb') as f:
                 di_origin_sess = pickle.load(f)
             # load model generation 
             sess_info['model_gen'] = di_origin_sess['sess_info']['model_gen']
@@ -217,23 +223,23 @@ class AutoencoderTrain:
         # Save the model and all params 
         tstmp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         model_save_name = tstmp + "_encoder_model_" + self.sess_info['model_gen'] + ".pth"
-        torch.save(self.model_enc, os.path.join(self.sess_info['path_trained_models'], model_save_name))
+        torch.save(self.model_enc, os.path.join(self.conf['path_trained_models'], model_save_name))
         model_save_name = tstmp + "_decoder_model_" + self.sess_info['model_gen'] + ".pth"
-        torch.save(self.model_dec, os.path.join(self.sess_info['path_trained_models'], model_save_name))
+        torch.save(self.model_dec, os.path.join(self.conf['path_trained_models'], model_save_name))
 
         di_sess = {'df_mse' : df_mse,'sess_info' : self.sess_info}
         sess_save_name = tstmp + "_session_info_" + self.sess_info['model_gen'] + ".pkl"
-        with open(os.path.join(self.sess_info['path_trained_models'], sess_save_name), 'wb') as f:
+        with open(os.path.join(self.conf['path_trained_models'], sess_save_name), 'wb') as f:
             pickle.dump(di_sess, f)
 
         # save model for external projects    
         model_save_name = tstmp + "_encoder_script_" + self.sess_info['model_gen'] + ".pth"
         model_enc_scripted = torch.jit.script(self.model_enc) # Export to TorchScript
-        model_enc_scripted.save(os.path.join(self.sess_info['path_trained_models'], model_save_name))   
+        model_enc_scripted.save(os.path.join(self.conf['path_trained_models'], model_save_name))   
 
         model_save_name = tstmp + "_decoder_script_" + self.sess_info['model_gen'] + ".pth"
         model_dec_scripted = torch.jit.script(self.model_dec) # Export to TorchScript
-        model_dec_scripted.save(os.path.join(self.sess_info['path_trained_models'], model_save_name))   
+        model_dec_scripted.save(os.path.join(self.conf['path_trained_models'], model_save_name))   
 
 
 
