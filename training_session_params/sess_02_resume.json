@@ -5,7 +5,7 @@
 "batch_size_te" : 32,
 "n_epochs" : 1,
 "hot_start" : true, 
-"model_tag" : "20250612_124535",  
+"model_tag" : "20250612_211116",  
 "data_generator" : {
     "da": {
         "rot_deg"    : 0.30,  

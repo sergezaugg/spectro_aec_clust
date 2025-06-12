@@ -1,6 +1,6 @@
 #----------------------
 # Author : Serge Zaugg
-# Description : Create a freezed version of an AEC architecture and save to file 
+# Description : Create a frozen versions of AEC architectures and save to file (run only once)
 #----------------------
 
 import torch
