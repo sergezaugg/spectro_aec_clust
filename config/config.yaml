@@ -1,0 +1,3 @@
+# 
+path_untrained_models : "D:/xc_real_projects/pytorch_cold_models"
+path_trained_models : "D:/xc_real_projects/pytorch_hot_models"

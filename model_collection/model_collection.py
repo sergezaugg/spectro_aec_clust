@@ -5,18 +5,13 @@
 
 import torch
 import torch.nn as nn
-from torchsummary import summary
-# torch.cuda.is_available()
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
 
 # -------------------------------------------------
 # GEN B0 (freq-pool : 128 - time-pool : 32)
 
-class EncoderGenB0(nn.Module):
-    def __init__(self, n_ch_in = 3):
-        super(EncoderGenB0, self).__init__()
-        ch = [64, 128, 128, 128, 256]
+class EncoderGenBTP32(nn.Module):
+    def __init__(self, n_ch_in = 3, ch = [64, 128, 128, 128, 256]):
+        super(EncoderGenBTP32, self).__init__()
         po = [(2, 2), (4, 2), (4, 2), (2, 2), (2, 2)]
         self.padding =  "same"
         self.conv0 = nn.Sequential(
@@ -47,6 +42,7 @@ class EncoderGenB0(nn.Module):
             nn.Conv2d(ch[3], ch[4], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.Conv2d(ch[4], ch[4], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.AvgPool2d(po[4], stride=po[4]))
+        
     def forward(self, x):
         x = self.conv0(x)
         x = self.conv1(x)
@@ -55,10 +51,9 @@ class EncoderGenB0(nn.Module):
         x = self.conv4(x)
         return(x)
     
-class DecoderGenB0(nn.Module):
-    def __init__(self, n_ch_out=3):
-        super(DecoderGenB0, self).__init__()
-        ch =  [256, 128, 128, 128, 64]
+class DecoderGenBTP32(nn.Module):
+    def __init__(self, n_ch_out=3, ch = [256, 128, 128, 128, 64]):
+        super(DecoderGenBTP32, self).__init__()
         po =  [(2, 2), (2, 2), (4, 2), (4, 2), (2, 2)]
         self.tconv0 = nn.Sequential(
             nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(5,5), stride=po[0], padding=(2,2), output_padding=(1,1)), 
@@ -102,14 +97,12 @@ class DecoderGenB0(nn.Module):
 # -------------------------------------------------
 
 
-
 # -------------------------------------------------
 # GEN B1 (freq-pool : 128 - time-pool : 16)
 
-class EncoderGenB1(nn.Module):
-    def __init__(self, n_ch_in = 3):
-        super(EncoderGenB1, self).__init__()
-        ch = [64, 128, 128, 128, 256]
+class EncoderGenBTP16(nn.Module):
+    def __init__(self, n_ch_in = 3, ch = [64, 128, 128, 128, 256]):
+        super(EncoderGenBTP16, self).__init__()
         po = [(2, 2), (4, 2), (4, 2), (2, 2), (2, 1)]
         self.padding =  "same"
         self.conv0 = nn.Sequential(
@@ -140,6 +133,7 @@ class EncoderGenB1(nn.Module):
             nn.Conv2d(ch[3], ch[4], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.Conv2d(ch[4], ch[4], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.AvgPool2d(po[4], stride=po[4]))
+        
     def forward(self, x):
         x = self.conv0(x)
         x = self.conv1(x)
@@ -148,10 +142,9 @@ class EncoderGenB1(nn.Module):
         x = self.conv4(x)
         return(x)
     
-class DecoderGenB1(nn.Module):
-    def __init__(self, n_ch_out = 3) :
-        super(DecoderGenB1, self).__init__()
-        ch =  [256, 128, 128, 128, 64]
+class DecoderGenBTP16(nn.Module):
+    def __init__(self, n_ch_out = 3, ch =  [256, 128, 128, 128, 64]) :
+        super(DecoderGenBTP16, self).__init__()
         po =  [(2, 2), (2, 2), (4, 2), (4, 2), (2, 1)]
         self.tconv0 = nn.Sequential(
             nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(5,5), stride=po[0], padding=(2,2), output_padding=(1,1)), 
@@ -195,14 +188,12 @@ class DecoderGenB1(nn.Module):
 # -------------------------------------------------
 
 
-
 # -------------------------------------------------
 # GEN B2 (freq-pool : 128 - time-pool : 8)
 
-class EncoderGenB2(nn.Module):
-    def __init__(self, n_ch_in = 3):
-        super(EncoderGenB2, self).__init__()
-        ch = [64, 128, 128, 128, 256]
+class EncoderGenBTP08(nn.Module):
+    def __init__(self, n_ch_in = 3, ch = [64, 128, 128, 128, 256]):
+        super(EncoderGenBTP08, self).__init__()
         po = [(2, 2), (4, 2), (4, 2), (2, 1), (2, 1)]
         self.padding =  "same"
         self.conv0 = nn.Sequential(
@@ -233,6 +224,7 @@ class EncoderGenB2(nn.Module):
             nn.Conv2d(ch[3], ch[4], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.Conv2d(ch[4], ch[4], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.AvgPool2d(po[4], stride=po[4]))
+        
     def forward(self, x):
         x = self.conv0(x)
         x = self.conv1(x)
@@ -241,10 +233,9 @@ class EncoderGenB2(nn.Module):
         x = self.conv4(x)
         return(x)
     
-class DecoderGenB2(nn.Module):
-    def __init__(self, n_ch_out=3) :
-        super(DecoderGenB2, self).__init__()
-        ch =  [256, 128, 128, 128, 64]
+class DecoderGenBTP08(nn.Module):
+    def __init__(self, n_ch_out=3, ch = [256, 128, 128, 128, 64]) :
+        super(DecoderGenBTP08, self).__init__()
         po =  [(2, 2), (2, 2), (4, 2), (4, 1), (2, 1)]
            
         self.tconv0 = nn.Sequential(
@@ -292,97 +283,6 @@ class DecoderGenB2(nn.Module):
 
 
 
-# -------------------------------------------------
-# GEN B0L (freq-pool : 128 - time-pool : 32) - latent feature size = 512
-
-class EncoderGenB0L(nn.Module):
-    def __init__(self, n_ch_in = 3):
-        super(EncoderGenB0L, self).__init__()
-        ch = [64, 128, 128, 256, 512]
-        po = [(2, 2), (4, 2), (4, 2), (2, 2), (2, 2)]
-        self.padding =  "same"
-        self.conv0 = nn.Sequential(
-            nn.Conv2d(n_ch_in,  ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
-            nn.Conv2d(ch[0], ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
-            nn.BatchNorm2d(ch[0]),
-            nn.ReLU(),
-            nn.AvgPool2d(po[0], stride=po[0]))
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(ch[0], ch[1], kernel_size=(3,3), stride=1, padding=self.padding),
-            nn.Conv2d(ch[1], ch[1], kernel_size=(3,3), stride=1, padding=self.padding),
-            nn.BatchNorm2d(ch[1]),
-            nn.ReLU(),
-            nn.AvgPool2d(po[1], stride=po[1]))
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(ch[1], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),
-            nn.Conv2d(ch[2], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),
-            nn.BatchNorm2d(ch[2]),
-            nn.ReLU(),
-            nn.AvgPool2d(po[2], stride=po[2]))
-        self.conv3 = nn.Sequential(
-            nn.Conv2d(ch[2], ch[3], kernel_size=(3,3), stride=1, padding=self.padding),
-            nn.Conv2d(ch[3], ch[3], kernel_size=(3,3), stride=1, padding=self.padding),
-            nn.BatchNorm2d(ch[3]),
-            nn.ReLU(),
-            nn.AvgPool2d(po[3], stride=po[3]))
-        self.conv4 = nn.Sequential(
-            nn.Conv2d(ch[3], ch[4], kernel_size=(3,3), stride=1, padding=self.padding),
-            nn.Conv2d(ch[4], ch[4], kernel_size=(3,3), stride=1, padding=self.padding),
-            nn.AvgPool2d(po[4], stride=po[4]))
-    def forward(self, x):
-        x = self.conv0(x)
-        x = self.conv1(x)
-        x = self.conv2(x)
-        x = self.conv3(x)
-        x = self.conv4(x)
-        return(x)
-    
-class DecoderGenB0L(nn.Module):
-    def __init__(self, n_ch_out=3):
-        super(DecoderGenB0L, self).__init__()
-        ch =  [512, 256, 128, 128, 64]
-        po =  [(2, 2), (2, 2), (4, 2), (4, 2), (2, 2)]
-        self.tconv0 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(5,5), stride=po[0], padding=(2,2), output_padding=(1,1)), 
-            nn.BatchNorm2d(ch[0]),
-            nn.ReLU()
-            )
-        self.tconv1 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(5,5), stride=po[1], padding=(2,2), output_padding=(1,1)), 
-            nn.BatchNorm2d(ch[1]),
-            nn.ReLU()
-            )
-        self.tconv2 = nn.Sequential(
-            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(5,5), stride=po[2], padding=(1,2), output_padding=(1,1)),  
-            nn.BatchNorm2d(ch[2]),
-            nn.ReLU()
-            )
-        self.tconv3 = nn.Sequential(
-            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=(5,5), stride=po[3], padding=(1,2),  output_padding=(1,1)), 
-            nn.BatchNorm2d(ch[3]),
-            nn.ReLU()
-            )
-        self.tconv4 = nn.Sequential(
-            nn.ConvTranspose2d(ch[3], ch[4], kernel_size=(5,5), stride=po[4], padding=(2,2),  output_padding=(1,1)), 
-            nn.BatchNorm2d(ch[4]),
-            nn.ReLU()
-            )
-        self.out_map = nn.Sequential(
-            nn.Conv2d(ch[4], n_ch_out, kernel_size=(1,1), padding=0),
-            nn.Sigmoid()
-            )
-
-    def forward(self, x):
-        x = self.tconv0(x)
-        x = self.tconv1(x)
-        x = self.tconv2(x)
-        x = self.tconv3(x)
-        x = self.tconv4(x)
-        x = self.out_map(x)
-        return x
-
-# -------------------------------------------------
-
 
 
 
@@ -394,8 +294,10 @@ class DecoderGenB0L(nn.Module):
 # devel code - supress execution if this is imported as module 
 if __name__ == "__main__":
 
-    # torch.cuda.is_available()
-    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    torch.cuda.is_available()
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    from torchsummary import summary
+
 
     # get size of receptive field 
     class Convnet00(nn.Module):

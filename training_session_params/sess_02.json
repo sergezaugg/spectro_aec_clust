@@ -1,13 +1,11 @@
  {
-"path_untrained_models" : "D:/xc_real_projects/untrained_models",
-"path_trained_models" : "D:/xc_real_projects/trained_models",
 "imgpath_train" : "D:/xc_real_projects/xc_all_4_pooled/images_24000sps_20250608_221808",
 "imgpath_test"  : "D:/xc_real_projects/xc_sw_europe/xc_spectrograms",  
 "batch_size_tr" : 8,  
 "batch_size_te" : 32,
-"n_epochs" : 3,
+"n_epochs" : 1,
 "hot_start" : true, 
-"model_tag" : "20250609_212853",  
+"model_tag" : "20250612_124535",  
 "data_generator" : {
     "da": {
         "rot_deg"    : 0.30,  
