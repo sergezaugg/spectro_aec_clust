@@ -4,7 +4,7 @@
 #--------------------------------
 
 import torch
-from torchsummary import summary
+# from torchsummary import summary
 from utils import AutoencoderTrain
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
