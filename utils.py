@@ -7,7 +7,6 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
-import shutil
 import datetime
 from PIL import Image
 from sklearn.preprocessing import StandardScaler
@@ -22,7 +21,6 @@ import torchvision.transforms.v2 as transforms
 import torch.optim as optim
 import json
 import yaml
-# from torchsummary import summary
 
 
 class SpectroImageDataset(Dataset):
@@ -67,7 +65,6 @@ class SpectroImageDataset(Dataset):
         return (len(self.all_img_files))
 
 
-
 class AutoencoderTrain:
   
     def __init__(self, sess_json, device):
@@ -81,10 +78,8 @@ class AutoencoderTrain:
         self.test_dataset  = SpectroImageDataset(self.sess_info['imgpath_test'],  par = self.sess_info['data_generator'], augment_1 = False, denoise_1 = False, augment_2 = False, denoise_2 = True)
         self.device = device
         # load path from config 
-        with open('./config.yaml') as f:
+        with open('./config/config.yaml') as f:
             self.conf = yaml.safe_load(f)
-        # self.conf['path_untrained_models']
-        # self.conf['path_trained_models']
 
         if sess_info['hot_start'] == False:
             tstmp_0 = sess_info['model_tag']
@@ -164,7 +159,7 @@ class AutoencoderTrain:
             _ = self.model_dec.train()
             trai_perf_li = []
             for batch_tr, (da_tr_1, da_tr_2, fi) in enumerate(train_loader, 0):
-                if devel and batch_tr > 1:
+                if devel and batch_tr > 4:
                     break
                 da_tr_1 = da_tr_1.to(self.device)
                 da_tr_2 = da_tr_2.to(self.device)
@@ -242,20 +237,20 @@ class AutoencoderTrain:
         model_dec_scripted.save(os.path.join(self.conf['path_trained_models'], model_save_name))   
 
 
-
 class AutoencoderExtract:
   
-    def __init__(self, path_images, path_models, time_stamp_model, device):  
+    def __init__(self, path_images, time_stamp_model, device):  
         """
         Arguments :
             path_images : 
-            path_models : 
             time_stamp_model :
         """    
         self.path_images = path_images
-        self.path_models = path_models
         self.time_stamp_model = time_stamp_model
         self.device = device
+        # load path from config 
+        with open('./config/config.yaml') as f:
+            self.conf = yaml.safe_load(f)
 
     def dim_reduce(self, X, n_neigh, n_dims_red):
         """
@@ -287,19 +282,11 @@ class AutoencoderExtract:
             print(data_2.shape)
         # ---------------------
         # (2) load models 
-        
-        # OLD 
-        # path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_model' in a][0]
-        # path_dec = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'decoder_model' in a][0]
-        # # load trained AEC
-        # model_enc = torch.load( os.path.join(self.path_models, path_enc), weights_only = False)
-        # model_dec = torch.load( os.path.join(self.path_models, path_dec), weights_only = False)
-
         # NEW with TorchScript models 
-        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_script' in a][0]
-        path_dec = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'decoder_script' in a][0]
-        model_enc = torch.jit.load(os.path.join(self.path_models, path_enc))
-        model_dec = torch.jit.load(os.path.join(self.path_models, path_dec))
+        path_enc = [a for a in os.listdir(self.conf['path_trained_models']) if self.time_stamp_model in a and 'encoder_script' in a][0]
+        path_dec = [a for a in os.listdir(self.conf['path_trained_models']) if self.time_stamp_model in a and 'decoder_script' in a][0]
+        model_enc = torch.jit.load(os.path.join(self.conf['path_trained_models'], path_enc))
+        model_dec = torch.jit.load(os.path.join(self.conf['path_trained_models'], path_dec))
         model_enc = model_enc.to(self.device)
         model_dec = model_dec.to(self.device)
         _ = model_enc.eval()
@@ -332,16 +319,9 @@ class AutoencoderExtract:
         Description: Applies a trained encoder to images in a dir and extracts the latent representation as a 2D feature array
         Arguments:
         """
-
-        # # ORIG ....
-        # # get the file corresponding to the time stamp
-        # path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_model' in a][0]
-        # # load trained AEC
-        # model_enc = torch.load(os.path.join(self.path_models, path_enc), weights_only = False)
-
         # NEW with TorchScript models 
-        path_enc = [a for a in os.listdir(self.path_models) if self.time_stamp_model in a and 'encoder_script' in a][0]
-        model_enc = torch.jit.load(os.path.join(self.path_models, path_enc))
+        path_enc = [a for a in os.listdir(self.conf['path_trained_models']) if self.time_stamp_model in a and 'encoder_script' in a][0]
+        model_enc = torch.jit.load(os.path.join(self.conf['path_trained_models'], path_enc))
     
         model_enc = model_enc.to(self.device)
         _ = model_enc.eval()

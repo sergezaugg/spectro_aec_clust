@@ -9,7 +9,7 @@ import os
 import yaml
 
 # load path from config 
-with open('./config.yaml') as f:
+with open('./config/config.yaml') as f:
     conf = yaml.safe_load(f)
 path_untrained_models = conf['path_untrained_models']
 

@@ -14,7 +14,7 @@ at = AutoencoderTrain(sess_json = 'sess_02.json', device = device)
 # Directly check if data augmentation as intended
 at.make_data_augment_examples().show()
 # Start training (.pth files will be saved to disk)
-at.train_autoencoder(devel = False)
+at.train_autoencoder(devel = True)
 
 
 
