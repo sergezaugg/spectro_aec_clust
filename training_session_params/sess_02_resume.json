@@ -8,7 +8,7 @@
 "model_tag" : "20250613_103528",  
 "data_generator" : {
     "da": {
-        "rot_deg"    : 0.30,  
+        "rot_deg"    : 0.25,  
         "trans_prop" : 0.005, 
         "brightness" : 0.40,  
         "contrast"   : 0.40,  
@@ -16,7 +16,7 @@
         "gnoiseprob" : 0.50
         },
     "den": {  
-    "thld" :  0.40
+    "thld" :  0.75
         } 
     }
 }

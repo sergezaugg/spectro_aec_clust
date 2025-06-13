@@ -47,10 +47,12 @@ class SpectroImageDataset(Dataset):
         x_1 = pil_to_tensor(img).to(torch.float32) / 255.0
         x_2 = pil_to_tensor(img).to(torch.float32) / 255.0
         # simple de-noising with threshold
+        # take random thld between 0.0 and self.par['den']['thld']
+        denoize_thld = np.random.uniform(low=0.0, high=self.par['den']['thld'], size=1).item()
         if self.denoise_1: 
-            x_1[x_1 < self.par['den']['thld'] ] = 0.0
+            x_1[x_1 < denoize_thld ] = 0.0
         if self.denoise_2: 
-            x_2[x_2 < self.par['den']['thld'] ] = 0.0    
+            x_2[x_2 < denoize_thld ] = 0.0    
         # data augmentation 
         if self.augment_1: 
             x_1 = self.dataaugm(x_1)  
