@@ -29,6 +29,6 @@
 * If other CUDA version or other OS, check official instructions [here](https://pytorch.org/get-started/locally)
 
 ### ML details
-![](pics/flow_chart_01.png)
+<img src="pics/flow_chart_01.png" alt="Example image" width="500"/>
 
 
