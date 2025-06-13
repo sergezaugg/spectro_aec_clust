@@ -47,10 +47,13 @@ class SpectroImageDataset(Dataset):
         x_1 = pil_to_tensor(img).to(torch.float32) / 255.0
         x_2 = pil_to_tensor(img).to(torch.float32) / 255.0
         # simple de-noising with threshold
+        # take random thld between 0.0 and self.par['den']['thld']
         if self.denoise_1: 
-            x_1[x_1 < self.par['den']['thld'] ] = 0.0
-        if self.denoise_2: 
-            x_2[x_2 < self.par['den']['thld'] ] = 0.0    
+            denoize_thld = np.random.uniform(low=0.0, high=self.par['den']['thld'], size=1).item()
+            x_1[x_1 < denoize_thld ] = 0.0
+        if self.denoise_2:
+            denoize_thld = np.random.uniform(low=0.0, high=self.par['den']['thld'], size=1).item() 
+            x_2[x_2 < denoize_thld ] = 0.0    
         # data augmentation 
         if self.augment_1: 
             x_1 = self.dataaugm(x_1)  
@@ -69,9 +72,9 @@ class AutoencoderTrain:
   
     def __init__(self, sess_json, device):
         """
-        sess_json : name of one of the session configuration json files that are stored in ./training_session_params
+        sess_json : name of one of the session configuration json files that are stored in ./session_params/training
         """
-        with open(os.path.join('./training_session_params', sess_json )) as f:
+        with open(os.path.join('./session_params/training', sess_json )) as f:
             sess_info = json.load(f)
         self.sess_info = sess_info    
         self.train_dataset = SpectroImageDataset(self.sess_info['imgpath_train'], par = self.sess_info['data_generator'], augment_1 = True, denoise_1 = False, augment_2 = False, denoise_2 = True)
@@ -242,14 +245,14 @@ class AutoencoderTrain:
 
 class AutoencoderExtract:
   
-    def __init__(self, path_images, time_stamp_model, device):  
+    def __init__(self, sess_json, device):  
         """
-        Arguments :
-            path_images : 
-            time_stamp_model :
+        TBD
         """    
-        self.path_images = path_images
-        self.time_stamp_model = time_stamp_model
+        with open(os.path.join('./session_params/extraction', sess_json )) as f:
+            sess_info = json.load(f)
+        self.path_images = sess_info['imgpath']
+        self.time_stamp_model = sess_info['model_tag']
         self.device = device
         # load path from config 
         with open('./config/config.yaml') as f:

@@ -3,12 +3,12 @@
 "imgpath_test"  : "D:/xc_real_projects/xc_sw_europe/xc_spectrograms",  
 "batch_size_tr" : 8,  
 "batch_size_te" : 32,
-"n_epochs" : 5,
-"hot_start" : true, 
-"model_tag" : "20250613_103528",  
+"n_epochs" : 1,
+"hot_start" : false, 
+"model_tag" : "GenBTP32_CH0256",  
 "data_generator" : {
     "da": {
-        "rot_deg"    : 0.30,  
+        "rot_deg"    : 0.25,  
         "trans_prop" : 0.005, 
         "brightness" : 0.40,  
         "contrast"   : 0.40,  
@@ -16,7 +16,7 @@
         "gnoiseprob" : 0.50
         },
     "den": {  
-    "thld" :  0.40
+    "thld" :  0.75
         } 
     }
 }

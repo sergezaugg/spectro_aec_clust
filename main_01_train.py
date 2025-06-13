@@ -15,10 +15,5 @@ at = AutoencoderTrain(sess_json = 'sess_02_resume.json', device = device)
 # Directly check data augmentation
 at.make_data_augment_examples().show()
 # Start training (.pth files will be saved to disk)
-at.train_autoencoder(devel = True)
-
-
-
-
-
+at.train_autoencoder(devel = False)
 
