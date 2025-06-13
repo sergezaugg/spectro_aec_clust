@@ -384,7 +384,8 @@ class DecoderGenBTP08(nn.Module):
 # devel code - supress execution if this is imported as module 
 if __name__ == "__main__":
 
-    from torchsummary import summary
+    from torchinfo import summary
+
 
 
 
@@ -392,8 +393,8 @@ if __name__ == "__main__":
 
     model_enc = EncoderGenBTP64(n_ch_in = 3, ch = [64, 128, 128, 128, 256])
     model_dec = DecoderGenBTP64(n_ch_out = 3, ch = [256, 128, 128, 128, 64])
-    summary(model_enc, (3, 128, 1152), device = "CPU")
-    summary(model_dec, (256, 1, 18), device = "CPU")
+    summary(model_enc, (1, 3, 128, 1152))
+    summary(model_dec, (1, 256, 1, 18))
 
 
 

@@ -5,9 +5,6 @@
 
 import torch
 import torch.nn as nn
-
-from torchsummary import summary
-# pip install torchinfo
 from torchinfo import summary
 
 
@@ -17,22 +14,49 @@ from torchinfo import summary
 
 class EncoderLSTM_A(nn.Module):
     def __init__(self):
-        super(EncoderLSTM_A, self).__init__()
-        self.lstm0 = nn.Sequential(
-            nn.LSTM(input_size = 128, hidden_size = 32, num_layers=1, bidirectional=True, batch_first=True)
-        )
+        super().__init__()
+        self.lstm0 = nn.LSTM(input_size = 128, hidden_size = 32, num_layers=1, bidirectional=True, batch_first=True)
+        
     def forward(self, x):
-        x = self.lstm0(x)
-        return(x)
+        out, hidden = self.lstm0(x)
+        return out, hidden
+
+
+class LSTMNet(nn.Module):
+    def __init__(self, vocab_size=20, embed_dim=300, hidden_dim=512, num_layers=2):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.embedding = nn.Embedding(vocab_size, embed_dim)
+        self.encoder = nn.LSTM(embed_dim, hidden_dim, num_layers=num_layers, batch_first=True)
+        self.decoder = nn.Linear(hidden_dim, vocab_size)
+
+    def forward(self, x):
+        embed = self.embedding(x)
+        out, hidden = self.encoder(embed)
+        out = self.decoder(out)
+        out = out.view(-1, out.size(2))
+        return out, hidden
+
+
+
+
+summary(
+    EncoderLSTM_A(), 
+    (1, 128),
+    dtypes=[torch.long]
+    )
+
+summary(
+    LSTMNet(),
+    (1, 100),
+    dtypes=[torch.long],
+    )
+
+
+
 
 model_enc = EncoderLSTM_A()
 
-x = torch.randn(1,1152, 128)
-out = model_enc(x) # works
-out[0].shape
-
-summary(model_enc, input_size=(5, 1, 1152, 128))
-# summary(model_enc, (1152, 128), device = "CPU")
-
-
-
+# x = torch.randn(1,1152, 128)
+# out = model_enc(x) # works
+# out[0].shape
