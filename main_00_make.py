@@ -56,3 +56,17 @@ summary(model_dec, (512, 1, 36), device = "CPU")
 torch.save(model_enc, os.path.join(path_untrained_models, 'cold_encoder' + save_file_name + '.pth'))
 torch.save(model_dec, os.path.join(path_untrained_models, 'cold_decoder' + save_file_name + '.pth'))
 
+
+
+from model_collection.model_collection import EncoderGenBTP64 as Encoder
+from model_collection.model_collection import DecoderGenBTP64 as Decoder
+save_file_name = "_GenBTP64_CH0256"
+model_enc = Encoder(n_ch_in = 3, ch = [64, 128, 128, 128, 256])
+model_dec = Decoder(n_ch_out = 3, ch = [256, 128, 128, 128, 64])
+summary(model_enc, (3, 128, 1152), device = "CPU")
+summary(model_dec, (256, 1, 18), device = "CPU")
+torch.save(model_enc, os.path.join(path_untrained_models, 'cold_encoder' + save_file_name + '.pth'))
+torch.save(model_dec, os.path.join(path_untrained_models, 'cold_decoder' + save_file_name + '.pth'))
+
+
+
