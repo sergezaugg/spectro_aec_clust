@@ -2,8 +2,8 @@
 
 ### Overview
 * Define and train simple custom Pytorch auto-encoders for spectrograms
-* Batch extract array features and linear features with these auto-encoders
-* With partial pooling of time axis (latent representation is 2D -> channel by time)
+* Extract array features with these auto-encoders and convert them to linear features (details in pic below)
+* Auto-encoders perform partial pooling of time axis (latent array representation is 2D -> channel by time)
 * Specific data loader for spectrogram data to train under de-noising regime
 * All functionality is called from 3 classes defined in **utils.py**
 * Extracted features are meant to be used in companion [project](https://github.com/sergezaugg/spectrogram_image_clustering) and its [frontend](https://spectrogram-image-clustering.streamlit.app/)
@@ -29,6 +29,6 @@
 * If other CUDA version or other OS, check official instructions [here](https://pytorch.org/get-started/locally)
 
 ### ML details
-![](pics/flow_chart_01.png)
+<img src="pics/flow_chart_01.png" alt="Example image" width="600"/>
 
 

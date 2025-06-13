@@ -90,6 +90,7 @@ class AutoencoderTrain:
             self.model_enc = self.model_enc.to(self.device)
             self.model_dec = self.model_dec.to(self.device)
             sess_info['model_gen'] = sess_info['model_tag']
+            self.epoch_restart_value = 0
         elif sess_info['hot_start'] == True:
             tstmp_1 = sess_info['model_tag']
             path_enc = [a for a in os.listdir(self.conf['path_trained_models']) if tstmp_1 in a and 'encoder_model' in a][0]
@@ -101,9 +102,11 @@ class AutoencoderTrain:
             # load info from previous training session 
             path_sess = [a for a in os.listdir(self.conf['path_trained_models']) if tstmp_1 in a and '_session_info' in a][0]
             with open(os.path.join(self.conf['path_trained_models'], path_sess), 'rb') as f:
-                di_origin_sess = pickle.load(f)
+                self.di_origin_sess = pickle.load(f)
             # load model generation 
-            sess_info['model_gen'] = di_origin_sess['sess_info']['model_gen']
+            sess_info['model_gen'] = self.di_origin_sess['sess_info']['model_gen']
+            self.epoch_restart_value = self.di_origin_sess['epoch'] + 1
+
         else:
             print("something is wrong with sess_info['hot_start']")
         # return(model_enc, model_dec)
@@ -151,8 +154,9 @@ class AutoencoderTrain:
 
         mse_test_li = []
         mse_trai_li = []
-        for epoch in range(self.sess_info['n_epochs']):
-            print(f"Epoch: {epoch + 1}/{self.sess_info['n_epochs']}")
+        for i, epoch in enumerate(range(self.epoch_restart_value, self.epoch_restart_value + self.sess_info['n_epochs'])):
+            print('Epoch (full trainig history): ', epoch +1)
+            print(f"Epoch (current training run): {i + 1}/{self.sess_info['n_epochs']}")
             #----------------
             # Train the model 
             _ = self.model_enc.train()
@@ -216,23 +220,22 @@ class AutoencoderTrain:
         df_mse.shape
 
         # Save the model and all params 
+        epoch_tag = '_epo' + str(epoch +1).zfill(3)
         tstmp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        model_save_name = tstmp + "_encoder_model_" + self.sess_info['model_gen'] + ".pth"
+        model_save_name = tstmp + "_encoder_model_" + self.sess_info['model_gen'] + epoch_tag + ".pth"
         torch.save(self.model_enc, os.path.join(self.conf['path_trained_models'], model_save_name))
-        model_save_name = tstmp + "_decoder_model_" + self.sess_info['model_gen'] + ".pth"
+        model_save_name = tstmp + "_decoder_model_" + self.sess_info['model_gen'] + epoch_tag+ ".pth"
         torch.save(self.model_dec, os.path.join(self.conf['path_trained_models'], model_save_name))
-
-        di_sess = {'df_mse' : df_mse,'sess_info' : self.sess_info}
-        sess_save_name = tstmp + "_session_info_" + self.sess_info['model_gen'] + ".pkl"
+        # save metadata 
+        di_sess = {'df_mse' : df_mse,'sess_info' : self.sess_info, 'epoch' : epoch}
+        sess_save_name = tstmp + "_session_info_" + self.sess_info['model_gen'] + epoch_tag + ".pkl"
         with open(os.path.join(self.conf['path_trained_models'], sess_save_name), 'wb') as f:
             pickle.dump(di_sess, f)
-
-        # save model for external projects    
-        model_save_name = tstmp + "_encoder_script_" + self.sess_info['model_gen'] + ".pth"
+        # save TorchScript model for external projects    
+        model_save_name = tstmp + "_encoder_script_" + self.sess_info['model_gen'] + epoch_tag + ".pth"
         model_enc_scripted = torch.jit.script(self.model_enc) # Export to TorchScript
         model_enc_scripted.save(os.path.join(self.conf['path_trained_models'], model_save_name))   
-
-        model_save_name = tstmp + "_decoder_script_" + self.sess_info['model_gen'] + ".pth"
+        model_save_name = tstmp + "_decoder_script_" + self.sess_info['model_gen'] + epoch_tag + ".pth"
         model_dec_scripted = torch.jit.script(self.model_dec) # Export to TorchScript
         model_dec_scripted.save(os.path.join(self.conf['path_trained_models'], model_save_name))   
 

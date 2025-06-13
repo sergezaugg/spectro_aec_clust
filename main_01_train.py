@@ -4,17 +4,20 @@
 #--------------------------------
 
 import torch
-# from torchsummary import summary
 from utils import AutoencoderTrain
 torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# Initialize a AEC-trainer instance with params from a json
-at = AutoencoderTrain(sess_json = 'sess_02.json', device = device)
-# Directly check if data augmentation as intended
+# Either, initialize a AEC-trainer with a naive model 
+at = AutoencoderTrain(sess_json = 'sess_01_randinit.json', device = device)
+# Or, initialize a AEC-trainer with a pre-trained model
+at = AutoencoderTrain(sess_json = 'sess_02_resume.json', device = device)
+# Directly check data augmentation
 at.make_data_augment_examples().show()
 # Start training (.pth files will be saved to disk)
 at.train_autoencoder(devel = True)
+
+
 
 
 

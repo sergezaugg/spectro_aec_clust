@@ -1,0 +1,22 @@
+ {
+"imgpath_train" : "D:/xc_real_projects/xc_all_4_pooled/images_24000sps_20250608_221808",
+"imgpath_test"  : "D:/xc_real_projects/xc_sw_europe/xc_spectrograms",  
+"batch_size_tr" : 8,  
+"batch_size_te" : 32,
+"n_epochs" : 5,
+"hot_start" : true, 
+"model_tag" : "20250613_103528",  
+"data_generator" : {
+    "da": {
+        "rot_deg"    : 0.30,  
+        "trans_prop" : 0.005, 
+        "brightness" : 0.40,  
+        "contrast"   : 0.40,  
+        "gnoisesigm" : 0.10,  
+        "gnoiseprob" : 0.50
+        },
+    "den": {  
+    "thld" :  0.40
+        } 
+    }
+}
