@@ -12,8 +12,8 @@
 * Prepare PNG formatted color images of spectrograms, e.g. with [this tool](https://github.com/sergezaugg/xeno_canto_organizer)
 * Download this repo and install dependencies
 * Set paths where models will be saved and fetched in **config/config.yaml**
-* Run **main_00_make_models.py** to prepare the naive (randinit) auto-encoder models (run just once)
-* Set training session parameters in a json file in **./training_session_params/**
+* Run **main_00_make.py** to prepare the naive (randinit) auto-encoder models (run just once)
+* Set training session parameters in a json file in **./session_params/training**
 * **main_01_train.py** illustrates a pipeline to train auto-encoders, session params passed via a json file
 * **main_02_extract.py** illustrates a pipeline to extract array features and get dim-reduced linear features, params currently defined in script header
 * Array and dim-reduced features are written to disk as NPZ files in parent of dir with images

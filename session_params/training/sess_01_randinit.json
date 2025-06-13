@@ -3,7 +3,7 @@
 "imgpath_test"  : "D:/xc_real_projects/xc_sw_europe/xc_spectrograms",  
 "batch_size_tr" : 8,  
 "batch_size_te" : 32,
-"n_epochs" : 2,
+"n_epochs" : 1,
 "hot_start" : false, 
 "model_tag" : "GenBTP32_CH0256",  
 "data_generator" : {

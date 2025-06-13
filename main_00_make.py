@@ -56,12 +56,3 @@ summary(model_dec, (512, 1, 36), device = "CPU")
 torch.save(model_enc, os.path.join(path_untrained_models, 'cold_encoder' + save_file_name + '.pth'))
 torch.save(model_dec, os.path.join(path_untrained_models, 'cold_decoder' + save_file_name + '.pth'))
 
-
-
-
-
-
-
-
-
-
