@@ -11,7 +11,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # Initialize a AEC-extractor instance
 ae = AutoencoderExtract(sess_json = 'extract_00.json', device = device)
 # evaluate reconstruction
-ae.evaluate_reconstruction_on_examples(n_images = 32, shuffle = True).show()
+ae.evaluate_reconstruction_on_examples(n_images = 64, shuffle = True).show()
 # extract (will save to disk as npz)
 ae.encoder_based_feature_extraction(devel = True)
 # time_pool_and_dim_reduce

@@ -5,7 +5,7 @@
 "batch_size_te" : 32,
 "n_epochs" : 1,
 "hot_start" : false, 
-"model_tag" : "GenBTP64_CH0256",  
+"model_tag" : "GenC_experiment",  
 "data_generator" : {
     "da": {
         "rot_deg"    : 0.25,  
