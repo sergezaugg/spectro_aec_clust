@@ -16,7 +16,7 @@ class EncoderGenCTP128(nn.Module):
                  ch = [64, 64, 64, 128, 128, 128]
                  ):
         super().__init__()
-        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
+        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 1), (2, 1)]
         self.padding =  "same"
         conv_kernel = (5,5)
         self.conv0 = nn.Sequential(
@@ -45,12 +45,12 @@ class EncoderGenCTP128(nn.Module):
             nn.ReLU(),
             nn.AvgPool2d(po[4], stride=po[4]))
         self.conv5 = nn.Sequential(
-            nn.Conv2d(ch[4], ch[5], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.Conv2d(ch[4], ch[5], kernel_size=(3,1), stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[5]),
             nn.ReLU(),
             nn.AvgPool2d(po[5], stride=po[5]))
         self.conv6 = nn.Sequential(
-            nn.Conv2d(ch[5], n_ch_out, kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.Conv2d(ch[5], n_ch_out, kernel_size=(3,1), stride=1, padding=self.padding),
             nn.AvgPool2d(po[6], stride=po[6]))
         
     def forward(self, x):
@@ -68,14 +68,14 @@ class DecoderGenCTP128(nn.Module):
     def __init__(self, n_ch_in=256, n_ch_out=3, 
                  ch = [128, 128, 128, 64, 64, 64]):
         super().__init__()
-        po =  [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
+        po =  [(2, 1), (2, 1), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
         self.tconv0 = nn.Sequential(
-            nn.ConvTranspose2d(n_ch_in, ch[0], kernel_size=(3,3), stride=po[0], padding=(1,1), output_padding=(1,1)), 
+            nn.ConvTranspose2d(n_ch_in, ch[0], kernel_size=(3,1), stride=po[0], padding=(1,0), output_padding=(1,0)), 
             nn.BatchNorm2d(ch[0]),
             nn.ReLU()
             )
         self.tconv1 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(3,3), stride=po[1], padding=(1,1), output_padding=(1,1)), 
+            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(3,1), stride=po[1], padding=(1,0), output_padding=(1,0)), 
             nn.BatchNorm2d(ch[1]),
             nn.ReLU()
             )
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     model_dec = DecoderGenCTP128(n_ch_in = 1024, n_ch_out = 3, ch = [512, 256, 128, 64, 64, 64])
     
     summary(model_enc, (1, 3, 128, 1152), depth = 1)
-    summary(model_dec, (1, 1024, 1, 9), depth = 1)
+    summary(model_dec, (1, 1024, 1, 36), depth = 1)
 
 
     summary(model_enc, (1, 3, 128, 256), depth = 1)

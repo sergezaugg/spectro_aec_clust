@@ -74,7 +74,7 @@ save_file_name = "_GenC_experiment"
 model_enc = Encoder(n_ch_in = 3, n_ch_out = 1024, ch = [64, 64, 64, 128, 256, 512])
 model_dec = Decoder(n_ch_in = 1024, n_ch_out = 3, ch = [512, 256, 128, 64, 64, 64])
 summary(model_enc, (1, 3, 128, 1152), depth = 1)
-summary(model_dec, (1, 1024, 1, 9), depth = 1)
+summary(model_dec, (1, 1024, 1, 36), depth = 1)
 torch.save(model_enc, os.path.join(path_untrained_models, 'cold_encoder' + save_file_name + '.pth'))
 torch.save(model_dec, os.path.join(path_untrained_models, 'cold_decoder' + save_file_name + '.pth'))
 

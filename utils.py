@@ -24,6 +24,22 @@ import yaml
 
 
 class SpectroImageDataset(Dataset):
+    """
+    PyTorch Dataset for spectrogram images with optional denoising and augmentation.
+    Loads PNG images from a directory and returns two versions (x_1, x_2) per sample, 
+    each optionally denoised and/or augmented, along with the image filename.
+
+    Parameters
+    ----------
+    imgpath : str
+        Directory containing PNG images.
+    par : dict, optional
+        Parameters for augmentation (par['da']) and denoising (par['den']).
+    augment_1, augment_2 : bool, optional
+        Apply augmentation to x_1/x_2.
+    denoise_1, denoise_2 : bool, optional
+        Apply denoising to x_1/x_2.
+    """
 
     def __init__(self, imgpath, par = None, augment_1=False, augment_2=False, denoise_1=False, denoise_2=False):
         self.all_img_files = [a for a in os.listdir(imgpath) if '.png' in a]
@@ -41,7 +57,13 @@ class SpectroImageDataset(Dataset):
                 transforms.ColorJitter(brightness = self.par['da']['brightness'] , contrast = self.par['da']['contrast']),
                 ])
  
-    def __getitem__(self, index):     
+    def __getitem__(self, index):   
+        """
+        Returns:
+            tuple: (x_1, x_2, y)
+                x_1, x_2 (Tensor): Processed images.
+                y (str): Filename.
+        """  
         img = Image.open( os.path.join(self.imgpath,  self.all_img_files[index] ))
         # load pimage and set range to [0.0, 1.0]
         x_1 = pil_to_tensor(img).to(torch.float32) / 255.0
@@ -65,15 +87,42 @@ class SpectroImageDataset(Dataset):
         return (x_1, x_2, y)
     
     def __len__(self):
+        """Number of images in the dataset."""
         return (len(self.all_img_files))
 
 
 class AutoencoderTrain:
+    """
+    Handles setup, training, and evaluation of an autoencoder for spectrogram images.
+
+    Attributes
+    ----------
+    sess_info : dict
+        Session configuration parameters.
+    train_dataset, test_dataset : SpectroImageDataset
+        Datasets for training and testing.
+    device : str or torch.device
+        Device for computation.
+    conf : dict
+        Project-wide configuration from YAML.
+    model_enc, model_dec : torch.nn.Module
+        Encoder and decoder models.
+    epoch_restart_value : int
+        Epoch to resume from (for hot start).
+    """
   
     def __init__(self, sess_json, device):
         """
-        sess_json : name of one of the session configuration json files that are stored in ./session_params/training
+        Initialize session, datasets, models, and config.
+
+        Parameters
+        ----------
+        sess_json : str
+            Name of session config JSON in ./session_params/training.
+        device : str or torch.device
+            Device for model training ("cpu" or "cuda").
         """
+
         with open(os.path.join('./session_params/training', sess_json )) as f:
             sess_info = json.load(f)
         self.sess_info = sess_info    
@@ -117,8 +166,17 @@ class AutoencoderTrain:
 
     def make_data_augment_examples(self, batch_size = 12):
         """
-        # assess a realization of data augmentation 
-        pt_dataset : an instance of torch.utils.data.Dataset
+        Returns a Plotly figure showing a batch of original and augmented images.
+
+        Parameters
+        ----------
+        batch_size : int
+            Number of image pairs to display.
+
+        Returns
+        -------
+        fig : plotly Figure
+            Visualization of data augmentation.
         """
         pt_loader = torch.utils.data.DataLoader(self.train_dataset, batch_size=batch_size,  shuffle=False, drop_last=True)
         # take only first batch 
@@ -142,6 +200,18 @@ class AutoencoderTrain:
     
 
     def train_autoencoder(self, devel = False):
+        """
+        Train autoencoder, evaluate on test data, save models and training metadata.
+
+        Parameters
+        ----------
+        devel : bool
+            If True, runs fewer batches per epoch for debugging.
+
+        Returns
+        -------
+        None
+        """
 
         # train 
         train_loader  = torch.utils.data.DataLoader(self.train_dataset, batch_size=self.sess_info['batch_size_tr'],  shuffle=True, drop_last=True)
