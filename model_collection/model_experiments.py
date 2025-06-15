@@ -16,42 +16,38 @@ class EncoderGenCTP128(nn.Module):
                  ch = [64, 64, 64, 128, 128, 128]
                  ):
         super().__init__()
-        po = [(2, 2), (2, 2), (2, 2), (2, 2), (2, 2), (2, 1), (2, 1)]
+        po = [(4, 2), (4, 2), (2, 2), (2, 2), (2, 2)]
         self.padding =  "same"
-        conv_kernel = (5,5)
+        conv_kernel = (3,3)
         self.conv0 = nn.Sequential(
             nn.Conv2d(n_ch_in,  ch[0], kernel_size=conv_kernel, stride=1, padding=self.padding),
+            nn.Conv2d(ch[0],  ch[0], kernel_size=conv_kernel, stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[0]),
             nn.ReLU(),
             nn.AvgPool2d(po[0], stride=po[0]))
         self.conv1 = nn.Sequential(
             nn.Conv2d(ch[0], ch[1], kernel_size=conv_kernel, stride=1, padding=self.padding),
+            nn.Conv2d(ch[1], ch[1], kernel_size=conv_kernel, stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[1]),
             nn.ReLU(),
             nn.AvgPool2d(po[1], stride=po[1]))
         self.conv2 = nn.Sequential(
             nn.Conv2d(ch[1], ch[2], kernel_size=conv_kernel, stride=1, padding=self.padding),
+            nn.Conv2d(ch[2], ch[2], kernel_size=conv_kernel, stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[2]),
             nn.ReLU(),
             nn.AvgPool2d(po[2], stride=po[2]))
         self.conv3 = nn.Sequential(
             nn.Conv2d(ch[2], ch[3], kernel_size=conv_kernel, stride=1, padding=self.padding),
+            nn.Conv2d(ch[3], ch[3], kernel_size=conv_kernel, stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[3]),
             nn.ReLU(),
             nn.AvgPool2d(po[3], stride=po[3]))
         self.conv4 = nn.Sequential(
-            nn.Conv2d(ch[3], ch[4], kernel_size=conv_kernel, stride=1, padding=self.padding),
-            nn.BatchNorm2d(ch[4]),
-            nn.ReLU(),
+            nn.Conv2d(ch[3], ch[3], kernel_size=conv_kernel, stride=1, padding=self.padding),
+            nn.Conv2d(ch[3], n_ch_out, kernel_size=conv_kernel, stride=1, padding=self.padding),
+            nn.BatchNorm2d(n_ch_out),
             nn.AvgPool2d(po[4], stride=po[4]))
-        self.conv5 = nn.Sequential(
-            nn.Conv2d(ch[4], ch[5], kernel_size=(3,1), stride=1, padding=self.padding),
-            nn.BatchNorm2d(ch[5]),
-            nn.ReLU(),
-            nn.AvgPool2d(po[5], stride=po[5]))
-        self.conv6 = nn.Sequential(
-            nn.Conv2d(ch[5], n_ch_out, kernel_size=(3,1), stride=1, padding=self.padding),
-            nn.AvgPool2d(po[6], stride=po[6]))
         
     def forward(self, x):
         x = self.conv0(x)
@@ -59,8 +55,6 @@ class EncoderGenCTP128(nn.Module):
         x = self.conv2(x)
         x = self.conv3(x)
         x = self.conv4(x)
-        x = self.conv5(x)
-        x = self.conv6(x)
         return(x)
 
 
@@ -68,41 +62,42 @@ class DecoderGenCTP128(nn.Module):
     def __init__(self, n_ch_in=256, n_ch_out=3, 
                  ch = [128, 128, 128, 64, 64, 64]):
         super().__init__()
-        po =  [(2, 1), (2, 1), (2, 2), (2, 2), (2, 2), (2, 2), (2, 2)]
+        self.padding =  "same"
+        po =  [(2, 2), (2, 2), (2, 2), (4, 2), (4, 2)]
         self.tconv0 = nn.Sequential(
-            nn.ConvTranspose2d(n_ch_in, ch[0], kernel_size=(3,1), stride=po[0], padding=(1,0), output_padding=(1,0)), 
+            nn.Conv2d(n_ch_in,  ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.Conv2d(ch[0],  ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[0]),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.Upsample(scale_factor=po[0], mode='bilinear')
             )
         self.tconv1 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(3,1), stride=po[1], padding=(1,0), output_padding=(1,0)), 
+            nn.Conv2d(ch[0], ch[1], kernel_size=(3,3), stride=1, padding=self.padding), 
+            nn.Conv2d(ch[1], ch[1], kernel_size=(3,3), stride=1, padding=self.padding), 
             nn.BatchNorm2d(ch[1]),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.Upsample(scale_factor=po[1], mode='bilinear')
             )
         self.tconv2 = nn.Sequential(
-            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(5,5), stride=po[2], padding=(2,2), output_padding=(1,1)),  
+            nn.Conv2d(ch[1], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.Conv2d(ch[2], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),    
             nn.BatchNorm2d(ch[2]),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.Upsample(scale_factor=po[2], mode='bilinear')
             )
         self.tconv3 = nn.Sequential(
-            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=(5,5), stride=po[3], padding=(2,2),  output_padding=(1,1)), 
+            nn.Conv2d(ch[2], ch[3], kernel_size=(3,3), stride=1, padding=self.padding), 
+            nn.Conv2d(ch[3], ch[3], kernel_size=(3,3), stride=1, padding=self.padding), 
             nn.BatchNorm2d(ch[3]),
-            nn.ReLU()
-            )
-        self.tconv4 = nn.Sequential(
-            nn.ConvTranspose2d(ch[3], ch[4], kernel_size=(5,5), stride=po[4], padding=(2,2),  output_padding=(1,1)), 
-            nn.BatchNorm2d(ch[4]),
-            nn.ReLU()
-            )
-        self.tconv5 = nn.Sequential(
-            nn.ConvTranspose2d(ch[4], ch[5], kernel_size=(5,5), stride=po[5], padding=(2,2),  output_padding=(1,1)), 
-            nn.BatchNorm2d(ch[5]),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.Upsample(scale_factor=po[3], mode='bilinear')
             )
         self.out_map = nn.Sequential(
-            nn.ConvTranspose2d(ch[5], n_ch_out, kernel_size=(5,5), stride=po[6], padding=(2,2),  output_padding=(1,1)), 
+            nn.Conv2d(ch[3], ch[3], kernel_size=(3,3), stride=1, padding=self.padding), 
+            nn.Conv2d(ch[3], n_ch_out, kernel_size=(3,3), stride=1, padding=self.padding), 
             nn.BatchNorm2d(n_ch_out),
-            nn.Sigmoid()
+            nn.Upsample(scale_factor=po[4], mode='bilinear'),
+            nn.Sigmoid(),
             )
 
     def forward(self, x):
@@ -110,8 +105,6 @@ class DecoderGenCTP128(nn.Module):
         x = self.tconv1(x)
         x = self.tconv2(x)
         x = self.tconv3(x)
-        x = self.tconv4(x)
-        x = self.tconv5(x)
         x = self.out_map(x)
         return x
 
@@ -122,16 +115,14 @@ class DecoderGenCTP128(nn.Module):
 
 if __name__ == "__main__":
 
-    model_enc = EncoderGenCTP128(n_ch_in = 3, n_ch_out = 1024, ch = [64, 64, 64, 128, 256, 512])
-    model_dec = DecoderGenCTP128(n_ch_in = 1024, n_ch_out = 3, ch = [512, 256, 128, 64, 64, 64])
+    model_enc = EncoderGenCTP128(n_ch_in = 3, n_ch_out = 256, ch = [64, 128, 128, 256])
+    model_dec = DecoderGenCTP128(n_ch_in = 256, n_ch_out = 3, ch = [256, 128, 128, 64])
     
     summary(model_enc, (1, 3, 128, 1152), depth = 1)
-    summary(model_dec, (1, 1024, 1, 36), depth = 1)
+    summary(model_dec, (1, 256, 1, 36), depth = 1)
 
 
-    summary(model_enc, (1, 3, 128, 256), depth = 1)
-    summary(model_dec, (1, 1024, 1, 2), depth = 1)
-
+   
 
 
 
