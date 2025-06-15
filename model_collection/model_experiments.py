@@ -21,32 +21,43 @@ class EncoderGenCTP128(nn.Module):
         conv_kernel = (3,3)
         self.conv0 = nn.Sequential(
             nn.Conv2d(n_ch_in,  ch[0], kernel_size=conv_kernel, stride=1, padding=self.padding),
+            nn.BatchNorm2d(ch[0]),
+            nn.ReLU(),
             nn.Conv2d(ch[0],  ch[0], kernel_size=conv_kernel, stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[0]),
             nn.ReLU(),
             nn.AvgPool2d(po[0], stride=po[0]))
         self.conv1 = nn.Sequential(
             nn.Conv2d(ch[0], ch[1], kernel_size=conv_kernel, stride=1, padding=self.padding),
+            nn.BatchNorm2d(ch[1]),
+            nn.ReLU(),
             nn.Conv2d(ch[1], ch[1], kernel_size=conv_kernel, stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[1]),
             nn.ReLU(),
             nn.AvgPool2d(po[1], stride=po[1]))
         self.conv2 = nn.Sequential(
             nn.Conv2d(ch[1], ch[2], kernel_size=conv_kernel, stride=1, padding=self.padding),
+            nn.BatchNorm2d(ch[2]),
+            nn.ReLU(),
             nn.Conv2d(ch[2], ch[2], kernel_size=conv_kernel, stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[2]),
             nn.ReLU(),
             nn.AvgPool2d(po[2], stride=po[2]))
         self.conv3 = nn.Sequential(
             nn.Conv2d(ch[2], ch[3], kernel_size=conv_kernel, stride=1, padding=self.padding),
+            nn.BatchNorm2d(ch[3]),
+            nn.ReLU(),
             nn.Conv2d(ch[3], ch[3], kernel_size=conv_kernel, stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[3]),
             nn.ReLU(),
             nn.AvgPool2d(po[3], stride=po[3]))
         self.conv4 = nn.Sequential(
             nn.Conv2d(ch[3], ch[3], kernel_size=conv_kernel, stride=1, padding=self.padding),
+            nn.BatchNorm2d(ch[3]),
+            nn.ReLU(),
             nn.Conv2d(ch[3], n_ch_out, kernel_size=conv_kernel, stride=1, padding=self.padding),
             nn.BatchNorm2d(n_ch_out),
+            nn.ReLU(),
             nn.AvgPool2d(po[4], stride=po[4]))
         
     def forward(self, x):
@@ -65,38 +76,48 @@ class DecoderGenCTP128(nn.Module):
         self.padding =  "same"
         po =  [(2, 2), (2, 2), (2, 2), (4, 2), (4, 2)]
         self.tconv0 = nn.Sequential(
+            nn.Upsample(scale_factor=po[0], mode='bilinear'),
             nn.Conv2d(n_ch_in,  ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.BatchNorm2d(ch[0]),
+            nn.ReLU(),
             nn.Conv2d(ch[0],  ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.BatchNorm2d(ch[0]),
             nn.ReLU(),
-            nn.Upsample(scale_factor=po[0], mode='bilinear')
             )
         self.tconv1 = nn.Sequential(
+            nn.Upsample(scale_factor=po[1], mode='bilinear'),
             nn.Conv2d(ch[0], ch[1], kernel_size=(3,3), stride=1, padding=self.padding), 
+            nn.BatchNorm2d(ch[1]),
+            nn.ReLU(),
             nn.Conv2d(ch[1], ch[1], kernel_size=(3,3), stride=1, padding=self.padding), 
             nn.BatchNorm2d(ch[1]),
             nn.ReLU(),
-            nn.Upsample(scale_factor=po[1], mode='bilinear')
             )
         self.tconv2 = nn.Sequential(
+            nn.Upsample(scale_factor=po[2], mode='bilinear'),
             nn.Conv2d(ch[1], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),
+            nn.BatchNorm2d(ch[2]),
+            nn.ReLU(),
             nn.Conv2d(ch[2], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),    
             nn.BatchNorm2d(ch[2]),
             nn.ReLU(),
-            nn.Upsample(scale_factor=po[2], mode='bilinear')
             )
         self.tconv3 = nn.Sequential(
+            nn.Upsample(scale_factor=po[3], mode='bilinear'),
             nn.Conv2d(ch[2], ch[3], kernel_size=(3,3), stride=1, padding=self.padding), 
+            nn.BatchNorm2d(ch[3]),
+            nn.ReLU(),
             nn.Conv2d(ch[3], ch[3], kernel_size=(3,3), stride=1, padding=self.padding), 
             nn.BatchNorm2d(ch[3]),
             nn.ReLU(),
-            nn.Upsample(scale_factor=po[3], mode='bilinear')
             )
         self.out_map = nn.Sequential(
+            nn.Upsample(scale_factor=po[4], mode='bilinear'),
             nn.Conv2d(ch[3], ch[3], kernel_size=(3,3), stride=1, padding=self.padding), 
+            nn.BatchNorm2d(ch[3]),
+            nn.ReLU(),
             nn.Conv2d(ch[3], n_ch_out, kernel_size=(3,3), stride=1, padding=self.padding), 
             nn.BatchNorm2d(n_ch_out),
-            nn.Upsample(scale_factor=po[4], mode='bilinear'),
             nn.Sigmoid(),
             )
 
@@ -122,8 +143,35 @@ if __name__ == "__main__":
     summary(model_dec, (1, 256, 1, 36), depth = 1)
 
 
-   
-
+    
+    # # from copilot 
+    # class AvgPoolUpsampleSpectrogramAutoencoder(nn.Module):
+    #     def __init__(self):
+    #         super(AvgPoolUpsampleSpectrogramAutoencoder, self).__init__()
+    #         # Encoder with AvgPool2d
+    #         self.encoder = nn.Sequential(
+    #             nn.Conv2d(1, 16, kernel_size=3, padding=1),     # [B, 1, H, W] -> [B, 16, H, W]
+    #             nn.ReLU(True),
+    #             nn.AvgPool2d(kernel_size=2, stride=2),          # [B, 16, H/2, W/2]
+    #             nn.Conv2d(16, 32, kernel_size=3, padding=1),    # [B, 32, H/2, W/2]
+    #             nn.ReLU(True),
+    #             nn.AvgPool2d(kernel_size=2, stride=2),          # [B, 32, H/4, W/4]
+    #             nn.Conv2d(32, 64, kernel_size=3, padding=1),    # [B, 64, H/4, W/4]
+    #             nn.ReLU(True),
+    #             nn.AvgPool2d(kernel_size=2, stride=2)           # [B, 64, H/8, W/8]
+    #         )
+    #         # Decoder with nn.Upsample + nn.Conv2d
+    #         self.decoder = nn.Sequential(
+    #             nn.Upsample(scale_factor=2, mode='nearest'),    # [B, 64, H/4, W/4]
+    #             nn.Conv2d(64, 32, kernel_size=3, padding=1),
+    #             nn.ReLU(True),
+    #             nn.Upsample(scale_factor=2, mode='nearest'),    # [B, 32, H/2, W/2]
+    #             nn.Conv2d(32, 16, kernel_size=3, padding=1),
+    #             nn.ReLU(True),
+    #             nn.Upsample(scale_factor=2, mode='nearest'),    # [B, 16, H, W]
+    #             nn.Conv2d(16, 1, kernel_size=3, padding=1),
+    #             nn.Sigmoid()  # Use sigmoid if spectrograms are normalized to [0,1]
+    #         )
 
 
 
