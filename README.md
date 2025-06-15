@@ -1,5 +1,12 @@
 # Compact auto-encoders for feature extraction from acoustic spectrograms  
 
+### Table of Contents
+* [Overview](#Overview)
+* [Intallation](#Intallation)
+* [Configuration](#Configuration)
+* [Usage](#Usage)
+* [ML details](#ML-details)
+
 ### Overview
 * Define and train simple custom Pytorch auto-encoders for spectrograms
 * Extract array features with these auto-encoders and convert them to linear features (details in pic below)
@@ -8,28 +15,38 @@
 * All functionality is called from 3 classes defined in **utils.py**
 * Extracted features are meant to be used in companion [project](https://github.com/sergezaugg/spectrogram_image_clustering) and its [frontend](https://spectrogram-image-clustering.streamlit.app/)
 
-### Usage 
-* Prepare PNG formatted color images of spectrograms, e.g. with [this tool](https://github.com/sergezaugg/xeno_canto_organizer)
-* Download this repo and install dependencies
-* Set paths where models will be saved and fetched in **config/config.yaml**
-* Run **main_00_make.py** to prepare the naive (randinit) auto-encoder models (run just once)
-* Set training session parameters in a json file in **./session_params/training**
-* **main_01_train.py** illustrates a pipeline to train auto-encoders
-* Set extraction session parameters in a json file in **./session_params/extraction**
-* **main_02_extract.py** illustrates a pipeline to extract array features and get dim-reduced linear features
-* Array and dim-reduced features are written to disk as NPZ files in parent of dir with images
 
-### Dependencies / Intallation
+### Intallation  
 * Developed under Python 3.12.8
+* ```git clone https://github.com/sergezaugg/feature_extraction_saec```
 * Make a fresh venv!
 * Install basic packages with
 * ```pip install -r requirements.txt```
 * Ideally **torch** and **torchvision** should to be install for GPU usage
 * This code was developed under Windows with CUDA 12.6 
-* ```pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126```
+* ```pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126```
 * If other CUDA version or other OS, check official instructions [here](https://pytorch.org/get-started/locally)
+
+
+### Configuration
+
+
+### Usage 
+* Prepare PNG formatted color images of spectrograms, e.g. with [this tool](https://github.com/sergezaugg/xeno_canto_organizer)
+* Download this repo and install dependencies
+* Set paths where models will be saved and fetched in **config/config.yaml**
+* Run [main_00_make.py](main_00_make.py) to prepare the naive (randinit) auto-encoder models (run just once)
+* Set training session parameters in a json file in **./session_params/training**
+* [main_01_train.py](main_01_train.py) illustrates a pipeline to train auto-encoders
+* Set extraction session parameters in a json file in **./session_params/extraction**
+* [main_02_extract.py](main_02_extract.py) illustrates a pipeline to extract array features and get dim-reduced linear features
+* Array and dim-reduced features are written to disk as NPZ files in parent of dir with images
+
+
 
 ### ML details
 <img src="pics/flow_chart_01.png" alt="Example image" width="600"/>
+
+
 
 
