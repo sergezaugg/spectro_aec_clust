@@ -15,7 +15,6 @@
 * All functionality is called from 3 classes defined in **utils.py**
 * Extracted features are meant to be used in companion [project](https://github.com/sergezaugg/spectrogram_image_clustering) and its [frontend](https://spectrogram-image-clustering.streamlit.app/)
 
-
 ### Intallation  
 * Developed under Python 3.12.8
 * ```git clone https://github.com/sergezaugg/feature_extraction_saec```
@@ -27,13 +26,13 @@
 * ```pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126```
 * If other CUDA version or other OS, check official instructions [here](https://pytorch.org/get-started/locally)
 
-
 ### Configuration
-
+* Paths where models will be saved and fetched are defined in **config/config.yaml**
+* Parameters for multiple training sessions can be defined as json file in **./session_params/training**
+* Parameters for multiple extraction sessions can be defined as json file in **./session_params/extraction**
 
 ### Usage 
 * Prepare PNG formatted color images of spectrograms, e.g. with [this tool](https://github.com/sergezaugg/xeno_canto_organizer)
-* Download this repo and install dependencies
 * Set paths where models will be saved and fetched in **config/config.yaml**
 * Run [main_00_make.py](main_00_make.py) to prepare the naive (randinit) auto-encoder models (run just once)
 * Set training session parameters in a json file in **./session_params/training**
@@ -41,8 +40,6 @@
 * Set extraction session parameters in a json file in **./session_params/extraction**
 * [main_02_extract.py](main_02_extract.py) illustrates a pipeline to extract array features and get dim-reduced linear features
 * Array and dim-reduced features are written to disk as NPZ files in parent of dir with images
-
-
 
 ### ML details
 <img src="pics/flow_chart_01.png" alt="Example image" width="600"/>
