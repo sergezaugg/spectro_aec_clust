@@ -3,9 +3,9 @@
 "imgpath_test"  : "D:/xc_real_projects/xc_sw_europe/xc_spectrograms",  
 "batch_size_tr" : 8,  
 "batch_size_te" : 32,
-"n_epochs" : 2,
+"n_epochs" : 12,
 "hot_start" : true, 
-"model_tag" : "20250616_141408",  
+"model_tag" : "20250616_163629",  
 "data_generator" : {
     "da": {
         "rot_deg"    : 0.25,  

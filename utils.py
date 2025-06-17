@@ -290,35 +290,35 @@ class AutoencoderTrain:
                         print('TEST loss', np.round(loss_test.item(),5), " --- "  + str(btchi) + " out of " + str(n_batches_te) + " batches")
                 mse_test_li.append(np.array(test_perf_li).mean())
             
-        # reshape performance metrics to a neat lil df
-        mse_test = np.array(mse_test_li)
-        mse_trai = np.array(mse_trai_li)
-        df_test = pd.DataFrame({"mse" : mse_test})
-        df_test['role'] = "test"
-        df_trai = pd.DataFrame({"mse" : mse_trai})
-        df_trai['role'] = "train"
-        df_mse = pd.concat([df_test, df_trai], axis = 0)
-        df_mse.shape
+            # reshape performance metrics to a neat lil df
+            mse_test = np.array(mse_test_li)
+            mse_trai = np.array(mse_trai_li)
+            df_test = pd.DataFrame({"mse" : mse_test})
+            df_test['role'] = "test"
+            df_trai = pd.DataFrame({"mse" : mse_trai})
+            df_trai['role'] = "train"
+            df_mse = pd.concat([df_test, df_trai], axis = 0)
+            df_mse.shape
 
-        # Save the model and all params 
-        epoch_tag = '_epo' + str(epoch +1).zfill(3)
-        tstmp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        model_save_name = tstmp + "_encoder_model_" + self.sess_info['model_gen'] + epoch_tag + ".pth"
-        torch.save(self.model_enc, os.path.join(self.conf['path_trained_models'], model_save_name))
-        model_save_name = tstmp + "_decoder_model_" + self.sess_info['model_gen'] + epoch_tag+ ".pth"
-        torch.save(self.model_dec, os.path.join(self.conf['path_trained_models'], model_save_name))
-        # save metadata 
-        di_sess = {'df_mse' : df_mse,'sess_info' : self.sess_info, 'epoch' : epoch}
-        sess_save_name = tstmp + "_session_info_" + self.sess_info['model_gen'] + epoch_tag + ".pkl"
-        with open(os.path.join(self.conf['path_trained_models'], sess_save_name), 'wb') as f:
-            pickle.dump(di_sess, f)
-        # save TorchScript model for external projects    
-        model_save_name = tstmp + "_encoder_script_" + self.sess_info['model_gen'] + epoch_tag + ".pth"
-        model_enc_scripted = torch.jit.script(self.model_enc) # Export to TorchScript
-        model_enc_scripted.save(os.path.join(self.conf['path_trained_models'], model_save_name))   
-        model_save_name = tstmp + "_decoder_script_" + self.sess_info['model_gen'] + epoch_tag + ".pth"
-        model_dec_scripted = torch.jit.script(self.model_dec) # Export to TorchScript
-        model_dec_scripted.save(os.path.join(self.conf['path_trained_models'], model_save_name))   
+            # Save the model and all params 
+            epoch_tag = '_epo' + str(epoch +1).zfill(3)
+            tstmp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            model_save_name = tstmp + "_encoder_model_" + self.sess_info['model_gen'] + epoch_tag + ".pth"
+            torch.save(self.model_enc, os.path.join(self.conf['path_trained_models'], model_save_name))
+            model_save_name = tstmp + "_decoder_model_" + self.sess_info['model_gen'] + epoch_tag+ ".pth"
+            torch.save(self.model_dec, os.path.join(self.conf['path_trained_models'], model_save_name))
+            # save metadata 
+            di_sess = {'df_mse' : df_mse,'sess_info' : self.sess_info, 'epoch' : epoch}
+            sess_save_name = tstmp + "_session_info_" + self.sess_info['model_gen'] + epoch_tag + ".pkl"
+            with open(os.path.join(self.conf['path_trained_models'], sess_save_name), 'wb') as f:
+                pickle.dump(di_sess, f)
+            # save TorchScript model for external projects    
+            model_save_name = tstmp + "_encoder_script_" + self.sess_info['model_gen'] + epoch_tag + ".pth"
+            model_enc_scripted = torch.jit.script(self.model_enc) # Export to TorchScript
+            model_enc_scripted.save(os.path.join(self.conf['path_trained_models'], model_save_name))   
+            model_save_name = tstmp + "_decoder_script_" + self.sess_info['model_gen'] + epoch_tag + ".pth"
+            model_dec_scripted = torch.jit.script(self.model_dec) # Export to TorchScript
+            model_dec_scripted.save(os.path.join(self.conf['path_trained_models'], model_save_name))   
 
 
 class AutoencoderExtract:
