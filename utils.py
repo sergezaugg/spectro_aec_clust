@@ -79,10 +79,10 @@ class SpectroImageDataset(Dataset):
         # simple de-noising with threshold
         # take random thld between 0.0 and self.par['den']['thld']
         if self.denoise_1: 
-            denoize_thld = np.random.uniform(low=0.0, high=self.par['den']['thld'], size=1).item()
+            denoize_thld = np.random.uniform(low=self.par['den']['thld_lo'], high=self.par['den']['thld_up'], size=1).item()
             x_1[x_1 < denoize_thld ] = 0.0
         if self.denoise_2:
-            denoize_thld = np.random.uniform(low=0.0, high=self.par['den']['thld'], size=1).item() 
+            denoize_thld = np.random.uniform(low=self.par['den']['thld_lo'], high=self.par['den']['thld_up'], size=1).item() 
             x_2[x_2 < denoize_thld ] = 0.0    
         # data augmentation 
         if self.augment_1: 
