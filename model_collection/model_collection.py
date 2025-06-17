@@ -397,7 +397,7 @@ class DecoderGenBTP08(nn.Module):
 class EncoderGenB3blocks(nn.Module):
     def __init__(self, n_ch_in = 3, ch = [64, 128, 256]):
         super().__init__()
-        po = [(2, 2), (2, 2), (2, 2)]
+        po = [(8, 2), (4, 2), (4, 2)]
         self.padding =  "same"
         self.conv0 = nn.Sequential(
             nn.Conv2d(n_ch_in,  ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
@@ -425,19 +425,19 @@ class EncoderGenB3blocks(nn.Module):
 class DecoderGenB3blocks(nn.Module):
     def __init__(self, n_ch_out=3, ch = [256, 128, 128, 64]):
         super().__init__()
-        po =  [(2, 2), (2, 2), (2, 2)]
+        po =  [(4, 2), (4, 2), (8, 2)]
         self.tconv0 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(5,5), stride=po[0], padding=(2,2), output_padding=(1,1)), 
+            nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(5,5), stride=po[0], padding=(1,2), output_padding=(1,1)), 
             nn.BatchNorm2d(ch[0]),
             nn.ReLU()
             )
         self.tconv1 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(5,5), stride=po[1], padding=(2,2), output_padding=(1,1)), 
+            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(5,5), stride=po[1], padding=(1,2), output_padding=(1,1)), 
             nn.BatchNorm2d(ch[1]),
             nn.ReLU()
             )
         self.tconv2 = nn.Sequential(
-            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(5,5), stride=po[2], padding=(2,2), output_padding=(1,1)),  
+            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(5,5), stride=po[2], padding=(0,2), output_padding=(3,1)),  
             nn.BatchNorm2d(ch[2]),
             nn.ReLU()
             )
