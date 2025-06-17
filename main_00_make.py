@@ -42,8 +42,8 @@ torch.save(model_dec, os.path.join(path_untrained_models, 'cold_decoder' + save_
 from model_collection.model_collection import EncoderGenB3blocks as Encoder
 from model_collection.model_collection import DecoderGenB3blocks as Decoder
 save_file_name = "_GenB3blocks"
-model_enc = Encoder(n_ch_in = 3, ch = [64, 128, 256])
-model_dec = Decoder(n_ch_out = 3, ch = [256, 128, 64])
+model_enc = Encoder(n_ch_in = 3, ch = [64, 128, 128, 256])
+model_dec = Decoder(n_ch_out = 3, ch = [256, 128, 128, 64])
 summary(model_enc, (1, 3, 128, 1152), depth = 1)
 summary(model_dec, (1, 256, 1, 144), depth = 1)
 torch.save(model_enc, os.path.join(path_untrained_models, 'cold_encoder' + save_file_name + '.pth'))

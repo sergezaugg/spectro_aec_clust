@@ -392,12 +392,12 @@ class DecoderGenBTP08(nn.Module):
 
 
 # -------------------------------------------------
-# GEN B 3blocks - better for hi freq features - textures ? (freq-pool : 8 - time-pool : 8)
+# GEN B 3blocks - better for hi freq features - textures ? (freq-pool : 128 - time-pool : 8)
 
 class EncoderGenB3blocks(nn.Module):
-    def __init__(self, n_ch_in = 3, ch = [64, 128, 256]):
+    def __init__(self, n_ch_in = 3, ch = [64, 128, 128, 256]):
         super().__init__()
-        po = [(8, 2), (4, 2), (4, 2)]
+        po = [(2, 2), (2, 2), (2, 2)]
         self.padding =  "same"
         self.conv0 = nn.Sequential(
             nn.Conv2d(n_ch_in,  ch[0], kernel_size=(3,3), stride=1, padding=self.padding),
@@ -414,43 +414,48 @@ class EncoderGenB3blocks(nn.Module):
         self.conv2 = nn.Sequential(
             nn.Conv2d(ch[1], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),
             nn.Conv2d(ch[2], ch[2], kernel_size=(3,3), stride=1, padding=self.padding),
-            nn.AvgPool2d(po[2], stride=po[2]))    
-        
+            nn.BatchNorm2d(ch[2]),
+            nn.ReLU(),
+            nn.AvgPool2d(po[2], stride=po[2]))
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(ch[2], ch[3], kernel_size=(16,1), stride=1, padding='valid'),
+            )   
     def forward(self, x):
         x = self.conv0(x)
         x = self.conv1(x)
         x = self.conv2(x)
+        x = self.conv3(x)
         return(x)
     
 class DecoderGenB3blocks(nn.Module):
-    def __init__(self, n_ch_out=3, ch = [256, 128, 128, 64]):
+    def __init__(self, n_ch_out=3, ch = [256, 128, 128, 128]):
         super().__init__()
-        po =  [(4, 2), (4, 2), (8, 2)]
+        po =  [(2, 2), (2, 2), (2, 2)]
         self.tconv0 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[0], kernel_size=(5,5), stride=po[0], padding=(1,2), output_padding=(1,1)), 
-            nn.BatchNorm2d(ch[0]),
-            nn.ReLU()
-            )
-        self.tconv1 = nn.Sequential(
-            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(5,5), stride=po[1], padding=(1,2), output_padding=(1,1)), 
+            nn.ConvTranspose2d(ch[0], ch[1], kernel_size=(16,1), stride=(1,1), padding=(0,0), output_padding=(0,0)), 
             nn.BatchNorm2d(ch[1]),
             nn.ReLU()
             )
-        self.tconv2 = nn.Sequential(
-            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(5,5), stride=po[2], padding=(0,2), output_padding=(3,1)),  
+        self.tconv1 = nn.Sequential(
+            nn.ConvTranspose2d(ch[1], ch[2], kernel_size=(5,5), stride=po[1], padding=(2,2), output_padding=(1,1)), 
             nn.BatchNorm2d(ch[2]),
             nn.ReLU()
             )
-        self.out_map = nn.Sequential(
-            nn.Conv2d(ch[2], n_ch_out, kernel_size=(1,1), padding=0),
+        self.tconv2 = nn.Sequential(
+            nn.ConvTranspose2d(ch[2], ch[3], kernel_size=(5,5), stride=po[2], padding=(2,2), output_padding=(1,1)),  
+            nn.BatchNorm2d(ch[3]),
+            nn.ReLU()
+            )
+        self.tconv3 = nn.Sequential(
+            nn.ConvTranspose2d(ch[3], n_ch_out, kernel_size=(5,5), stride=po[2], padding=(2,2), output_padding=(1,1)),  
+            nn.BatchNorm2d(n_ch_out),
             nn.Sigmoid()
             )
-        
     def forward(self, x):
         x = self.tconv0(x)
         x = self.tconv1(x)
         x = self.tconv2(x)
-        x = self.out_map(x)
+        x = self.tconv3(x)
         return x
 # -------------------------------------------------
 
