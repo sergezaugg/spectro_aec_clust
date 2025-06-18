@@ -8,11 +8,12 @@
 * [ML details](#ML-details)
 
 ### Overview
-* Define and train simple custom Pytorch auto-encoders for spectrograms
-* Extract array features with these auto-encoders and convert them to linear features (details in pic below)
+* This is a codebase for applied research with auto-encoders to extract features from spectrograms 
+* It allow two things:
+* (1) Define and train simple custom Pytorch auto-encoders for spectrograms
+* (2) Extract array features with these auto-encoders and convert them to linear features (details in pic below)
 * Auto-encoders perform partial pooling of time axis (latent array representation is 2D -> channel by time)
 * Specific data loader for spectrogram data to train under de-noising regime
-* All functionality is called from 3 classes defined in **utils.py**
 * Extracted features are meant to be used in companion [project](https://github.com/sergezaugg/spectrogram_image_clustering) and its [frontend](https://spectrogram-image-clustering.streamlit.app/)
 
 ### Intallation  
@@ -29,7 +30,7 @@
 ### Configuration
 * Paths where models will be saved and fetched are defined in **config/config.yaml**
 * Parameters for multiple training sessions can be defined as json file in **./session_params/training**
-* Parameters for multiple extraction sessions can be defined as json file in **./session_params/extraction**
+* Parameters for multiple extraction sessions can be defined as yaml file in **./session_params/extraction**
 
 ### Usage 
 * Prepare PNG formatted color images of spectrograms, e.g. with [this tool](https://github.com/sergezaugg/xeno_canto_organizer)
@@ -37,7 +38,7 @@
 * Run [main_00_make.py](main_00_make.py) to prepare the naive (randinit) auto-encoder models (run just once)
 * Set training session parameters in a json file in **./session_params/training**
 * [main_01_train.py](main_01_train.py) illustrates a pipeline to train auto-encoders
-* Set extraction session parameters in a json file in **./session_params/extraction**
+* Set extraction session parameters in a yaml file in **./session_params/extraction**
 * [main_02_extract.py](main_02_extract.py) illustrates a pipeline to extract array features and get dim-reduced linear features
 * Array and dim-reduced features are written to disk as NPZ files in parent of dir with images
 
