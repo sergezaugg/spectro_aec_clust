@@ -16,7 +16,8 @@
         "gnoiseprob" : 0.00
         },
     "den": {  
-    "thld" :  0.00
+        "thld_lo" :  0.00,
+        "thld_up" :  0.01
         } 
     }
 }
