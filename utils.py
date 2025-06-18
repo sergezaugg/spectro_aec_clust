@@ -328,18 +328,19 @@ class AutoencoderExtract:
     visualization, and pooling/aggregation of features over time using a trained autoencoder.
     """
   
-    def __init__(self, sess_json, device): 
+    def __init__(self, sess, device): 
         """
         Initialize the AutoencoderExtract instance.
         Loads session parameters and configuration files, and sets up paths and device information.
         Args:
-            sess_json (str): Filename of the session JSON file in './session_params/extraction'.
+            sess (str): Filename of the session YAML file in './session_params/extraction'.
             device (str or torch.device): The device to run models on ('cpu' or 'cuda').
         """
-        with open(os.path.join('./session_params/extraction', sess_json )) as f:
-            sess_info = json.load(f)
-        self.path_images = sess_info['imgpath']
-        self.time_stamp_model = sess_info['model_tag']
+        with open(os.path.join('./session_params/extraction', sess)) as f:
+            self.sess_info = yaml.safe_load(f)    
+        self.path_images = self.sess_info['imgpath']
+        self.time_stamp_model = self.sess_info['model_tag']
+        # 
         self.device = device
         # load path from config 
         with open('./config/config.yaml') as f:
