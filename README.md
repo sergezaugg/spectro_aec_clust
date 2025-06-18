@@ -34,13 +34,9 @@
 
 ### Usage 
 * Prepare PNG formatted color images of spectrograms, e.g. with [this tool](https://github.com/sergezaugg/xeno_canto_organizer)
-* Set paths where models will be saved and fetched in **config/config.yaml**
-* Run [main_00_make.py](main_00_make.py) to prepare the naive (randinit) auto-encoder models (run just once)
-* Set training session parameters in a json file in **./session_params/training**
-* [main_01_train.py](main_01_train.py) illustrates a pipeline to train auto-encoders
-* Set extraction session parameters in a yaml file in **./session_params/extraction**
+* [main_01_train.py](main_01_train.py) illustrates a pipeline to create and train auto-encoders
 * [main_02_extract.py](main_02_extract.py) illustrates a pipeline to extract array features and get dim-reduced linear features
-* Array and dim-reduced features are written to disk as NPZ files in parent of dir with images
+* Array and dim-reduced features are written to disk as NPZ files in parent of images dir.
 
 ### ML details
 <img src="pics/flow_chart_01.png" alt="Example image" width="600"/>
