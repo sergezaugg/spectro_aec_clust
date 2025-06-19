@@ -26,16 +26,31 @@ from torchinfo import summary
 
 class MakeColdAutoencoders:
     """
+    Class for creating and saving multiple 'cold' (untrained) autoencoder architectures.
+    This class loads configuration from a YAML file, instantiates several encoder-decoder 
+    architecture variants from model_collection, summarizes their structures, and saves 
+    them as untrained model files for further use or inspection.
     """
+
     def __init__(self):
-        # load path from config 
+        """
+        Loads configuration settings (such as paths for saving models) from
+        './config/config.yaml' and stores them as an instance attribute.
+        """
         with open('./config/config.yaml') as f:
             self.conf = yaml.safe_load(f)
 
     def make(self):
         """
-        """
+        This method creates several pairs of encoders and decoders with different 
+        architectural variants, summarizes their model structures, and saves the 
+        untrained (cold) models to disk as .pth files in the configured directory.
 
+        Returns:
+            dict: A dictionary containing model architecture summaries for all 
+                generated encoder and decoder pairs. The keys are model names, 
+                and the values are dicts with 'enc' and 'dec' summaries.
+        """
         arch_di = {}
 
         #--------------------------------
